@@ -601,6 +601,22 @@ body.clientview .cab-detail,body.clientview #stageChip,body.clientview #transfor
 .notif-head b{font-family:Archivo,sans-serif;font-size:15.5px}
 .notif-note{font-size:11.5px;color:var(--muted);line-height:1.55;margin:9px 0 0}
 .notif-share-line{font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Segmented by share / project: one section per share, newest
+   activity first. The header names the project and that name is
+   the link to the share's client view (new tab). */
+.notif-group{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);margin-top:12px}
+.notif-group-head{background:var(--panel2);border-bottom:1px solid var(--line);padding:10px 12px}
+.notif-group-title-row{display:flex;align-items:flex-start;gap:8px}
+.notif-group-link{flex:1;min-width:0;font-family:Archivo,sans-serif;font-size:14px;font-weight:700;line-height:1.3;color:var(--text);text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px;word-break:break-word}
+.notif-group-link:hover{color:var(--accent)}
+.notif-group-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.notif-group-link .ext-ic{width:13px;height:13px;vertical-align:-1px;margin-left:4px;flex:none}
+.notif-group-meta{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:5px;font-size:11px;color:var(--muted);line-height:1.5}
+.notif-group-meta .code{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--text)}
+.notif-group-meta .mode-pill{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--line2);border-radius:999px;padding:1px 7px;color:var(--muted);white-space:nowrap}
+.notif-group-body{padding:10px;display:flex;flex-direction:column;gap:6px}
+.notif-group-body .cc-row{margin:0}
+.notif-group-reply{border-top:1px dashed var(--line);padding-top:9px;margin-top:2px}
 .notif-new{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:var(--accent);color:#161006;white-space:nowrap}
 .notif-reply{margin-top:8px}
 .notif-reply-box{margin-top:8px}
@@ -1128,16 +1144,21 @@ body:not(.learning-on) .learn{display:none}
 <!-- NOTIFICATIONS PANEL — designer / owner only (never client view:
      the top bar that carries its bell is hidden there, and
      initNotifications returns immediately for a client-view
-     request). Lists comments / reviews across ALL of the owner's
-     shares, newest first, each with a Reply box posting back to
-     that share. Tracking sources, deduplicated by share code:
-     shares owned by the signed-in user, plus share codes created
-     in this browser (kept in localStorage). Read state is local to
-     this browser too — the panel says so plainly. -->
+     request). Segmented by share / project: one section per
+     share in newest-activity-first order, its header naming the
+     project (Untitled design when no name is stored) as a link
+     opening ?client=1&share=<code> in a NEW tab, plus the short
+     code, mode and expiry when known; inside, that share's
+     comments / reviews newest first with one Reply box per share
+     posting back to that share. Tracking sources, deduplicated
+     by share code: shares owned by the signed-in user, plus
+     share codes created in this browser (kept in localStorage).
+     Read state is local to this browser too — the panel says
+     so plainly. -->
 <div id="notifPanel" hidden role="dialog" aria-label="Notifications — client comments and reviews">
   <div class="notif-head"><b>Notifications</b><button class="btn small" type="button" id="notifClose">Close</button></div>
   <p class="notif-note" id="notifSignInNote" hidden></p>
-  <p class="notif-note">Comments and reviews from clients on your shared links, newest first. Names are self-reported, not verified. Notifications are per-device / per-browser: read state is kept in this browser only, is not synced across devices, and there is no push or email alert — new comments are checked when the app opens, when this panel opens, and every few minutes while the app is open.</p>
+  <p class="notif-note">Comments and reviews from clients on your shared links, grouped by project / shared link with the newest activity first. Tap a project name to open that design in client view in a new tab. Names are self-reported, not verified. Notifications are per-device / per-browser: read state is kept in this browser only, is not synced across devices, and there is no push or email alert — new comments are checked when the app opens, when this panel opens, and every few minutes while the app is open.</p>
   <p class="cc-err" id="notifErr"></p>
   <div class="cc-list" id="notifList"></div>
 </div>
@@ -1797,7 +1818,8 @@ body:not(.learning-on) .learn{display:none}
     <div id="shareCommentsBox" hidden style="margin-top:12px">
       <button class="btn small" type="button" id="shareCommentsBtn" title="See the comments and reviews clients posted on this share's client view, and reply">View comments</button>
       <div id="shareCommentsPanel" hidden style="margin-top:10px">
-        <p class="share-note">Comments and reviews posted on this share's client view, newest first. Names are self-reported, not verified.</p>
+        <div class="field" id="scPickField" hidden style="margin-bottom:10px"><span>Comments for share</span><select id="scSharePick"></select></div>
+        <p class="share-note">Comments and reviews posted on the selected share's client view, newest first. Names are self-reported, not verified.</p>
         <div class="cc-list" id="scList"></div>
         <div class="field" style="margin-top:10px"><span>Your reply — posted as <b id="scReplyAs">Owner</b></span><textarea id="scBody" rows="3" placeholder="Reply to your client…"></textarea></div>
         <p class="cc-err" id="scErr"></p>
@@ -11897,13 +11919,14 @@ function supaGetShare(code,passkeyHash){
    views never extend it, only comments, reviews and owner updates
    do. The review outcome rides in kind (the table has no verdict
    column): "comment", "review_approved", "review_changes".
-   NOTE, verified live 30 Oct 2026: the table's row-level security
-   currently REFUSES inserts from the app (Postgres 42501 for the
-   anonymous key, for public and private shares alike), and there
-   is no comment RPC to route around it, so a refused owner post
-   surfaces COMMENT_SQL_FIX in the Share dialog — the exact policy
-   to add — instead of failing silently or changing the table
-   design; the client drawer just says posting isn't available. */
+   NOTE, re-verified live 31 Oct 2026: inserts were refused
+   (Postgres 42501) until the owner added an insert policy in the
+   Supabase SQL editor; since then client posts save and read back
+   (verified end to end against the live project). If a project's
+   rules ever refuse inserts again, a refused owner post surfaces
+   COMMENT_SQL_FIX in the Share dialog — the exact policy to add —
+   instead of failing silently, and the client drawer just says
+   posting isn't available. */
 var COMMENT_SQL_FIX="-- LUTAS LED — allow posting comments / reviews on shares.\n-- Run this once in the Supabase SQL editor:\ncreate policy \"Anyone can post a comment or review\"\non public.share_comments\nfor insert\nto anon, authenticated\nwith check (\n  exists (\n    select 1 from public.shares s\n    where s.code = share_code\n      and (s.expires_at is null or s.expires_at > now())\n  )\n);";
 function cmtKindInfo(kind){
   var k=String(kind||"comment");
@@ -11934,27 +11957,38 @@ function renderCommentsInto(box,rows,emptyText){
 }
 /* Insert one comment / review row. Owner replies from the main app
    go out with the signed-in session token when there is one;
-   client-view posts use the publishable key. Resolves with the
-   inserted rows (callers that don't need them just ignore the
-   value; the notifications code notes the new row's id so the
-   owner's own reply never counts as unread). Rejects with an
-   error carrying .status and .rls (true when row-level security
-   refused the insert) so the UI can show COMMENT_SQL_FIX. */
+   client-view posts use the publishable key. If the signed-in
+   insert is refused by row-level security, it is retried once
+   with the publishable key before giving up: the table's insert
+   rule may be scoped to the anonymous role (the role every client
+   post uses successfully), and a refusal must never silently eat
+   an owner's reply while client posts on the same share succeed.
+   Resolves with the inserted rows (callers that don't need them
+   just ignore the value; the notifications code notes the new
+   row's id so the owner's own reply never counts as unread).
+   Rejects with an error carrying .status and .rls (true when
+   row-level security refused the insert) so the UI can show
+   COMMENT_SQL_FIX. */
 function supaPostComment(code,author,kind,body,useAuth){
-  var headers=(useAuth&&typeof authSession!=="undefined"&&authSession&&authSession.access_token)
-    ? authHeaders({"Prefer":"return=representation"})
-    : supaHeaders({"Prefer":"return=representation"});
   var payload={share_code:code,author_name:String(author||"Anonymous").slice(0,80),kind:kind,body:String(body||"")};
-  return supaFetch(SUPABASE_URL+"/rest/v1/share_comments",{method:"POST",headers:headers,body:JSON.stringify(payload)},15000)
-    .then(function(res){
-      if(res.ok)return res.json().then(function(rows){return Array.isArray(rows)?rows:[]},function(){return []});
-      return res.text().then(function(txt){
-        var err=new Error("Supabase comment post failed ("+res.status+")");
-        err.status=res.status;
-        err.rls=(res.status===401||res.status===403||/42501|row-level security/i.test(txt||""));
-        throw err;
+  function attempt(headers){
+    return supaFetch(SUPABASE_URL+"/rest/v1/share_comments",{method:"POST",headers:headers,body:JSON.stringify(payload)},15000)
+      .then(function(res){
+        if(res.ok)return res.json().then(function(rows){return Array.isArray(rows)?rows:[]},function(){return []});
+        return res.text().then(function(txt){
+          var err=new Error("Supabase comment post failed ("+res.status+")");
+          err.status=res.status;
+          err.rls=(res.status===401||res.status===403||/42501|row-level security/i.test(txt||""));
+          throw err;
+        });
       });
-    });
+  }
+  var signedIn=useAuth&&typeof authSession!=="undefined"&&authSession&&authSession.access_token;
+  if(!signedIn)return attempt(supaHeaders({"Prefer":"return=representation"}));
+  return attempt(authHeaders({"Prefer":"return=representation"})).catch(function(err){
+    if(err&&err.rls)return attempt(supaHeaders({"Prefer":"return=representation"}));
+    throw err;
+  });
 }
 function fillCommentSqlBlocks(){
   var pres=document.querySelectorAll(".cc-sql-pre");
@@ -12687,8 +12721,10 @@ function rebuildShareLink(){
     if(!created||seq!==shareBuildSeq)return;
     shareCode=created.code; shareId=created.code; shareExpiresAt=created.expires_at||"";
     /* Remember this code in this browser, so the notifications
-       bell can track comments on it even while signed out. */
-    if(typeof notifRememberShare==="function")notifRememberShare(created.code,projectName);
+       bell can track comments on it even while signed out. Mode
+       and expiry ride along so the bell's per-project section
+       header can show them for this share too. */
+    if(typeof notifRememberShare==="function")notifRememberShare(created.code,projectName,{mode:shareMode,expires_at:created.expires_at||""});
     /* A fresh short share gets a fresh owner comments section:
        show the View comments button, collapsed, with any previous
        share's list and messages cleared. */
@@ -12702,6 +12738,10 @@ function rebuildShareLink(){
       var sco=$("scOk"); if(sco){sco.textContent=""; sco.classList.remove("show")}
       var scs=$("scSql"); if(scs)scs.hidden=true;
       var scn=$("scNote"); if(scn)scn.textContent="";
+      /* Keep the comments panel's share picker in step with the
+         link just created, and reload its list if it is open. */
+      if(typeof scPopulatePicker==="function")scPopulatePicker();
+      if(scp&&!scp.hidden&&typeof scLoadList==="function")scLoadList();
     }
     shareUrl="?client=1&share="+created.code;
     shareLink=sharePageBase()+shareUrl;
@@ -12788,12 +12828,14 @@ function ccRefreshExpiry(){
   });
 }
 function ccLoadList(){
-  var box=$("ccList"); if(!box)return;
+  var box=$("ccList"); if(!box)return Promise.resolve(null);
   box.innerHTML='<div class="cc-empty">Loading comments…</div>';
-  supaFetchComments(clientShareCode).then(function(rows){
+  return supaFetchComments(clientShareCode).then(function(rows){
     renderCommentsInto(box,rows,"No comments yet — be the first to comment or review this design.");
+    return rows;
   }).catch(function(){
     box.innerHTML='<div class="cc-empty">Comments couldn\'t be loaded — the share service could not be reached. Close and reopen to try again.</div>';
+    return null;
   });
 }
 function initClientComments(){
@@ -12828,12 +12870,28 @@ function initClientComments(){
     var author=($("ccName").value||"").trim()||"Anonymous";
     showErr(""); showOk(""); sqlEl.hidden=true;
     postBtn.disabled=true; postBtn.textContent="Posting…";
-    supaPostComment(clientShareCode,author,ccKindSel,body,false).then(function(){
+    supaPostComment(clientShareCode,author,ccKindSel,body,false).then(function(rows){
       postBtn.disabled=false; postBtn.textContent="Post";
       $("ccBody").value="";
-      showOk("Posted — thank you. This preview now stays alive for 30 days from now.");
-      ccLoadList();
-      ccRefreshExpiry();
+      /* Confirm the saved row is actually visible in the re-read
+         list before claiming success — a post that cannot be seen
+         again is reported as unconfirmed, never as posted. */
+      var postedId=(rows&&rows[0]&&rows[0].id)||null;
+      return ccLoadList().then(function(listRows){
+        var visible=false;
+        if(Array.isArray(listRows)){
+          visible=listRows.some(function(r){
+            if(postedId)return String(r.id)===String(postedId);
+            return (r.body||"")===body&&(r.author_name||"")===author;
+          });
+        }
+        if(visible){
+          showOk("Posted — thank you. This preview now stays alive for 30 days from now.");
+        }else{
+          showErr("Your comment was sent, but it isn't showing in the list yet — close and reopen Comments to check. If it still isn't there, please let the designer know.");
+        }
+        ccRefreshExpiry();
+      });
     }).catch(function(err){
       postBtn.disabled=false; postBtn.textContent="Post";
       if(err&&err.rls){
@@ -12849,11 +12907,59 @@ function initClientComments(){
    while the dialog's current link is a short Supabase share (the
    show / hide happens in rebuildShareLink); replies post as the
    signed-in display name when available, otherwise "Owner". */
+/* Which share the dialog's comments panel is looking at. The
+   dialog mints a NEW short code every time it opens, so binding
+   the panel to the session's current code alone made comments on
+   the link the client actually received unreachable the moment
+   the dialog was reopened — the designer saw an empty list on a
+   fresh code and concluded comments were not saved. The panel
+   therefore offers every share this designer can know about —
+   the current link, shares created in this browser, and (via the
+   notifications state) shares owned by the signed-in account —
+   and remembers the last one viewed in this browser. */
+var SC_VIEW_KEY="lutasLED.scViewCode", scViewCodeVal="";
+function scCandidates(){
+  var out=[], seen={};
+  function add(code,name){
+    code=String(code||"");
+    if(!code||seen[code])return;
+    seen[code]=true;
+    out.push({code:code,project_name:String(name||"Stage design")});
+  }
+  var local=(typeof notifLocalShares==="function")?notifLocalShares():[];
+  var localName={}; local.forEach(function(r){localName[r.code]=r.project_name});
+  var ownedName=(typeof notifState!=="undefined"&&notifState.byCode&&notifState.byCode[shareCode])?notifState.byCode[shareCode].project_name:"";
+  if(shareCode)add(shareCode,localName[shareCode]||ownedName);
+  local.forEach(function(r){add(r.code,r.project_name)});
+  if(typeof notifState!=="undefined"&&Array.isArray(notifState.shares))notifState.shares.forEach(function(s){add(s.code,s.project_name)});
+  return out;
+}
+function scPopulatePicker(){
+  var field=$("scPickField"), pick=$("scSharePick"); if(!field||!pick)return;
+  var cands=scCandidates();
+  var last=""; try{last=localStorage.getItem(SC_VIEW_KEY)||""}catch(e){}
+  var chosen="";
+  cands.forEach(function(c){if(c.code===last)chosen=last});
+  if(!chosen)chosen=shareCode||(cands.length?cands[0].code:"");
+  scViewCodeVal=chosen;
+  field.hidden=cands.length<=1;
+  if(cands.length>1){
+    pick.innerHTML=cands.map(function(c){
+      return '<option value="'+escHtml(c.code)+'"'+(c.code===chosen?" selected":"")+'>'+escHtml(c.project_name)+" · "+escHtml(c.code)+(c.code===shareCode?" — current link":"")+"</option>";
+    }).join("");
+  }
+}
+function scViewCode(){return scViewCodeVal||shareCode}
 function scLoadList(){
-  var box=$("scList"); if(!box||!shareCode)return;
+  var box=$("scList"); if(!box)return;
+  var code=scViewCode();
+  if(!code){box.innerHTML='<div class="cc-empty">No share link yet — create one and its comments will appear here.</div>'; return}
   box.innerHTML='<div class="cc-empty">Loading comments…</div>';
-  supaFetchComments(shareCode).then(function(rows){
-    renderCommentsInto(box,rows,"No comments on this share yet. Clients can comment or review from the client view's Comments button.");
+  supaFetchComments(code).then(function(rows){
+    var multi=!$("scPickField").hidden;
+    renderCommentsInto(box,rows,multi
+      ? "No comments on this share yet. If your client commented on a different link, choose it under \u201CComments for share\u201D above."
+      : "No comments on this share yet. Clients can comment or review from the client view's Comments button.");
   }).catch(function(){
     box.innerHTML='<div class="cc-empty">Comments couldn\'t be loaded — Supabase could not be reached.</div>';
   });
@@ -12866,20 +12972,35 @@ $("shareCommentsBtn").addEventListener("click",function(){
   if(opening){
     fillCommentSqlBlocks();
     var ra=$("scReplyAs"); if(ra)ra.textContent=(typeof authUser!=="undefined"&&authUser)?authDisplayName(authUser):"Owner";
+    scPopulatePicker();
     scLoadList();
+    /* Pull the account's shares in too (the bell's source list),
+       then refresh the picker so shares created on other devices
+       become selectable here as well. */
+    if(typeof notifRefresh==="function")notifRefresh().then(function(){
+      if(!$("shareCommentsPanel").hidden){scPopulatePicker(); scLoadList()}
+    });
   }
+});
+$("scSharePick").addEventListener("change",function(){
+  scViewCodeVal=this.value||shareCode;
+  try{localStorage.setItem(SC_VIEW_KEY,scViewCodeVal)}catch(e){}
+  scLoadList();
 });
 $("scPost").addEventListener("click",function(){
   var errEl=$("scErr"), okEl=$("scOk"), sqlEl=$("scSql"), noteEl=$("scNote"), postBtn=this;
   function showErr(m){errEl.textContent=m||""; errEl.classList.toggle("show",!!m)}
   function showOk(m){okEl.textContent=m||""; okEl.classList.toggle("show",!!m)}
-  if(!shareCode){showErr("There is no short share for this link yet — wait for the short link to be created."); return}
+  /* The reply goes to the share the panel is viewing (the picker),
+     which may be an earlier link than the one just created. */
+  var viewCode=(typeof scViewCode==="function")?scViewCode():"";
+  if(!viewCode){showErr("There is no short share for this link yet — wait for the short link to be created."); return}
   var body=($("scBody").value||"").trim();
   if(!body){showOk(""); sqlEl.hidden=true; showErr("Write a reply first — an empty reply can't be posted."); $("scBody").focus(); return}
   var author=(typeof authUser!=="undefined"&&authUser)?authDisplayName(authUser):"Owner";
   showErr(""); showOk(""); sqlEl.hidden=true; if(noteEl)noteEl.textContent="";
   postBtn.disabled=true; postBtn.textContent="Posting…";
-  supaPostComment(shareCode,author,"comment",body,true).then(function(rows){
+  supaPostComment(viewCode,author,"comment",body,true).then(function(rows){
     postBtn.disabled=false; postBtn.textContent="Post reply";
     $("scBody").value="";
     showOk("Reply posted.");
@@ -12888,9 +13009,11 @@ $("scPost").addEventListener("click",function(){
     if(rows&&rows[0]&&rows[0].id&&typeof notifNoteOwnComment==="function")notifNoteOwnComment(rows[0].id);
     scLoadList();
     /* The reply extended the expiry server-side; refresh the date
-       shown for public shares (private rows aren't readable here). */
-    supaFetchPublicShare(shareCode).then(function(row){
-      if(row&&row.expires_at){shareExpiresAt=row.expires_at; if(noteEl)noteEl.textContent="This share now expires "+fmtShareDate(shareExpiresAt)+"."}
+       shown for public shares (private rows aren't readable here).
+       Only the current link's own date feeds the dialog's expiry
+       line; a reply on an earlier share just gets the note. */
+    supaFetchPublicShare(viewCode).then(function(row){
+      if(row&&row.expires_at){if(viewCode===shareCode)shareExpiresAt=row.expires_at; if(noteEl)noteEl.textContent="This share now expires "+fmtShareDate(row.expires_at)+"."}
       else if(noteEl)noteEl.textContent="This share's expiry was extended by 30 days from now.";
     },function(){if(noteEl)noteEl.textContent="This share's expiry was extended by 30 days from now."});
   }).catch(function(err){
@@ -12937,16 +13060,36 @@ function notifStoreSet(key,val){
 function notifLocalShares(){
   var a=notifStoreGet(NOTIF_LOCAL_SHARES_KEY,[]);
   if(!Array.isArray(a))return [];
-  return a.filter(function(r){return r&&r.code}).map(function(r){return {code:String(r.code),project_name:String(r.project_name||"Stage design")}});
+  return a.filter(function(r){return r&&r.code}).map(function(r){return {code:String(r.code),project_name:String(r.project_name||""),mode:String(r.mode||""),expires_at:String(r.expires_at||"")}});
 }
-function notifRememberShare(code,projectName){
+function notifRememberShare(code,projectName,meta){
   if(!code)return;
+  meta=meta||{};
   var a=notifLocalShares(), found=false;
-  a=a.map(function(r){if(r.code===code){found=true; return {code:code,project_name:projectName||r.project_name}} return r});
-  if(!found)a.unshift({code:code,project_name:projectName||"Stage design"});
+  a=a.map(function(r){if(r.code===code){found=true; return {code:code,project_name:projectName||r.project_name,mode:String(meta.mode||r.mode||""),expires_at:String(meta.expires_at||r.expires_at||"")}} return r});
+  if(!found)a.unshift({code:code,project_name:String(projectName||""),mode:String(meta.mode||""),expires_at:String(meta.expires_at||"")});
   notifStoreSet(NOTIF_LOCAL_SHARES_KEY,a.slice(0,60));
   notifSyncVisibility();
   notifRefresh();
+}
+/* Display helpers for the segmented panel: the project label
+   falls back to "Untitled design" when no name is stored (the
+   share code is always shown alongside, so no group is ever
+   anonymous), and the client-view href is the relative short
+   share URL so it opens the same page's client view in a new
+   tab without switching this designer app into client view. */
+function notifProjectLabel(share){
+  var n=share&&share.project_name?String(share.project_name).trim():"";
+  return n?n:"Untitled design";
+}
+function notifClientHref(code){
+  return "?client=1&share="+encodeURIComponent(String(code||""));
+}
+function notifModeLabel(mode){
+  var m=String(mode||"").toLowerCase();
+  if(m==="private")return "Private";
+  if(m==="public")return "Public";
+  return "";
 }
 function notifIdSet(key){
   var a=notifStoreGet(key,[]), out={};
@@ -12995,9 +13138,27 @@ function notifRenderBadge(){
 function supaFetchMyShares(){
   if(!(typeof authUser!=="undefined"&&authUser&&authUser.id))return Promise.resolve([]);
   var url=SUPABASE_URL+"/rest/v1/shares?owner_id=eq."+encodeURIComponent(authUser.id)+"&select=code,project_name,mode,created_at,expires_at&order=created_at.desc&limit=200";
-  return supaFetch(url,{method:"GET",headers:authHeaders()},15000).then(function(res){
-    if(!res.ok){var err=new Error("Supabase shares read failed ("+res.status+")"); err.status=res.status; throw err}
-    return res.json().then(function(rows){return Array.isArray(rows)?rows:[]});
+  function go(headers){
+    return supaFetch(url,{method:"GET",headers:headers},15000).then(function(res){
+      if(!res.ok){var err=new Error("Supabase shares read failed ("+res.status+")"); err.status=res.status; throw err}
+      return res.json().then(function(rows){return Array.isArray(rows)?rows:[]});
+    });
+  }
+  function settle(p){return p.then(function(rows){return {rows:rows}},function(err){return {err:err}})}
+  /* Merge the session-token read with a publishable-key read of
+     the same owner filter. Public share rows are readable with
+     the publishable key, so if the authenticated role's rules
+     ever answer empty (or refuse) for this table, the bell still
+     finds the owner's public shares instead of tracking nothing
+     and showing no error. An error surfaces only when the
+     session read failed AND the fallback found nothing either. */
+  return Promise.all([settle(go(authHeaders())),settle(go(supaHeaders()))]).then(function(rs){
+    var a=rs[0], b=rs[1], byCode={}, out=[];
+    [a.rows||[],b.rows||[]].forEach(function(rows){rows.forEach(function(r){
+      if(r&&r.code&&!byCode[r.code]){byCode[r.code]=true; out.push(r)}
+    })});
+    if(!out.length&&a.err)throw a.err;
+    return out;
   });
 }
 function supaFetchCommentsBulk(codes){
@@ -13010,9 +13171,33 @@ function supaFetchCommentsBulk(codes){
       return res.json().then(function(rows){return Array.isArray(rows)?rows:[]});
     });
   }
+  /* Read with BOTH credential sets and merge. Comments are
+     readable with the publishable key by design (the client
+     drawer reads them that way), but a signed-in request runs
+     under the authenticated role — and row-level security with
+     no matching SELECT rule for that role answers 200 with an
+     EMPTY list, not an error. Taking only the signed-in result
+     therefore hid every saved comment from the signed-in
+     designer while clients could see them fine — the reported
+     "comments are not visible" bug. Merging both reads (dedupe
+     by id, newest first) makes the designer's view a superset of
+     the client's, whichever role the table's rules favour. An
+     error surfaces only when both reads fail. */
+  function settle(p){return p.then(function(rows){return {rows:rows}},function(err){return {err:err}})}
+  var anonP=settle(go(supaHeaders()));
   var signedIn=(typeof authSession!=="undefined"&&authSession&&authSession.access_token);
-  if(signedIn)return go(authHeaders()).catch(function(){return go(supaHeaders())});
-  return go(supaHeaders());
+  if(!signedIn)return anonP.then(function(a){if(a.err)throw a.err; return a.rows});
+  return Promise.all([anonP,settle(go(authHeaders()))]).then(function(rs){
+    var a=rs[0], b=rs[1];
+    if(a.err&&b.err)throw a.err;
+    var byId={}, out=[];
+    [a.rows||[],b.rows||[]].forEach(function(rows){rows.forEach(function(r){
+      var k=String(r&&r.id);
+      if(r&&!byId[k]){byId[k]=true; out.push(r)}
+    })});
+    out.sort(function(x,y){return String(y.created_at||"").localeCompare(String(x.created_at||""))});
+    return out.slice(0,200);
+  });
 }
 function notifRefresh(){
   if(isClientViewRequest())return Promise.resolve();
@@ -13032,8 +13217,17 @@ function notifRefresh(){
     : Promise.resolve([]);
   return ownedP.then(function(owned){
     var byCode={}, shares=[];
-    owned.forEach(function(r){if(r&&r.code&&!byCode[r.code]){var s={code:String(r.code),project_name:String(r.project_name||"Stage design")}; byCode[s.code]=s; shares.push(s)}});
-    local.forEach(function(r){if(r&&r.code&&!byCode[r.code]){var s={code:r.code,project_name:r.project_name}; byCode[s.code]=s; shares.push(s)}});
+    function mergeShare(code,projectName,mode,expiresAt){
+      code=String(code||"");
+      if(!code)return;
+      var ex=byCode[code];
+      if(!ex){var s={code:code,project_name:String(projectName||""),mode:String(mode||""),expires_at:String(expiresAt||"")}; byCode[code]=s; shares.push(s); return}
+      if(!ex.project_name&&projectName)ex.project_name=String(projectName);
+      if(!ex.mode&&mode)ex.mode=String(mode);
+      if(!ex.expires_at&&expiresAt)ex.expires_at=String(expiresAt);
+    }
+    owned.forEach(function(r){if(r&&r.code)mergeShare(r.code,r.project_name,r.mode,r.expires_at)});
+    local.forEach(function(r){if(r&&r.code)mergeShare(r.code,r.project_name,r.mode,r.expires_at)});
     notifState.shares=shares; notifState.byCode=byCode;
     var codes=shares.map(function(s){return s.code});
     if(!codes.length){notifState.comments=[]; notifState.err=""; return null}
@@ -13103,29 +13297,68 @@ function notifRenderList(){
     return;
   }
   var seen=notifIdSet(NOTIF_SEEN_KEY);
-  list.innerHTML=notifState.comments.map(function(c){
-    var ki=cmtKindInfo(c.kind);
-    var share=notifState.byCode[c.share_code]||{project_name:"Stage design"};
-    var isNew=!notifIsOwn(c)&&!seen[String(c.id)];
-    var cid=String(c.id);
-    var open=!!notifState.openReply[cid];
-    var st=notifState.status[cid]||{};
-    var html='<div class="cc-row"><div class="cc-row-top"><b>'+escHtml(c.author_name||"Anonymous")+'</b>'
-      +'<span class="cc-badge '+ki.c+'">'+escHtml(ki.t)+'</span>'
-      +(isNew?'<span class="notif-new">New</span>':"")
-      +'<span class="cc-when">'+escHtml(fmtCommentWhen(c.created_at))+'</span></div>'
-      +'<div class="notif-share-line">'+escHtml(share.project_name||"Stage design")+' · '+escHtml(c.share_code||"")+'</div>'
-      +'<div class="cc-body">'+escHtml(c.body||"")+'</div>'
-      +'<div class="notif-reply"><button class="btn small" type="button" data-notif-reply="'+escHtml(cid)+'">'+(open?"Hide reply":"Reply")+'</button></div>';
+  /* Segment by share / project: group every comment under its
+     share — including comments whose share has no stored project
+     name (they group under their code as "Untitled design", so
+     no comment is ever orphaned or hidden) — order the sections
+     by newest activity first, and the comments inside each
+     section newest first. */
+  var groupsByCode={}, groups=[];
+  notifState.comments.forEach(function(c){
+    var code=String(c.share_code||"");
+    var g=groupsByCode[code];
+    if(!g){
+      var sh=notifState.byCode[code]||{code:code,project_name:"",mode:"",expires_at:""};
+      g={code:code,share:sh,items:[],latest:""};
+      groupsByCode[code]=g; groups.push(g);
+    }
+    g.items.push(c);
+    if(!g.latest||String(c.created_at||"")>g.latest)g.latest=String(c.created_at||"");
+  });
+  groups.forEach(function(g){g.items.sort(function(x,y){return String(y.created_at||"").localeCompare(String(x.created_at||""))})});
+  groups.sort(function(a,b){return String(b.latest||"").localeCompare(String(a.latest||""))});
+  var extSvg='<svg class="ext-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+  list.innerHTML=groups.map(function(g){
+    var share=g.share;
+    var label=notifProjectLabel(share);
+    var modeTxt=notifModeLabel(share.mode);
+    var expTxt=share.expires_at?(typeof fmtShareDate==="function"?fmtShareDate(share.expires_at):""):"";
+    var unreadInGroup=g.items.filter(function(c){return !notifIsOwn(c)&&!seen[String(c.id)]}).length;
+    var codeKey=g.code;
+    var open=!!notifState.openReply[codeKey];
+    var st=notifState.status[codeKey]||{};
+    var metaHtml='<span class="code">'+escHtml(g.code||"—")+'</span>'
+      +(modeTxt?'<span class="mode-pill">'+escHtml(modeTxt)+'</span>':"")
+      +(expTxt?'<span>Expires '+escHtml(expTxt)+'</span>':"")
+      +'<span>'+g.items.length+(g.items.length===1?" comment":" comments")+'</span>';
+    var html='<section class="notif-group" aria-label="'+escHtml(label)+'">'
+      +'<div class="notif-group-head"><div class="notif-group-title-row">'
+      +'<a class="notif-group-link" href="'+escHtml(notifClientHref(g.code))+'" target="_blank" rel="noopener noreferrer" title="Open this design in client view (new tab)">'+escHtml(label)+extSvg+'</a>'
+      +(unreadInGroup?'<span class="notif-new">'+unreadInGroup+' new</span>':"")
+      +'</div><div class="notif-group-meta">'+metaHtml+'</div></div>'
+      +'<div class="notif-group-body">';
+    html+=g.items.map(function(c){
+      var ki=cmtKindInfo(c.kind);
+      var isNew=!notifIsOwn(c)&&!seen[String(c.id)];
+      return '<div class="cc-row"><div class="cc-row-top"><b>'+escHtml(c.author_name||"Anonymous")+'</b>'
+        +'<span class="cc-badge '+ki.c+'">'+escHtml(ki.t)+'</span>'
+        +(isNew?'<span class="notif-new">New</span>':"")
+        +'<span class="cc-when">'+escHtml(fmtCommentWhen(c.created_at))+'</span></div>'
+        +'<div class="cc-body">'+escHtml(c.body||"")+'</div></div>';
+    }).join("");
+    /* One Reply box per share / section: it posts to this
+       section's share and extends that share's 30-day expiry. */
+    html+='<div class="notif-group-reply"><button class="btn small" type="button" data-notif-reply="'+escHtml(codeKey)+'">'+(open?"Hide reply":"Reply")+'</button>';
     if(open){
-      html+='<div class="notif-reply-box"><div class="field"><span>Your reply — posted as '+escHtml(notifReplyAuthor())+' to '+escHtml(share.project_name||"Stage design")+' ('+escHtml(c.share_code||"")+')</span>'
-        +'<textarea rows="3" data-notif-draft="'+escHtml(cid)+'" placeholder="Reply to your client…">'+escHtml(notifState.drafts[cid]||"")+'</textarea></div>'
+      html+='<div class="notif-reply-box"><div class="field"><span>Your reply — posted as '+escHtml(notifReplyAuthor())+' to '+escHtml(label)+' ('+escHtml(g.code||"")+')</span>'
+        +'<textarea rows="3" data-notif-draft="'+escHtml(codeKey)+'" placeholder="Reply to your client…">'+escHtml(notifState.drafts[codeKey]||"")+'</textarea></div>'
         +(st.msg?'<p class="notif-status '+(st.err?"err":"ok")+'">'+escHtml(st.msg)+'</p>':"")
-        +'<div style="margin-top:8px"><button class="btn primary small" type="button" data-notif-post="'+escHtml(cid)+'">Post reply</button></div></div>';
+        +'<div style="margin-top:8px"><button class="btn primary small" type="button" data-notif-post="'+escHtml(codeKey)+'">Post reply</button></div></div>';
     }else if(st.msg){
       html+='<p class="notif-status '+(st.err?"err":"ok")+'">'+escHtml(st.msg)+'</p>';
     }
-    return html+'</div>';
+    html+='</div></div></section>';
+    return html;
   }).join("");
 }
 function notifOpenPanel(){
@@ -13144,23 +13377,25 @@ function notifClosePanel(){
   var p=$("notifPanel"), b=$("notifBtn"); if(!p)return;
   p.hidden=true; if(b)b.setAttribute("aria-expanded","false");
 }
-function notifPostReply(cid){
-  var c=null;
-  notifState.comments.forEach(function(x){if(String(x.id)===String(cid))c=x});
-  if(!c)return;
-  var body=String(notifState.drafts[cid]||"").trim();
-  if(!body){notifState.status[cid]={err:true,msg:"Write a reply first — an empty reply can't be posted."}; notifRenderList(); return}
-  notifState.status[cid]={err:false,msg:"Posting…"};
+function notifPostReply(shareCodeKey){
+  /* Replies are per share / section: the key is the share code,
+     so a reply from a project section always posts to that
+     section's share (and extends that share's 30-day expiry). */
+  var code=String(shareCodeKey||"");
+  if(!code)return;
+  var body=String(notifState.drafts[code]||"").trim();
+  if(!body){notifState.status[code]={err:true,msg:"Write a reply first — an empty reply can't be posted."}; notifRenderList(); return}
+  notifState.status[code]={err:false,msg:"Posting…"};
   notifRenderList();
-  supaPostComment(c.share_code,notifReplyAuthor(),"comment",body,true).then(function(rows){
+  supaPostComment(code,notifReplyAuthor(),"comment",body,true).then(function(rows){
     if(rows&&rows[0]&&rows[0].id)notifNoteOwnComment(rows[0].id);
-    notifState.drafts[cid]="";
-    notifState.status[cid]={err:false,msg:"Reply posted — it also extends this share's 30-day expiry from now."};
+    notifState.drafts[code]="";
+    notifState.status[code]={err:false,msg:"Reply posted — it also extends this share's 30-day expiry from now."};
     return notifRefresh();
   }).then(function(){
     notifRenderList();
   }).catch(function(err){
-    notifState.status[cid]={err:true,msg:(err&&err.rls)
+    notifState.status[code]={err:true,msg:(err&&err.rls)
       ? "Your reply couldn't be posted — Supabase's security rules refused it ("+((err&&err.status)||"401/403")+"). The share_comments insert rule in Supabase needs to allow posting (the same fix the Share dialog's View comments panel shows)."
       : "Your reply couldn't be posted — Supabase could not be reached. Check your connection and try again."};
     notifRenderList();
