@@ -532,6 +532,57 @@ body.clientview .cab-detail,body.clientview #stageChip,body.clientview #transfor
 .client-hint{margin-left:auto;font-size:11.5px;color:#cbd5e1;background:rgba(10,14,20,.88);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 12px}
 .client-expiry{font-size:11.5px;color:#fde68a;background:rgba(10,14,20,.88);border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:8px 12px;white-space:nowrap}
 .client-expiry[hidden]{display:none!important}
+/* ── Comments & reviews — client drawer + owner Share-dialog panel ──
+   The client-bar Comments button (short Supabase shares only) opens
+   a right-side drawer over the cinematic frame; the same comment
+   list styles serve the owner's panel inside the Share dialog. The
+   drawer is dark glass like the gate card, because the client view
+   is always the dark cinematic frame; the owner panel inherits the
+   dialog theme through the --cc-* variables. */
+.client-comments-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(10,14,20,.88);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 12px;color:#e2e8f0;font-size:12px;font-weight:700;cursor:pointer}
+.client-comments-btn:hover{border-color:rgba(255,255,255,.35)}
+.client-comments-btn .ic{width:15px;height:15px}
+.client-comments-btn[hidden]{display:none!important}
+#clientComments{position:fixed;top:0;right:0;bottom:0;width:min(392px,94vw);z-index:150;background:rgba(13,19,28,.98);border-left:1px solid rgba(255,255,255,.16);color:#e2e8f0;box-shadow:-24px 0 60px rgba(0,0,0,.5);display:none;flex-direction:column;padding:18px;overflow-y:auto;--cc-surface:rgba(255,255,255,.05);--cc-line:rgba(255,255,255,.14);--cc-text:#e2e8f0;--cc-muted:#94a3b8}
+#clientComments.open{display:flex}
+#clientComments h2{font-family:Archivo,sans-serif;font-size:17px;margin:0;color:#f1f5f9}
+.cc-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cc-note{font-size:11.5px;color:var(--cc-muted,#94a3b8);line-height:1.55;margin:10px 0 0}
+.cc-expiry-line{font-size:12px;color:#fde68a;line-height:1.5;margin:8px 0 0}
+.cc-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.cc-row{background:var(--cc-surface,var(--panel2));border:1px solid var(--cc-line,var(--line));border-radius:10px;padding:9px 11px}
+.cc-row-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cc-row-top b{font-size:13px;color:var(--cc-text,var(--text))}
+.cc-when{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--cc-muted,var(--muted));white-space:nowrap}
+.cc-badge{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--cc-line,var(--line2));border-radius:999px;padding:2px 8px;color:var(--cc-muted,var(--muted));white-space:nowrap}
+.cc-badge.ok{color:#4ade80;border-color:rgba(74,222,128,.45);background:rgba(74,222,128,.1)}
+.cc-badge.chg{color:#fbbf24;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.1)}
+.cc-body{font-size:12.5px;line-height:1.55;color:var(--cc-text,var(--text));margin-top:5px;white-space:pre-wrap;word-break:break-word}
+.cc-empty{font-size:12.5px;color:var(--cc-muted,var(--muted));line-height:1.6;background:var(--cc-surface,var(--panel2));border:1px dashed var(--cc-line,var(--line2));border-radius:10px;padding:12px}
+.cc-form{margin-top:16px;border-top:1px solid var(--cc-line,rgba(255,255,255,.14));padding-top:14px}
+#clientComments .field{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18);margin-top:8px}
+#clientComments .field span{color:#94a3b8}
+#clientComments .field input,#clientComments .field textarea{color:#e2e8f0}
+.field textarea{width:100%;border:0;background:transparent;color:var(--text);font-weight:600;font-size:13.5px;outline:none;padding:2px 0 0;font-family:Inter,sans-serif;resize:vertical;min-height:56px;line-height:1.5}
+.cc-kind{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px}
+@media(min-width:380px){.cc-kind{grid-template-columns:repeat(3,1fr)}}
+.cc-kind button{border:1px solid var(--cc-line,var(--line));background:var(--cc-surface,var(--panel2));padding:8px 6px;border-radius:9px;font-size:11.5px;font-weight:700;color:var(--cc-text,var(--text));cursor:pointer;line-height:1.35}
+.cc-kind button.on{background:#f59e0b;color:#111827;border-color:#fbbf24}
+.cc-err{display:none;font-size:12.5px;color:#b91c1c;margin:10px 0 0;line-height:1.5}
+.cc-err.show{display:block}
+#clientComments .cc-err{color:#fca5a5}
+@media(prefers-color-scheme:dark){.cc-err{color:#fca5a5}.cc-ok{color:#4ade80}}
+:root[data-theme="dark"] .cc-err{color:#fca5a5}
+:root[data-theme="dark"] .cc-ok{color:#4ade80}
+.cc-ok{display:none;font-size:12.5px;color:#15803d;margin:10px 0 0;line-height:1.5}
+.cc-ok.show{display:block}
+#clientComments .cc-ok{color:#4ade80}
+.cc-sql{margin-top:10px}
+.cc-sql p{font-size:12px;line-height:1.55;margin:0 0 6px;color:var(--cc-text,var(--text))}
+.cc-sql pre{font-family:"IBM Plex Mono",monospace;font-size:10.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word;background:var(--cc-surface,var(--panel2));border:1px solid var(--cc-line,var(--line));border-radius:10px;padding:10px;max-height:220px;overflow-y:auto;margin:0}
+.cc-post{width:100%;margin-top:12px;background:#f59e0b;border:1px solid #fbbf24;color:#111827;font-weight:800;font-size:13.5px;padding:11px 14px;border-radius:10px;cursor:pointer}
+.cc-post:hover{background:#fbbf24}
+.cc-post:disabled{opacity:.55;cursor:default}
 #clientNotice{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;padding:16px;background:#05070b}
 #clientNotice.open{display:flex}
 .share-status{font-size:12px;line-height:1.55;margin-top:7px;color:var(--muted)}
@@ -1109,6 +1160,7 @@ body:not(.learning-on) .learn{display:none}
         <div class="client-bar">
           <div class="client-id"><b id="clientTitle">Stage design</b><span class="client-tag">Client view · view only</span></div>
           <div class="v3d-group"><span class="cap">Camera</span><button data-cam="front" class="iconly" title="Front — orthographic elevation, no perspective" aria-label="Front camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="4,8.5 16,8.5 16,20.5 4,20.5" fill="currentColor" stroke="none"/><path d="M4 8.5 7 4h12v12l-3 4.5H4Z"/><path d="M4 8.5h12M16 8.5 19 4M16 8.5v12"/></svg></button><button data-cam="top" class="iconly" title="Top — orthographic plan view" aria-label="Top camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,2.8 20.5,7.4 12,12 3.5,7.4" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="left" class="iconly" title="Left — orthographic, from stage left" aria-label="Left camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3.5,7.4 12,12 12,21.2 3.5,16.6" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="right" class="iconly" title="Right — orthographic, from stage right" aria-label="Right camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,12 20.5,7.4 20.5,16.6 12,21.2" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="iso" class="iconly" title="Isometric — perspective three-quarter view" aria-label="Isometric camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="free" class="iconly" title="Free camera — orbit, tilt, pan and zoom freely" aria-label="Free camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6.5" width="13" height="11" rx="2"/><path d="m15.5 10.8 6-3.3v9l-6-3.3"/></svg></button></div>
+          <button type="button" class="client-comments-btn" id="clientCommentsBtn" hidden title="Comments and reviews for this share — leave a comment, or review the design: approve it or request changes"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>Comments</button>
           <div class="client-expiry" id="clientExpiry" hidden>This preview stays only 30 days</div>
           <div class="client-hint">Drag to orbit · Scroll to zoom · Right-drag to pan</div>
         </div>
@@ -1696,6 +1748,24 @@ body:not(.learning-on) .learn{display:none}
       <button class="btn primary" type="button" id="shareCopyBtn" title="Copy the share link shown — paste it anywhere to share this client view">Copy link</button>
     </div>
     <p class="share-status" id="shareShortNote">Creating a short link…</p>
+    <div id="shareCommentsBox" hidden style="margin-top:12px">
+      <button class="btn small" type="button" id="shareCommentsBtn" title="See the comments and reviews clients posted on this share's client view, and reply">View comments</button>
+      <div id="shareCommentsPanel" hidden style="margin-top:10px">
+        <p class="share-note">Comments and reviews posted on this share's client view, newest first. Names are self-reported, not verified.</p>
+        <div class="cc-list" id="scList"></div>
+        <div class="field" style="margin-top:10px"><span>Your reply — posted as <b id="scReplyAs">Owner</b></span><textarea id="scBody" rows="3" placeholder="Reply to your client…"></textarea></div>
+        <p class="cc-err" id="scErr"></p>
+        <div class="cc-sql" id="scSql" hidden>
+          <p>Posting this reply is blocked by the share_comments table's security rules in Supabase. Run this SQL once in the Supabase SQL editor to allow it:</p>
+          <pre class="cc-sql-pre"></pre>
+        </div>
+        <p class="cc-ok" id="scOk"></p>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+          <button class="btn primary" type="button" id="scPost">Post reply</button>
+          <span class="share-note" id="scNote"></span>
+        </div>
+      </div>
+    </div>
     <p class="share-note" id="shareModeNote" style="margin-top:14px">Public — anyone with the link opens the client view directly.</p>
     <p class="share-note" id="shareScreenNote" style="margin-top:7px">Screen content: nothing is playing on the screens, so the client sees the screens in their layout colours. Start a Simulator source in Render first if you want content on the walls in the client view.</p>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
@@ -1852,6 +1922,36 @@ body:not(.learning-on) .learn{display:none}
     <h2 id="clientNoticeTitle">Loading preview…</h2>
     <p class="gate-sub" id="clientNoticeMsg">Fetching this design…</p>
     <p class="gate-note">This preview stays only 30 days. It is removed after 30 days unless a comment, a review, or an update from the designer extends it.</p>
+  </div>
+</div>
+
+<!-- CLIENT COMMENTS DRAWER — short Supabase shares only: opened by
+     the client bar's Comments button, closed by default. Lists this
+     share's rows from public.share_comments (newest first) and posts
+     new ones to the same table; a posted comment / review extends
+     the share's 30-day expiry server-side (the table's trigger),
+     while views never do. Long-link shares have no share code, so
+     the button — and this drawer — never appear for them. -->
+<div id="clientComments" role="dialog" aria-modal="false" aria-labelledby="ccTitle">
+  <div class="cc-head"><h2 id="ccTitle">Comments &amp; reviews</h2><button class="btn small" type="button" id="ccClose">Close</button></div>
+  <p class="cc-note">Names here are self-reported — typed by the person posting, not verified.</p>
+  <p class="cc-expiry-line" id="ccExpiryLine" hidden></p>
+  <div class="cc-list" id="ccList"><div class="cc-empty">Loading comments…</div></div>
+  <div class="cc-form">
+    <div class="field"><span>Your name</span><input type="text" id="ccName" autocomplete="name" placeholder="Anonymous"></div>
+    <div class="cc-kind" id="ccKind" role="group" aria-label="Post as">
+      <button type="button" data-cckind="comment" class="on">Comment</button>
+      <button type="button" data-cckind="review_approved">Review — Approve</button>
+      <button type="button" data-cckind="review_changes">Review — Request changes</button>
+    </div>
+    <div class="field"><span>Your comment</span><textarea id="ccBody" rows="3" placeholder="Write a comment, or what needs to change…"></textarea></div>
+    <p class="cc-err" id="ccErr"></p>
+    <div class="cc-sql" id="ccSql" hidden>
+      <p>Posting isn't available for this share right now — the share service is refusing new comments. Please let the designer know; they can switch posting on from their side. Your comment wasn't posted.</p>
+    </div>
+    <p class="cc-ok" id="ccOk"></p>
+    <button class="cc-post" type="button" id="ccPost">Post</button>
+    <p class="cc-note">Posting a comment or review keeps this preview alive for 30 days from now. Just viewing it does not extend it.</p>
   </div>
 </div>
 
@@ -11553,7 +11653,7 @@ $("mSave").addEventListener("click",function(){closeMenus(); if(typeof authUser!
    can orbit / pan / zoom and switch Front / Top / Left / Right /
    Isometric / Free — and nothing else: View mode only, so no gizmo,
    no drag editing, no save / load anywhere on screen. */
-var clientMode=false, clientPayload="", clientShareCode="", clientShareExpiresAt="";
+var clientMode=false, clientPayload="", clientShareCode="", clientShareExpiresAt="", clientGateName="";
 (function(){
   try{
     var q=new URLSearchParams(window.location.search||"");
@@ -11742,6 +11842,74 @@ function supaGetShare(code,passkeyHash){
       if(!res.ok)throw new Error("Supabase get_share failed ("+res.status+")");
       return res.json().then(function(v){return (v&&typeof v==="object")?v:null});
     });
+}
+/* ══ Share comments & reviews — public.share_comments ═══════════
+   One table serves both sides: rows carry share_code, author_name,
+   kind, body, created_at. Reading works with the publishable key
+   (verified live). Posting inserts a row for the share code; the
+   table's own trigger then extends that share's 30-day expiry —
+   views never extend it, only comments, reviews and owner updates
+   do. The review outcome rides in kind (the table has no verdict
+   column): "comment", "review_approved", "review_changes".
+   NOTE, verified live 30 Oct 2026: the table's row-level security
+   currently REFUSES inserts from the app (Postgres 42501 for the
+   anonymous key, for public and private shares alike), and there
+   is no comment RPC to route around it, so a refused owner post
+   surfaces COMMENT_SQL_FIX in the Share dialog — the exact policy
+   to add — instead of failing silently or changing the table
+   design; the client drawer just says posting isn't available. */
+var COMMENT_SQL_FIX="-- LUTAS LED — allow posting comments / reviews on shares.\n-- Run this once in the Supabase SQL editor:\ncreate policy \"Anyone can post a comment or review\"\non public.share_comments\nfor insert\nto anon, authenticated\nwith check (\n  exists (\n    select 1 from public.shares s\n    where s.code = share_code\n      and (s.expires_at is null or s.expires_at > now())\n  )\n);";
+function cmtKindInfo(kind){
+  var k=String(kind||"comment");
+  if(k==="review_changes"||k==="review_changes_requested"||k==="changes_requested")return {t:"Review — Changes requested",c:"chg"};
+  if(k.indexOf("review")===0)return {t:"Review — Approved",c:"ok"};
+  return {t:"Comment",c:""};
+}
+function fmtCommentWhen(iso){
+  if(!iso)return "";
+  var d=new Date(iso);
+  if(isNaN(d.getTime()))return String(iso);
+  try{return d.toLocaleString(undefined,{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"})}catch(e){return d.toISOString().slice(0,16).replace("T"," ")}
+}
+function supaFetchComments(code){
+  var url=SUPABASE_URL+"/rest/v1/share_comments?share_code=eq."+encodeURIComponent(code)+"&select=id,share_code,author_name,kind,body,created_at&order=created_at.desc";
+  return supaFetch(url,{method:"GET",headers:supaHeaders()},15000).then(function(res){
+    if(!res.ok)throw new Error("Supabase comments read failed ("+res.status+")");
+    return res.json().then(function(rows){return Array.isArray(rows)?rows:[]});
+  });
+}
+function renderCommentsInto(box,rows,emptyText){
+  if(!box)return;
+  if(!rows||!rows.length){box.innerHTML='<div class="cc-empty">'+escHtml(emptyText||"No comments yet.")+'</div>'; return}
+  box.innerHTML=rows.map(function(r){
+    var ki=cmtKindInfo(r.kind);
+    return '<div class="cc-row"><div class="cc-row-top"><b>'+escHtml(r.author_name||"Anonymous")+'</b><span class="cc-badge '+ki.c+'">'+escHtml(ki.t)+'</span><span class="cc-when">'+escHtml(fmtCommentWhen(r.created_at))+'</span></div><div class="cc-body">'+escHtml(r.body||"")+'</div></div>';
+  }).join("");
+}
+/* Insert one comment / review row. Owner replies from the main app
+   go out with the signed-in session token when there is one;
+   client-view posts use the publishable key. Rejects with an error
+   carrying .status and .rls (true when row-level security refused
+   the insert) so the UI can show COMMENT_SQL_FIX. */
+function supaPostComment(code,author,kind,body,useAuth){
+  var headers=(useAuth&&typeof authSession!=="undefined"&&authSession&&authSession.access_token)
+    ? authHeaders({"Prefer":"return=representation"})
+    : supaHeaders({"Prefer":"return=representation"});
+  var payload={share_code:code,author_name:String(author||"Anonymous").slice(0,80),kind:kind,body:String(body||"")};
+  return supaFetch(SUPABASE_URL+"/rest/v1/share_comments",{method:"POST",headers:headers,body:JSON.stringify(payload)},15000)
+    .then(function(res){
+      if(res.ok)return res.json().then(function(){return true},function(){return true});
+      return res.text().then(function(txt){
+        var err=new Error("Supabase comment post failed ("+res.status+")");
+        err.status=res.status;
+        err.rls=(res.status===401||res.status===403||/42501|row-level security/i.test(txt||""));
+        throw err;
+      });
+    });
+}
+function fillCommentSqlBlocks(){
+  var pres=document.querySelectorAll(".cc-sql-pre");
+  for(var i=0;i<pres.length;i++)pres[i].textContent=COMMENT_SQL_FIX;
 }
 /* ══ Accounts — Supabase Auth (email first, then Google) ════════
    Plain fetch calls to the Supabase Auth REST API — no SDK added.
@@ -12446,6 +12614,7 @@ function rebuildShareLink(){
       shareUrl="?client=1#s="+p;
       shareLink=sharePageBase()+shareUrl;
       shareCode=""; shareExpiresAt="";
+      var scbLong=$("shareCommentsBox"); if(scbLong)scbLong.hidden=true; /* comments need a short share code */
       field.value=shareLink; field.placeholder="";
       $("shareCopyBtn").disabled=false;
       setModeNote();
@@ -12465,6 +12634,20 @@ function rebuildShareLink(){
   }).then(function(created){
     if(!created||seq!==shareBuildSeq)return;
     shareCode=created.code; shareId=created.code; shareExpiresAt=created.expires_at||"";
+    /* A fresh short share gets a fresh owner comments section:
+       show the View comments button, collapsed, with any previous
+       share's list and messages cleared. */
+    var scb=$("shareCommentsBox");
+    if(scb){
+      scb.hidden=false;
+      var scp=$("shareCommentsPanel"); if(scp)scp.hidden=true;
+      var scbtn=$("shareCommentsBtn"); if(scbtn)scbtn.textContent="View comments";
+      var scl=$("scList"); if(scl)scl.innerHTML="";
+      var sce=$("scErr"); if(sce){sce.textContent=""; sce.classList.remove("show")}
+      var sco=$("scOk"); if(sco){sco.textContent=""; sco.classList.remove("show")}
+      var scs=$("scSql"); if(scs)scs.hidden=true;
+      var scn=$("scNote"); if(scn)scn.textContent="";
+    }
     shareUrl="?client=1&share="+created.code;
     shareLink=sharePageBase()+shareUrl;
     field.value=shareLink; field.placeholder="";
@@ -12520,6 +12703,148 @@ $("shareCopyBtn").addEventListener("click",function(){
 $("shareOpenBtn").addEventListener("click",function(){if(shareUrl)window.open(shareUrl,"_blank")});
 $("shareClose").addEventListener("click",function(){$("shareModal").classList.remove("open")});
 $("shareModal").addEventListener("click",function(ev){if(ev.target===this)this.classList.remove("open")});
+/* ── Comments UI — client drawer + owner Share-dialog panel ──────
+   The client drawer lives in the client view only: initClientComments
+   is called from startClient, and only when the view came from a
+   short Supabase share (clientShareCode set). The owner panel lives
+   in the Share dialog and is wired at the bottom of this block; it
+   is shown only while the dialog holds a short share code. */
+var ccKindSel="comment", ccInitDone=false;
+function ccSyncExpiryLine(){
+  var line=$("ccExpiryLine"); if(!line)return;
+  var expTxt=fmtShareDate(clientShareExpiresAt);
+  line.textContent=expTxt?("This preview currently expires "+expTxt+". A comment or review extends it by 30 days."):"";
+  line.hidden=!expTxt;
+}
+function ccRefreshExpiry(){
+  /* After a post, the table's trigger has already moved the share's
+     expiry server-side; re-read the public row when it is readable.
+     A private share's row is not publicly readable, so fall back to
+     the rule itself: 30 days from now. */
+  return supaFetchPublicShare(clientShareCode).then(function(row){
+    if(row&&row.expires_at)clientShareExpiresAt=row.expires_at;
+    else clientShareExpiresAt=new Date(Date.now()+30*86400000).toISOString();
+  },function(){
+    clientShareExpiresAt=new Date(Date.now()+30*86400000).toISOString();
+  }).then(function(){
+    var ce=$("clientExpiry");
+    if(ce){var expTxt=fmtShareDate(clientShareExpiresAt); ce.textContent="This preview stays only 30 days"+(expTxt?" · Expires "+expTxt:""); ce.hidden=false}
+    ccSyncExpiryLine();
+  });
+}
+function ccLoadList(){
+  var box=$("ccList"); if(!box)return;
+  box.innerHTML='<div class="cc-empty">Loading comments…</div>';
+  supaFetchComments(clientShareCode).then(function(rows){
+    renderCommentsInto(box,rows,"No comments yet — be the first to comment or review this design.");
+  }).catch(function(){
+    box.innerHTML='<div class="cc-empty">Comments couldn\'t be loaded — the share service could not be reached. Close and reopen to try again.</div>';
+  });
+}
+function initClientComments(){
+  var btn=$("clientCommentsBtn"), drawer=$("clientComments");
+  if(!btn||!drawer||!clientShareCode)return;
+  btn.hidden=false;
+  fillCommentSqlBlocks();
+  if(ccInitDone)return;
+  ccInitDone=true;
+  var nameField=$("ccName");
+  if(nameField)nameField.value=clientGateName||"Anonymous";
+  ccSyncExpiryLine();
+  btn.addEventListener("click",function(){
+    var opening=!drawer.classList.contains("open");
+    drawer.classList.toggle("open",opening);
+    if(opening){ccLoadList(); ccSyncExpiryLine()}
+  });
+  $("ccClose").addEventListener("click",function(){drawer.classList.remove("open")});
+  var kindBtns=drawer.querySelectorAll("[data-cckind]");
+  Array.prototype.forEach.call(kindBtns,function(b){
+    b.addEventListener("click",function(){
+      ccKindSel=b.getAttribute("data-cckind")||"comment";
+      Array.prototype.forEach.call(kindBtns,function(x){x.classList.toggle("on",x===b)});
+    });
+  });
+  $("ccPost").addEventListener("click",function(){
+    var errEl=$("ccErr"), okEl=$("ccOk"), sqlEl=$("ccSql"), postBtn=$("ccPost");
+    function showErr(m){errEl.textContent=m||""; errEl.classList.toggle("show",!!m)}
+    function showOk(m){okEl.textContent=m||""; okEl.classList.toggle("show",!!m)}
+    var body=($("ccBody").value||"").trim();
+    if(!body){showOk(""); sqlEl.hidden=true; showErr("Write a comment first — an empty comment can't be posted."); $("ccBody").focus(); return}
+    var author=($("ccName").value||"").trim()||"Anonymous";
+    showErr(""); showOk(""); sqlEl.hidden=true;
+    postBtn.disabled=true; postBtn.textContent="Posting…";
+    supaPostComment(clientShareCode,author,ccKindSel,body,false).then(function(){
+      postBtn.disabled=false; postBtn.textContent="Post";
+      $("ccBody").value="";
+      showOk("Posted — thank you. This preview now stays alive for 30 days from now.");
+      ccLoadList();
+      ccRefreshExpiry();
+    }).catch(function(err){
+      postBtn.disabled=false; postBtn.textContent="Post";
+      if(err&&err.rls){
+        showErr("Your comment couldn't be posted.");
+        sqlEl.hidden=false;
+      }else{
+        showErr("Your comment couldn't be posted — the share service could not be reached. Check your connection and try again.");
+      }
+    });
+  });
+}
+/* Owner side — the Share dialog's View comments section. Shown only
+   while the dialog's current link is a short Supabase share (the
+   show / hide happens in rebuildShareLink); replies post as the
+   signed-in display name when available, otherwise "Owner". */
+function scLoadList(){
+  var box=$("scList"); if(!box||!shareCode)return;
+  box.innerHTML='<div class="cc-empty">Loading comments…</div>';
+  supaFetchComments(shareCode).then(function(rows){
+    renderCommentsInto(box,rows,"No comments on this share yet. Clients can comment or review from the client view's Comments button.");
+  }).catch(function(){
+    box.innerHTML='<div class="cc-empty">Comments couldn\'t be loaded — Supabase could not be reached.</div>';
+  });
+}
+$("shareCommentsBtn").addEventListener("click",function(){
+  var panel=$("shareCommentsPanel");
+  var opening=panel.hidden;
+  panel.hidden=!opening;
+  this.textContent=opening?"Hide comments":"View comments";
+  if(opening){
+    fillCommentSqlBlocks();
+    var ra=$("scReplyAs"); if(ra)ra.textContent=(typeof authUser!=="undefined"&&authUser)?authDisplayName(authUser):"Owner";
+    scLoadList();
+  }
+});
+$("scPost").addEventListener("click",function(){
+  var errEl=$("scErr"), okEl=$("scOk"), sqlEl=$("scSql"), noteEl=$("scNote"), postBtn=this;
+  function showErr(m){errEl.textContent=m||""; errEl.classList.toggle("show",!!m)}
+  function showOk(m){okEl.textContent=m||""; okEl.classList.toggle("show",!!m)}
+  if(!shareCode){showErr("There is no short share for this link yet — wait for the short link to be created."); return}
+  var body=($("scBody").value||"").trim();
+  if(!body){showOk(""); sqlEl.hidden=true; showErr("Write a reply first — an empty reply can't be posted."); $("scBody").focus(); return}
+  var author=(typeof authUser!=="undefined"&&authUser)?authDisplayName(authUser):"Owner";
+  showErr(""); showOk(""); sqlEl.hidden=true; if(noteEl)noteEl.textContent="";
+  postBtn.disabled=true; postBtn.textContent="Posting…";
+  supaPostComment(shareCode,author,"comment",body,true).then(function(){
+    postBtn.disabled=false; postBtn.textContent="Post reply";
+    $("scBody").value="";
+    showOk("Reply posted.");
+    scLoadList();
+    /* The reply extended the expiry server-side; refresh the date
+       shown for public shares (private rows aren't readable here). */
+    supaFetchPublicShare(shareCode).then(function(row){
+      if(row&&row.expires_at){shareExpiresAt=row.expires_at; if(noteEl)noteEl.textContent="This share now expires "+fmtShareDate(shareExpiresAt)+"."}
+      else if(noteEl)noteEl.textContent="This share's expiry was extended by 30 days from now.";
+    },function(){if(noteEl)noteEl.textContent="This share's expiry was extended by 30 days from now."});
+  }).catch(function(err){
+    postBtn.disabled=false; postBtn.textContent="Post reply";
+    if(err&&err.rls){
+      showErr("Your reply couldn't be posted — the share service refused it.");
+      sqlEl.hidden=false;
+    }else{
+      showErr("Your reply couldn't be posted — Supabase could not be reached. Check your connection and try again.");
+    }
+  });
+});
 /* ── Viewer log ─────────────────────────────────────────────────────
    A client view opened in this browser reports its own opening back
    to the owner's LUTAS: a BroadcastChannel post (same-origin by
@@ -12587,7 +12912,7 @@ function bootClientView(){
      and so does typing in the private-share gate. */
   document.addEventListener("keydown",function(ev){
     var t=ev.target;
-    if(t&&t.closest&&(t.closest(".client-bar")||t.closest("#clientGate")))return;
+    if(t&&t.closest&&(t.closest(".client-bar")||t.closest("#clientGate")||t.closest("#clientComments")))return;
     ev.preventDefault(); ev.stopPropagation();
   },true);
   function startClient(layout,share,viewerName,look,screen,imgEl){
@@ -12616,6 +12941,11 @@ function bootClientView(){
       ce.textContent="This preview stays only 30 days"+(expTxt?" · Expires "+expTxt:"");
       ce.hidden=false;
     }
+    /* Comments & reviews exist only for short shares (they key off
+       the share code); a long-link view never gets the button. The
+       gate name (private shares) pre-fills the drawer's name field. */
+    clientGateName=(viewerName&&viewerName!=="Anonymous")?viewerName:"";
+    if(clientShareCode)initClientComments();
     document.title="Client view — "+(state.project||"LUTAS LED");
     /* Report this opening to the owner's Viewer log (name is
        self-reported; Public shares report as Anonymous). */
