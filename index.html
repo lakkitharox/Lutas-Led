@@ -2377,6 +2377,53 @@ function cabFill(dcol,c,r){return ((c+r)%2===1)?cabLight(dcol):dcol}
 var IC_PLAY='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" fill="currentColor" stroke="none"/></svg>', IC_PAUSE='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>', IC_MUTE='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>', IC_SND='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
 var uidSeq=1;
 function uid(){return "d"+(uidSeq++)}
+/* ── Loaded-id repair ─────────────────────────────────────────────
+   Every object id in the app — displays, modifiers, and everything
+   nested inside a modifier (layers groups, truss segments, stage
+   pieces, props) — comes from the ONE counter above, and everything
+   finds its object BY id: sel() / selOpt() return the first display
+   whose id matches, the 2D selection outline / gizmo and the human
+   reference anchor follow selOpt(), the Layers rows select by id,
+   and the 3D view keeps one group per display in T3.groups[id], so
+   the 3D gizmo attaches by id too. Loading a layout keeps the
+   file's ids (makeDisplay / sanitizeModifier preserve o.id) but the
+   counter itself restarts with the session — so without this
+   repair, the first screen ADDED after a load is handed an id a
+   loaded screen already owns. The two screens then share one
+   identity: the gizmo draws on the loaded screen, both rows light
+   up as selected in Layers, and moving either one moves the other
+   (a delete would take both). A layout saved after that collision
+   carries the duplicated id IN the file, so bumping the counter
+   alone is not enough — duplicates must be re-keyed too.
+   fixLoadedIds() runs on every load / restore path, right after the
+   displays and modifiers land and before any selection is read:
+   1) the counter moves past every numeric id already in use, so
+      the next uid() can never reuse a loaded id;
+   2) duplicates are re-keyed — the first object keeps its id (a
+      saved selection and group references keep pointing at it) and
+      each later object with the same id gets a fresh one. */
+function fixLoadedIds(){
+  var objs=[];
+  state.displays.forEach(function(d){objs.push(d)});
+  state.modifiers.forEach(function(m){
+    objs.push(m);
+    (function walk(o){
+      if(!o||typeof o!=="object")return;
+      if(Array.isArray(o)){o.forEach(walk); return}
+      if(o!==m.params&&typeof o.id==="string"&&o.id)objs.push(o);
+      Object.keys(o).forEach(function(k){walk(o[k])});
+    })(m.params);
+  });
+  objs.forEach(function(o){
+    var mm=/^d(\d+)$/.exec(o.id||"");
+    if(mm){var n=parseInt(mm[1],10)+1; if(n>uidSeq)uidSeq=n}
+  });
+  var seen={};
+  objs.forEach(function(o){
+    if(!o.id||seen[o.id])o.id=uid();
+    seen[o.id]=1;
+  });
+}
 function makeDisplay(o){
   o=o||{};
   var d={
@@ -4754,6 +4801,7 @@ function histRestore(snap){
   if(!state.displays.length)state.displays=[makeDisplay({name:"Screen 1"})];
   state.modifiers=(data.modifiers||[]).map(sanitizeModifier).filter(Boolean);
   syncDeckFromMainStage(); /* history carries no deck — re-derive it from the restored Main deck piece */
+  fixLoadedIds(); /* a snapshot can carry ids the live counter has since passed — or duplicates from before this repair */
   state.selId=(data.selId&&state.displays.some(function(d){return d.id===data.selId}))?data.selId:state.displays[0].id;
   state.selCab=data.selCab||null;
   selModId=(data.selModId&&modById(data.selModId))?data.selModId:null;
@@ -13503,6 +13551,7 @@ function applySharedLayout(data){
   if(Array.isArray(data.modifiers)){state.modifiers=data.modifiers.map(sanitizeModifier).filter(Boolean); selModId=state.modifiers.length?state.modifiers[0].id:null; syncDeckFromMainStage()}
   if(data.project){state.project=data.project; $("projectName").value=data.project}
   state.displays=data.displays.map(function(o){return makeDisplay(o)});
+  fixLoadedIds();
   state.selId=state.displays[0].id; state.selCab=null;
   return true;
 }
@@ -13721,6 +13770,7 @@ function applyLoadedLayout(data){
         // older single-wall save: wrap it as one display
         state.displays=[makeDisplay({name:data.project||"Screen 1",cabW:data.cabW,cabH:data.cabH,pitch:data.pitch,resX:data.resX,resY:data.resY,weight:data.weight,power:data.power,cols:data.cols,rows:data.rows,corner:data.corner,path:data.path,pmode:data.pmode,cabPerPort:data.cabPerPort,pixPerPort:data.pixPerPort,rotation:data.rotation||0,off:data.off||[]})];
       }else{toast("That layout has no displays in it.");return false}
+      fixLoadedIds(); /* loaded ids kept, counter moved past them, duplicates re-keyed — before any selection is read */
       state.selId=state.displays[0].id; state.selCab=null;
       if(data.tool)setTool(data.tool);
       render(); fitView();
