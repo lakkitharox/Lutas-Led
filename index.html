@@ -11652,26 +11652,76 @@ function fmtShareDate(iso){
    creates a NEW row (a new code): anonymous rows cannot be updated
    under the table's security rules, and a new link keeps the rule
    simple — the dialog always shows the newest code. Retries on a
-   code clash (409) with a fresh code. Resolves {code,expires_at}. */
+   code clash (409) with a fresh code. Resolves {code,expires_at}.
+
+   The insert must be authorised for the owner_id it carries —
+   that pairing decides success under the shares table's row-level
+   security (verified live against this project):
+   • a row naming an owner is accepted only when the request
+     carries THAT user's access token (the policy checks
+     auth.uid() = owner_id). Sending the owner's id under the
+     anonymous publishable key is refused with 401 (Postgres
+     42501) — that was the share bug: creation ALWAYS sent the
+     anon key, so it failed whenever the owner happened to be
+     signed in, in Public and Private alike, and only ever worked
+     signed out. (Designs never had this bug: they pair the id
+     with authHeaders().)
+   • an anonymous row (owner_id null) is accepted under the
+     publishable key, Public and Private alike.
+   So a signed-in owner tries the authenticated insert first —
+   refreshing an expired session once on a 401 / 403 — and any
+   refusal falls back to the anonymous row. The resulting link
+   is identical either way, and creation no longer depends on
+   whether the visitor happens to be signed in. */
 function supaCreateShare(payloadSupa,mode,passkeyHash,projectName){
-  var attempt=0;
-  function tryOnce(){
-    attempt++;
-    var code=genShareCode();
-    var body={code:code,owner_id:(typeof authUser!=="undefined"&&authUser)?authUser.id:null,design_id:null,project_name:projectName||"Stage design",mode:mode,passkey_hash:passkeyHash||null,payload:payloadSupa};
-    /* The payload's share id follows the code being stored. */
-    if(body.payload&&body.payload.share)body.payload.share.id=code;
-    return supaFetch(SUPABASE_URL+"/rest/v1/shares",{method:"POST",headers:supaHeaders({"Prefer":"return=representation"}),body:JSON.stringify(body)},15000)
-      .then(function(res){
-        if(res.status===409&&attempt<4)return tryOnce();
-        if(!res.ok)throw new Error("Supabase create failed ("+res.status+")");
-        return res.json().then(function(rows){
-          var row=Array.isArray(rows)?rows[0]:rows;
-          return {code:code,expires_at:(row&&row.expires_at)||"",created_at:(row&&row.created_at)||""};
+  function attempt(makeHeaders,ownerId){
+    var tries=0;
+    function once(){
+      tries++;
+      var code=genShareCode();
+      /* Each try stores its own payload copy whose share id
+         follows the code being stored, so a retry never leaves
+         an earlier try's code inside the payload. */
+      var payloadCopy=payloadSupa;
+      try{payloadCopy=JSON.parse(JSON.stringify(payloadSupa))}catch(e){}
+      if(payloadCopy&&payloadCopy.share)payloadCopy.share.id=code;
+      var body={code:code,owner_id:ownerId,design_id:null,project_name:projectName||"Stage design",mode:mode,passkey_hash:passkeyHash||null,payload:payloadCopy};
+      return supaFetch(SUPABASE_URL+"/rest/v1/shares",{method:"POST",headers:makeHeaders({"Prefer":"return=representation"}),body:JSON.stringify(body)},15000)
+        .then(function(res){
+          if(res.status===409&&tries<4)return once(); /* code clash — fresh code */
+          if(res.status>=500&&tries<3)return once(); /* transient server error — retry */
+          if(!res.ok){var err=new Error("Supabase create failed ("+res.status+")"); err.status=res.status; throw err}
+          return res.json().then(function(rows){
+            var row=Array.isArray(rows)?rows[0]:rows;
+            return {code:code,expires_at:(row&&row.expires_at)||"",created_at:(row&&row.created_at)||""};
+          });
+        },function(netErr){
+          if(tries<3)return once(); /* network-level failure — retry */
+          throw netErr;
         });
-      });
+    }
+    return once();
   }
-  return tryOnce();
+  function anonAttempt(){return attempt(function(x){return supaHeaders(x)},null)}
+  var signedIn=(typeof authUser!=="undefined"&&authUser&&authUser.id&&typeof authSession!=="undefined"&&authSession&&authSession.access_token);
+  if(!signedIn)return anonAttempt();
+  function authedAttempt(){return attempt(function(x){return authHeaders(x)},authUser.id)}
+  return authedAttempt().catch(function(err){
+    var st=err&&err.status;
+    if(st===401||st===403){
+      /* The stored session may simply have expired mid-visit —
+         refresh it once and retry as the owner before falling
+         back to the anonymous row. */
+      var tryRefresh=(typeof authRefresh==="function")?authRefresh().then(function(){return true},function(){return false}):Promise.resolve(false);
+      return tryRefresh.then(function(){return authedAttempt()});
+    }
+    throw err;
+  }).catch(function(){
+    /* Any remaining refusal (including a still-rejected owner
+       insert) falls back to the anonymous row, which the table
+       accepts for both modes — the link is the same. */
+    return anonAttempt();
+  });
 }
 /* Read a live PUBLIC share row directly (security rules only allow
    public + unexpired rows this way). Resolves the row or null. */
