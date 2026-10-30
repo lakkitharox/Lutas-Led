@@ -583,6 +583,32 @@ body.clientview .cab-detail,body.clientview #stageChip,body.clientview #transfor
 .cc-post{width:100%;margin-top:12px;background:#f59e0b;border:1px solid #fbbf24;color:#111827;font-weight:800;font-size:13.5px;padding:11px 14px;border-radius:10px;cursor:pointer}
 .cc-post:hover{background:#fbbf24}
 .cc-post:disabled{opacity:.55;cursor:default}
+/* ── Notifications — designer / owner only, top bar ──────────────
+   The bell sits at the right end of the top bar (the top bar itself
+   never renders in client view, so the bell never does either).
+   Its panel is a fixed dropdown under the bar reusing the comment
+   row styles (.cc-list / .cc-row / .cc-badge). The unread badge is
+   a plain count pill; read state lives in this browser only. */
+.notif-wrap{position:relative;flex:none}
+.notif-btn{position:relative;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:9px;padding:0;cursor:pointer}
+.notif-btn:hover{border-color:var(--line2)}
+.notif-btn .ic{width:18px;height:18px}
+.notif-badge{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#dc2626;color:#fff;font-size:11px;font-weight:800;line-height:19px;text-align:center;border:2px solid var(--panel)}
+.notif-badge[hidden]{display:none!important}
+#notifPanel{position:fixed;top:54px;right:12px;width:min(448px,calc(100vw - 24px));max-height:min(76dvh,680px);overflow-y:auto;z-index:95;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px;color:var(--text)}
+#notifPanel[hidden]{display:none!important}
+.notif-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.notif-head b{font-family:Archivo,sans-serif;font-size:15.5px}
+.notif-note{font-size:11.5px;color:var(--muted);line-height:1.55;margin:9px 0 0}
+.notif-share-line{font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notif-new{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:var(--accent);color:#161006;white-space:nowrap}
+.notif-reply{margin-top:8px}
+.notif-reply-box{margin-top:8px}
+.notif-reply-box .field{margin-top:0}
+.notif-status{font-size:12px;line-height:1.5;margin:8px 0 0;color:var(--muted)}
+.notif-status.err{color:#b91c1c}
+.notif-status.ok{color:#15803d}
+@media(prefers-color-scheme:dark){.notif-status.err{color:#fca5a5}.notif-status.ok{color:#4ade80}}
 #clientNotice{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;padding:16px;background:#05070b}
 #clientNotice.open{display:flex}
 .share-status{font-size:12px;line-height:1.55;margin-top:7px;color:var(--muted)}
@@ -1094,7 +1120,27 @@ body:not(.learning-on) .learn{display:none}
     <button id="btnView3D" aria-pressed="false" title="3D view — the same layout standing on the stage">3D View</button>
     <button id="btnRender" aria-pressed="false" title="Render — a look-only cinematic view of the 3D stage: no editing features, just camera navigation and a Capture (PNG) of the frame">Render</button>
   </div>
+  <div class="notif-wrap" id="notifWrap" hidden>
+    <button class="notif-btn" type="button" id="notifBtn" aria-haspopup="dialog" aria-expanded="false" title="Notifications — new client comments and reviews on your shared links, with reply"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="notif-badge" id="notifBadge" hidden>0</span></button>
+  </div>
 </header>
+
+<!-- NOTIFICATIONS PANEL — designer / owner only (never client view:
+     the top bar that carries its bell is hidden there, and
+     initNotifications returns immediately for a client-view
+     request). Lists comments / reviews across ALL of the owner's
+     shares, newest first, each with a Reply box posting back to
+     that share. Tracking sources, deduplicated by share code:
+     shares owned by the signed-in user, plus share codes created
+     in this browser (kept in localStorage). Read state is local to
+     this browser too — the panel says so plainly. -->
+<div id="notifPanel" hidden role="dialog" aria-label="Notifications — client comments and reviews">
+  <div class="notif-head"><b>Notifications</b><button class="btn small" type="button" id="notifClose">Close</button></div>
+  <p class="notif-note" id="notifSignInNote" hidden></p>
+  <p class="notif-note">Comments and reviews from clients on your shared links, newest first. Names are self-reported, not verified. Notifications are per-device / per-browser: read state is kept in this browser only, is not synced across devices, and there is no push or email alert — new comments are checked when the app opens, when this panel opens, and every few minutes while the app is open.</p>
+  <p class="cc-err" id="notifErr"></p>
+  <div class="cc-list" id="notifList"></div>
+</div>
 
 <div class="workspace">
 
@@ -11888,9 +11934,12 @@ function renderCommentsInto(box,rows,emptyText){
 }
 /* Insert one comment / review row. Owner replies from the main app
    go out with the signed-in session token when there is one;
-   client-view posts use the publishable key. Rejects with an error
-   carrying .status and .rls (true when row-level security refused
-   the insert) so the UI can show COMMENT_SQL_FIX. */
+   client-view posts use the publishable key. Resolves with the
+   inserted rows (callers that don't need them just ignore the
+   value; the notifications code notes the new row's id so the
+   owner's own reply never counts as unread). Rejects with an
+   error carrying .status and .rls (true when row-level security
+   refused the insert) so the UI can show COMMENT_SQL_FIX. */
 function supaPostComment(code,author,kind,body,useAuth){
   var headers=(useAuth&&typeof authSession!=="undefined"&&authSession&&authSession.access_token)
     ? authHeaders({"Prefer":"return=representation"})
@@ -11898,7 +11947,7 @@ function supaPostComment(code,author,kind,body,useAuth){
   var payload={share_code:code,author_name:String(author||"Anonymous").slice(0,80),kind:kind,body:String(body||"")};
   return supaFetch(SUPABASE_URL+"/rest/v1/share_comments",{method:"POST",headers:headers,body:JSON.stringify(payload)},15000)
     .then(function(res){
-      if(res.ok)return res.json().then(function(){return true},function(){return true});
+      if(res.ok)return res.json().then(function(rows){return Array.isArray(rows)?rows:[]},function(){return []});
       return res.text().then(function(txt){
         var err=new Error("Supabase comment post failed ("+res.status+")");
         err.status=res.status;
@@ -11957,6 +12006,9 @@ function authSetUser(u){
   if(b)b.textContent=authUser?authDisplayName(authUser):"Sign in";
   var md=$("mMyDesigns"); if(md)md.hidden=!authUser;
   syncAuthDialog();
+  /* The notifications bell tracks this user's shares: re-check
+     what there is to track whenever the signed-in user changes. */
+  if(typeof notifOnAuthChange==="function")notifOnAuthChange();
 }
 function authSignOutLocal(){authStoreSession(null); authSetUser(null); currentProjectId=null}
 function authErrorText(err,status){
@@ -12634,6 +12686,9 @@ function rebuildShareLink(){
   }).then(function(created){
     if(!created||seq!==shareBuildSeq)return;
     shareCode=created.code; shareId=created.code; shareExpiresAt=created.expires_at||"";
+    /* Remember this code in this browser, so the notifications
+       bell can track comments on it even while signed out. */
+    if(typeof notifRememberShare==="function")notifRememberShare(created.code,projectName);
     /* A fresh short share gets a fresh owner comments section:
        show the View comments button, collapsed, with any previous
        share's list and messages cleared. */
@@ -12824,10 +12879,13 @@ $("scPost").addEventListener("click",function(){
   var author=(typeof authUser!=="undefined"&&authUser)?authDisplayName(authUser):"Owner";
   showErr(""); showOk(""); sqlEl.hidden=true; if(noteEl)noteEl.textContent="";
   postBtn.disabled=true; postBtn.textContent="Posting…";
-  supaPostComment(shareCode,author,"comment",body,true).then(function(){
+  supaPostComment(shareCode,author,"comment",body,true).then(function(rows){
     postBtn.disabled=false; postBtn.textContent="Post reply";
     $("scBody").value="";
     showOk("Reply posted.");
+    /* Note the reply's own id, so the notifications bell never
+       counts the owner's own reply as an unread client comment. */
+    if(rows&&rows[0]&&rows[0].id&&typeof notifNoteOwnComment==="function")notifNoteOwnComment(rows[0].id);
     scLoadList();
     /* The reply extended the expiry server-side; refresh the date
        shown for public shares (private rows aren't readable here). */
@@ -12845,6 +12903,314 @@ $("scPost").addEventListener("click",function(){
     }
   });
 });
+/* ══ Notifications — client comments & reviews, owner side ═════
+   The top-bar bell tracks comments / reviews across ALL of the
+   owner's shares, newest first, each with an inline Reply box.
+   Sources, deduplicated by share code:
+     (a) signed in — shares whose owner_id is this user, read from
+         public.shares with the session token;
+     (b) share codes created in THIS browser, remembered in
+         localStorage at creation (notifRememberShare, called from
+         rebuildShareLink), so guest-created shares are tracked on
+         this device even while signed out.
+   The bell is hidden when there is nothing to track — signed out
+   and no locally created shares. Read state (seen comment ids +
+   last-checked time) and the ids of the owner's own replies live
+   in this browser only: not synced, no push, no email, no service
+   worker. Checks run on app load, when the panel opens, and every
+   3 minutes while the app is open. Owner replies post through the
+   same supaPostComment path as the Share dialog's View comments
+   panel (which is unchanged), so a reply also extends that
+   share's 30-day expiry via the table's trigger. Read / reply
+   failures surface as a plain error in the panel — never hidden. */
+var NOTIF_LOCAL_SHARES_KEY="lutasLED.myShares";
+var NOTIF_SEEN_KEY="lutasLED.notifSeenIds";
+var NOTIF_OWN_KEY="lutasLED.notifOwnIds";
+var NOTIF_CHECK_KEY="lutasLED.notifLastCheck";
+var notifState={shares:[],byCode:{},comments:[],unread:0,loading:false,loaded:false,err:"",sharesErr:"",openReply:{},drafts:{},status:{}};
+function notifStoreGet(key,fallback){
+  try{var raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback}catch(e){return fallback}
+}
+function notifStoreSet(key,val){
+  try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}
+}
+function notifLocalShares(){
+  var a=notifStoreGet(NOTIF_LOCAL_SHARES_KEY,[]);
+  if(!Array.isArray(a))return [];
+  return a.filter(function(r){return r&&r.code}).map(function(r){return {code:String(r.code),project_name:String(r.project_name||"Stage design")}});
+}
+function notifRememberShare(code,projectName){
+  if(!code)return;
+  var a=notifLocalShares(), found=false;
+  a=a.map(function(r){if(r.code===code){found=true; return {code:code,project_name:projectName||r.project_name}} return r});
+  if(!found)a.unshift({code:code,project_name:projectName||"Stage design"});
+  notifStoreSet(NOTIF_LOCAL_SHARES_KEY,a.slice(0,60));
+  notifSyncVisibility();
+  notifRefresh();
+}
+function notifIdSet(key){
+  var a=notifStoreGet(key,[]), out={};
+  if(Array.isArray(a))a.forEach(function(id){if(id!=null)out[String(id)]=true});
+  return out;
+}
+function notifIdPush(key,id){
+  if(id==null)return;
+  var a=notifStoreGet(key,[]);
+  if(!Array.isArray(a))a=[];
+  a.push(String(id));
+  if(a.length>800)a=a.slice(a.length-800);
+  notifStoreSet(key,a);
+}
+function notifNoteOwnComment(id){notifIdPush(NOTIF_OWN_KEY,id)}
+function notifReplyAuthor(){
+  return (typeof authUser!=="undefined"&&authUser)?authDisplayName(authUser):"Owner";
+}
+function notifIsOwn(c){
+  if(!c)return true;
+  if(notifIdSet(NOTIF_OWN_KEY)[String(c.id)])return true;
+  /* Replies posted from another device / before id tracking carry
+     the owner's name: the signed-in display name, or "Owner". */
+  var an=String(c.author_name||"");
+  return !!an&&(an===notifReplyAuthor()||an==="Owner"&&!(typeof authUser!=="undefined"&&authUser));
+}
+function notifHasSources(){
+  return !!((typeof authUser!=="undefined"&&authUser&&authUser.id)||notifLocalShares().length);
+}
+function notifSyncVisibility(){
+  var wrap=$("notifWrap"); if(!wrap)return;
+  var show=!isClientViewRequest()&&notifHasSources();
+  wrap.hidden=!show;
+  if(!show){var p=$("notifPanel"); if(p)p.hidden=true; var b=$("notifBtn"); if(b)b.setAttribute("aria-expanded","false")}
+}
+function notifComputeUnread(){
+  var seen=notifIdSet(NOTIF_SEEN_KEY);
+  notifState.unread=notifState.comments.filter(function(c){return !notifIsOwn(c)&&!seen[String(c.id)]}).length;
+}
+function notifRenderBadge(){
+  var badge=$("notifBadge"); if(!badge)return;
+  var n=notifState.unread||0;
+  badge.hidden=!(n>0&&notifHasSources());
+  badge.textContent=n>99?"99+":String(n);
+}
+function supaFetchMyShares(){
+  if(!(typeof authUser!=="undefined"&&authUser&&authUser.id))return Promise.resolve([]);
+  var url=SUPABASE_URL+"/rest/v1/shares?owner_id=eq."+encodeURIComponent(authUser.id)+"&select=code,project_name,mode,created_at,expires_at&order=created_at.desc&limit=200";
+  return supaFetch(url,{method:"GET",headers:authHeaders()},15000).then(function(res){
+    if(!res.ok){var err=new Error("Supabase shares read failed ("+res.status+")"); err.status=res.status; throw err}
+    return res.json().then(function(rows){return Array.isArray(rows)?rows:[]});
+  });
+}
+function supaFetchCommentsBulk(codes){
+  if(!codes.length)return Promise.resolve([]);
+  var inList="in.("+codes.map(function(c){return '"'+String(c).replace(/"/g,"")+'"'}).join(",")+")";
+  var url=SUPABASE_URL+"/rest/v1/share_comments?share_code="+encodeURIComponent(inList)+"&select=id,share_code,author_name,kind,body,created_at&order=created_at.desc&limit=200";
+  function go(headers){
+    return supaFetch(url,{method:"GET",headers:headers},15000).then(function(res){
+      if(!res.ok){var err=new Error("Supabase comments read failed ("+res.status+")"); err.status=res.status; err.rls=(res.status===401||res.status===403); throw err}
+      return res.json().then(function(rows){return Array.isArray(rows)?rows:[]});
+    });
+  }
+  var signedIn=(typeof authSession!=="undefined"&&authSession&&authSession.access_token);
+  if(signedIn)return go(authHeaders()).catch(function(){return go(supaHeaders())});
+  return go(supaHeaders());
+}
+function notifRefresh(){
+  if(isClientViewRequest())return Promise.resolve();
+  notifSyncVisibility();
+  if(!notifHasSources()){
+    notifState.shares=[]; notifState.byCode={}; notifState.comments=[]; notifState.unread=0; notifState.err=""; notifState.sharesErr="";
+    notifRenderBadge();
+    var p0=$("notifPanel"); if(p0&&!p0.hidden)notifRenderList();
+    return Promise.resolve();
+  }
+  if(notifState.loading)return Promise.resolve();
+  notifState.loading=true;
+  var local=notifLocalShares();
+  notifState.sharesErr="";
+  var ownedP=(typeof authUser!=="undefined"&&authUser&&authUser.id)
+    ? supaFetchMyShares().catch(function(err){notifState.sharesErr=err; return []})
+    : Promise.resolve([]);
+  return ownedP.then(function(owned){
+    var byCode={}, shares=[];
+    owned.forEach(function(r){if(r&&r.code&&!byCode[r.code]){var s={code:String(r.code),project_name:String(r.project_name||"Stage design")}; byCode[s.code]=s; shares.push(s)}});
+    local.forEach(function(r){if(r&&r.code&&!byCode[r.code]){var s={code:r.code,project_name:r.project_name}; byCode[s.code]=s; shares.push(s)}});
+    notifState.shares=shares; notifState.byCode=byCode;
+    var codes=shares.map(function(s){return s.code});
+    if(!codes.length){notifState.comments=[]; notifState.err=""; return null}
+    return supaFetchCommentsBulk(codes).then(function(rows){
+      notifState.comments=rows; notifState.err="";
+    }).catch(function(err){
+      notifState.err=err;
+    });
+  }).then(function(){
+    notifState.loading=false; notifState.loaded=true;
+    notifStoreSet(NOTIF_CHECK_KEY,new Date().toISOString());
+    notifComputeUnread();
+    notifRenderBadge();
+    var p=$("notifPanel"); if(p&&!p.hidden)notifRenderList();
+  },function(){
+    notifState.loading=false;
+    notifRenderBadge();
+  });
+}
+function notifOnAuthChange(){
+  notifSyncVisibility();
+  notifRefresh();
+}
+function notifMarkShownRead(){
+  var seen=notifStoreGet(NOTIF_SEEN_KEY,[]);
+  if(!Array.isArray(seen))seen=[];
+  var have={}; seen.forEach(function(id){have[String(id)]=true});
+  notifState.comments.forEach(function(c){if(!notifIsOwn(c)&&!have[String(c.id)]){seen.push(String(c.id)); have[String(c.id)]=true}});
+  if(seen.length>800)seen=seen.slice(seen.length-800);
+  notifStoreSet(NOTIF_SEEN_KEY,seen);
+  notifComputeUnread();
+  notifRenderBadge();
+}
+function notifRenderList(){
+  var list=$("notifList"); if(!list)return;
+  var errEl=$("notifErr");
+  var signNote=$("notifSignInNote");
+  if(signNote){
+    var signedIn=!!(typeof authUser!=="undefined"&&authUser);
+    signNote.hidden=signedIn;
+    if(!signedIn)signNote.textContent=notifLocalShares().length
+      ? "You're not signed in — showing notifications for shares created in this browser only. Sign in to see notifications for your shares on your account."
+      : "Sign in to see notifications for your shares.";
+  }
+  var errMsg="";
+  if(notifState.err){
+    var e=notifState.err;
+    errMsg="Couldn't load notifications — "+(e&&e.rls
+      ? "Supabase's security rules refused the read ("+(e.status||"401/403")+"). Comments on your shares could not be checked; the share_comments rules in Supabase need to allow reading them."
+      : "the share service could not be reached ("+((e&&e.message)||"network error")+"). Try closing and reopening this panel.");
+  }else if(notifState.sharesErr&&!notifState.shares.length&&!notifLocalShares().length){
+    var se=notifState.sharesErr;
+    errMsg="Couldn't load your shares from Supabase ("+((se&&se.message)||"error")+"). Your share list could not be checked — try again in a moment.";
+  }
+  if(errEl){errEl.textContent=errMsg; errEl.classList.toggle("show",!!errMsg)}
+  /* Preserve any reply drafts / open reply boxes across re-renders. */
+  var tas=list.querySelectorAll("textarea[data-notif-draft]");
+  Array.prototype.forEach.call(tas,function(t){notifState.drafts[t.getAttribute("data-notif-draft")]=t.value});
+  if(!notifHasSources()){
+    list.innerHTML='<div class="cc-empty">Nothing to track yet. Sign in, or create a share link in this browser, and client comments and reviews on your shares will appear here.</div>';
+    return;
+  }
+  if(notifState.loading&&!notifState.loaded){list.innerHTML='<div class="cc-empty">Loading notifications…</div>'; return}
+  if(errMsg&&!notifState.comments.length){list.innerHTML=""; return}
+  if(!notifState.comments.length){
+    list.innerHTML='<div class="cc-empty">No comments or reviews yet on your shares. When a client comments or reviews from a client view, it will appear here.</div>';
+    return;
+  }
+  var seen=notifIdSet(NOTIF_SEEN_KEY);
+  list.innerHTML=notifState.comments.map(function(c){
+    var ki=cmtKindInfo(c.kind);
+    var share=notifState.byCode[c.share_code]||{project_name:"Stage design"};
+    var isNew=!notifIsOwn(c)&&!seen[String(c.id)];
+    var cid=String(c.id);
+    var open=!!notifState.openReply[cid];
+    var st=notifState.status[cid]||{};
+    var html='<div class="cc-row"><div class="cc-row-top"><b>'+escHtml(c.author_name||"Anonymous")+'</b>'
+      +'<span class="cc-badge '+ki.c+'">'+escHtml(ki.t)+'</span>'
+      +(isNew?'<span class="notif-new">New</span>':"")
+      +'<span class="cc-when">'+escHtml(fmtCommentWhen(c.created_at))+'</span></div>'
+      +'<div class="notif-share-line">'+escHtml(share.project_name||"Stage design")+' · '+escHtml(c.share_code||"")+'</div>'
+      +'<div class="cc-body">'+escHtml(c.body||"")+'</div>'
+      +'<div class="notif-reply"><button class="btn small" type="button" data-notif-reply="'+escHtml(cid)+'">'+(open?"Hide reply":"Reply")+'</button></div>';
+    if(open){
+      html+='<div class="notif-reply-box"><div class="field"><span>Your reply — posted as '+escHtml(notifReplyAuthor())+' to '+escHtml(share.project_name||"Stage design")+' ('+escHtml(c.share_code||"")+')</span>'
+        +'<textarea rows="3" data-notif-draft="'+escHtml(cid)+'" placeholder="Reply to your client…">'+escHtml(notifState.drafts[cid]||"")+'</textarea></div>'
+        +(st.msg?'<p class="notif-status '+(st.err?"err":"ok")+'">'+escHtml(st.msg)+'</p>':"")
+        +'<div style="margin-top:8px"><button class="btn primary small" type="button" data-notif-post="'+escHtml(cid)+'">Post reply</button></div></div>';
+    }else if(st.msg){
+      html+='<p class="notif-status '+(st.err?"err":"ok")+'">'+escHtml(st.msg)+'</p>';
+    }
+    return html+'</div>';
+  }).join("");
+}
+function notifOpenPanel(){
+  var p=$("notifPanel"), b=$("notifBtn"); if(!p)return;
+  p.hidden=false; if(b)b.setAttribute("aria-expanded","true");
+  notifRenderList();
+  notifRefresh().then(function(){
+    /* Render first (so comments that just arrived still show
+       their New pill for this viewing), then mark what was shown
+       as read and clear the unread count. */
+    notifRenderList();
+    notifMarkShownRead();
+  });
+}
+function notifClosePanel(){
+  var p=$("notifPanel"), b=$("notifBtn"); if(!p)return;
+  p.hidden=true; if(b)b.setAttribute("aria-expanded","false");
+}
+function notifPostReply(cid){
+  var c=null;
+  notifState.comments.forEach(function(x){if(String(x.id)===String(cid))c=x});
+  if(!c)return;
+  var body=String(notifState.drafts[cid]||"").trim();
+  if(!body){notifState.status[cid]={err:true,msg:"Write a reply first — an empty reply can't be posted."}; notifRenderList(); return}
+  notifState.status[cid]={err:false,msg:"Posting…"};
+  notifRenderList();
+  supaPostComment(c.share_code,notifReplyAuthor(),"comment",body,true).then(function(rows){
+    if(rows&&rows[0]&&rows[0].id)notifNoteOwnComment(rows[0].id);
+    notifState.drafts[cid]="";
+    notifState.status[cid]={err:false,msg:"Reply posted — it also extends this share's 30-day expiry from now."};
+    return notifRefresh();
+  }).then(function(){
+    notifRenderList();
+  }).catch(function(err){
+    notifState.status[cid]={err:true,msg:(err&&err.rls)
+      ? "Your reply couldn't be posted — Supabase's security rules refused it ("+((err&&err.status)||"401/403")+"). The share_comments insert rule in Supabase needs to allow posting (the same fix the Share dialog's View comments panel shows)."
+      : "Your reply couldn't be posted — Supabase could not be reached. Check your connection and try again."};
+    notifRenderList();
+  });
+}
+var notifInitDone=false;
+function initNotifications(){
+  if(isClientViewRequest()||notifInitDone)return; /* designer / main app only — never client view */
+  notifInitDone=true;
+  fillCommentSqlBlocks();
+  var btn=$("notifBtn");
+  if(btn)btn.addEventListener("click",function(ev){
+    ev.stopPropagation();
+    var p=$("notifPanel");
+    if(p&&p.hidden)notifOpenPanel(); else notifClosePanel();
+  });
+  var closeBtn=$("notifClose"); if(closeBtn)closeBtn.addEventListener("click",notifClosePanel);
+  document.addEventListener("click",function(ev){
+    var p=$("notifPanel"); if(!p||p.hidden)return;
+    if(ev.target&&ev.target.closest&&(ev.target.closest("#notifPanel")||ev.target.closest("#notifWrap")))return;
+    notifClosePanel();
+  });
+  document.addEventListener("keydown",function(ev){
+    if(ev.key==="Escape")notifClosePanel();
+  });
+  var list=$("notifList");
+  if(list){
+    list.addEventListener("input",function(ev){
+      var t=ev.target;
+      if(t&&t.getAttribute&&t.getAttribute("data-notif-draft")!=null)notifState.drafts[t.getAttribute("data-notif-draft")]=t.value;
+    });
+    list.addEventListener("click",function(ev){
+      var t=ev.target&&ev.target.closest?ev.target.closest("[data-notif-reply],[data-notif-post]"):null;
+      if(!t)return;
+      var rc=t.getAttribute("data-notif-reply");
+      if(rc!=null){notifState.openReply[rc]=!notifState.openReply[rc]; notifRenderList(); return}
+      var pc=t.getAttribute("data-notif-post");
+      if(pc!=null){
+        var ta=list.querySelector('textarea[data-notif-draft="'+pc+'"]');
+        if(ta)notifState.drafts[pc]=ta.value;
+        notifPostReply(pc);
+      }
+    });
+  }
+  notifSyncVisibility();
+  notifRefresh();
+  /* Poll every few minutes while the app is open — no push, no
+     email, no service worker. */
+  setInterval(function(){notifRefresh()},3*60*1000);
+}
 /* ── Viewer log ─────────────────────────────────────────────────────
    A client view opened in this browser reports its own opening back
    to the owner's LUTAS: a BroadcastChannel post (same-origin by
@@ -18537,6 +18903,7 @@ function animateModifiers3D(t){
 applyPrefs();
 render();
 initAuth();
+initNotifications();
 if(clientMode)bootClientView();
 requestAnimationFrame(function(){fitView()});
 })();
