@@ -470,9 +470,10 @@ select option,select optgroup{color:#11151c;background-color:#fff}
 .v3d-group button{border:1px solid transparent;background:rgba(255,255,255,.06);color:#e2e8f0;font-size:12px;font-weight:700;padding:6px 10px;border-radius:7px}
 .v3d-group button.on{background:#f59e0b;color:#111827}
 .v3d-group button:hover{border-color:rgba(255,255,255,.25)}
-/* 3D bar Gizmo group is icons only — no text labels; the camera group
-   sits at the right corner of the bar under its Viewpoint caption and is
-   icons only too; every button keeps its title tooltip and aria-label. */
+/* 3D bar Gizmo group is icons only — no text labels; the Viewpoint
+   control at the right corner of the bar is one frameless dropdown
+   (see .v3d-viewpoint below); every button keeps its title tooltip
+   and aria-label. */
 .v3d-group button.iconly{padding:6px 8px;display:grid;place-items:center}
 .v3d-group button:disabled{opacity:.35;pointer-events:none}
 .v3d-group button.iconly .ic{width:16px;height:16px;vertical-align:0}
@@ -486,6 +487,40 @@ select option,select optgroup{color:#11151c;background-color:#fff}
 .v3d-editchip:hover{border-color:rgba(255,255,255,.35)}
 .v3d-editchip.on{background:#f59e0b;border-color:#f59e0b;color:#111827}
 .v3d-editchip.on::after{content:"✕";font-weight:900}
+/* ── View cube (Maya / ZBrush-style) — 3D view only ───────────────
+   Small cube overlay in the top-right corner of the 3D viewport,
+   sitting BELOW the 3D bar so it never covers the Viewpoint control.
+   The cube is drawn on a 2D canvas from the real camera basis every
+   frame (see drawViewCube), so it turns exactly with the camera.
+   It lives inside #view3d, so it is automatically absent in 2D;
+   Render and Client views hide it — 3D editing view only.
+   FRAMELESS by request: no border, no background box, no shadow and
+   no caption text under the cube — just the cube itself floating on
+   the 3D view, so the layout keeps all the space. The cube itself
+   is TRANSPARENT — translucent faces with clear edges (see
+   drawViewCube) — and its face labels stay in each face's plane,
+   turning with the cube instead of facing the camera. */
+.view-cube{position:absolute;top:68px;right:12px;z-index:7;width:96px;display:flex;align-items:center;justify-content:center;background:none;border:none;box-shadow:none;padding:0;touch-action:none;user-select:none;-webkit-user-select:none}
+#view3d.render-on .view-cube,#view3d.client-on .view-cube{display:none}
+.view-cube canvas{display:block;width:80px;height:80px;cursor:grab;outline:none}
+.view-cube canvas:active{cursor:grabbing}
+.view-cube canvas:focus-visible{box-shadow:0 0 0 2px #f59e0b}
+@media(max-width:900px){.view-cube{top:118px;width:84px}.view-cube canvas{width:68px;height:68px}}
+@media(max-width:560px){.view-cube{top:128px;right:8px}}
+/* ── 3D bar Viewpoint — one compact FRAMELESS dropdown ────────────
+   Replaces the old framed row of six Viewpoint icon buttons (and its
+   caption): a single select showing the current view, opening to
+   Front / Back / Top / Bottom / Left / Right / Isometric / Free.
+   No border, no background box, no text under it — it takes a
+   fraction of the old row's width so the layout gets the space.
+   It stays two-way synced with the view cube and the Camera panel
+   through syncCamButtons / applyCamPreset, like the buttons did. */
+.v3d-viewpoint{display:flex;align-items:center;gap:2px;margin-left:auto;pointer-events:auto;color:#e2e8f0;background:none;border:none;box-shadow:none}
+.v3d-viewpoint .ic{width:16px;height:16px;flex:none;opacity:.9;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))}
+.v3d-viewpoint select{background:transparent;border:0;box-shadow:none;color:#e2e8f0;font-size:12px;font-weight:700;padding:6px 0;cursor:pointer;max-width:118px;text-shadow:0 1px 3px rgba(0,0,0,.85)}
+.v3d-viewpoint select:hover{color:#fbbf24}
+.v3d-viewpoint select:focus-visible{outline:2px solid #f59e0b;outline-offset:1px}
+.v3d-viewpoint select option{color:#11151c;background-color:#fff;text-shadow:none}
 /* Top-bar 2D / 3D view toggle — replaces the old top Export PNG button
    (PNG export still lives in the File menu and the Export tab). The
    active view stays highlighted. */
@@ -1268,7 +1303,16 @@ body:not(.learning-on) .learn{display:none}
           <div class="v3d-group v3d-gizmo-group"><button data-gmode="move" class="on iconly" title="Move gizmo — red X · green Y (height) · blue Z (depth) arrows + plane squares" aria-label="Move gizmo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></button><button data-gmode="rotate" class="iconly" title="Rotate gizmo — coloured axis rings. The red X and blue Z rings are 3D-only tilts; the green Y ring follows Layout Link (3D tab): the wall's own 3D facing in Independent mode, the shared 2D degree in Linked mode" aria-label="Rotate gizmo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button><button data-gmode="scale" class="iconly" title="Scale gizmo — axis cubes like Blender: X = width, Y = height, Z = uniform (whole cabinets), blue square = width + height, white cube = uniform. With a custom Truss / Lighting modifier selected, the gizmo modes drive its segments / fixtures instead" aria-label="Scale gizmo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="v3Snap" class="iconly" aria-pressed="false" title="Snap (magnet) — the 3D view's snap tool: press it and 3D snapping turns on and the Magnet strength popup opens — the strength bands (weak / medium / strong / max) set the angle and metre steps that screens, truss segments, lights and props snap to while they move in the 3D view. Press it again to turn snapping off" aria-label="Snap (magnet) — 3D snapping with strength popup"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><g transform="rotate(45 12 12)"><path d="M5 8v3a7 7 0 0 0 14 0V8h-4.5v3a2.5 2.5 0 0 1-5 0V8H5z"/><rect x="5" y="2.6" width="4.5" height="3.6" rx="0.9"/><rect x="14.5" y="2.6" width="4.5" height="3.6" rx="0.9"/></g></svg></button></div>
           <div class="v3d-group"><span class="cap">Display</span><button data-shade="shaded" class="on iconly" title="Shaded — the normal lit view: smooth shading, shadows and screen glow, each screen in its chosen colour as a colour / lighter-colour chessboard" aria-label="Shaded display mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6a8.4 8.4 0 0 1 0 16.8Z" fill="currentColor" fill-opacity="0.45" stroke="none"/><path d="M16.5 4.91a8.4 8.4 0 0 1 0 14.18Z" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8.4"/></svg></button><button data-shade="flat" class="iconly" title="Flat — the signal / port map: every cabinet in its flat, unshaded port colour with its port number on it; the rest of the stage in flat tones" aria-label="Flat display mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.6" y="4.6" width="14.8" height="14.8" rx="1.4" fill="currentColor" stroke="none"/></svg></button><button data-shade="wireframe" class="iconly" title="Wireframe — edges only: the stage drawn as a wireframe model, no filled faces" aria-label="Wireframe display mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M9.33 4v16M14.67 4v16M4 9.33h16M4 14.67h16"/></svg></button></div>
           <div class="v3d-group"><span class="cap">Orientation</span><select class="v3d-orient" id="v3Orient" aria-label="Transform orientation — Global, Local or Parent" title="Transform Orientation — the axes the 3D gizmo uses for the object selected in 3D: Global = the world axes · Local = the selected object's own axes · Parent = its parent's axes (the stage frame for screens, props and lights)"><option value="global" selected>Global</option><option value="local">Local</option><option value="parent">Parent</option></select></div>
-          <div class="v3d-group" style="margin-left:auto"><span class="cap">Viewpoint</span><button data-cam="front" class="iconly" title="Front — orthographic elevation, no perspective" aria-label="Front camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="4,8.5 16,8.5 16,20.5 4,20.5" fill="currentColor" stroke="none"/><path d="M4 8.5 7 4h12v12l-3 4.5H4Z"/><path d="M4 8.5h12M16 8.5 19 4M16 8.5v12"/></svg></button><button data-cam="top" class="iconly" title="Top — orthographic plan view" aria-label="Top camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,2.8 20.5,7.4 12,12 3.5,7.4" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="left" class="iconly" title="Left — orthographic, from stage left" aria-label="Left camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3.5,7.4 12,12 12,21.2 3.5,16.6" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="right" class="iconly" title="Right — orthographic, from stage right" aria-label="Right camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,12 20.5,7.4 20.5,16.6 12,21.2" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="iso" class="iconly" title="Isometric — perspective three-quarter view" aria-label="Isometric camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="free" class="iconly" title="Free camera — full Blender-style control: orbit, tilt all the way over, pan in the screen plane, dolly" aria-label="Free camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6.5" width="13" height="11" rx="2"/><path d="m15.5 10.8 6-3.3v9l-6-3.3"/></svg></button></div>
+          <div class="v3d-viewpoint"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg><select id="v3Viewpoint" aria-label="Viewpoint — choose the 3D camera view" title="Viewpoint — choose the camera view. Stays in sync with the view cube in the corner"><option value="front">Front</option><option value="back">Back</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="iso" selected>Isometric</option><option value="free">Free</option></select></div>
+        </div>
+        <!-- VIEW CUBE — Maya / ZBrush-style orientation gizmo, top-right
+             corner of the 3D viewport, below the bar so it never covers
+             the Viewpoint controls. Drag it to orbit the Free camera;
+             click a face for that orthographic view (Front / Back / Top /
+             Bottom / Left / Right), a corner or edge for Isometric.
+             Drawn live from the camera every frame (drawViewCube). -->
+        <div class="view-cube" id="viewCube" title="View cube — drag to orbit · click a face to snap to that view · click a corner for Isometric">
+          <canvas id="viewCubeCanvas" width="160" height="160" tabindex="0" role="button" aria-label="View cube — drag to orbit the Free camera, click a face to snap to Front, Back, Top, Bottom, Left or Right, click a corner for Isometric. Arrow keys orbit."></canvas>
         </div>
         <div class="render-vig" aria-hidden="true"></div>
         <!-- CLIENT BAR — client view only (#view3d.client-on): the
@@ -1934,7 +1978,7 @@ body:not(.learning-on) .learn{display:none}
       <p class="share-note" id="authInfo" style="margin-top:10px"></p>
       <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap">
         <button class="btn small" type="button" id="authForgot">Forgot password?</button>
-        <button class="btn" type="button" id="authClose" title="Close and keep using the app without an account">Continue as guest</button>
+        <button class="btn" type="button" id="authClose" aria-label="Continue as guest">Continue as guest</button>
       </div>
       <div class="auth-or">OR</div>
       <button class="btn block" type="button" id="authGoogle">Continue with Google</button>
@@ -7215,7 +7259,7 @@ $("linkModal").addEventListener("click",function(ev){if(ev.target===this){this.c
    camera: perspective, tilt unlocked all the way over (phi 0–180°),
    and pan moves the target in the screen plane — up and down
    included — instead of only across the floor. */
-var CAM_LABELS={front:"Front — orthographic",top:"Top — orthographic",left:"Left — orthographic",right:"Right — orthographic",iso:"Isometric",free:"Free camera"};
+var CAM_LABELS={front:"Front — orthographic",back:"Back — orthographic",top:"Top — orthographic",bottom:"Bottom — orthographic",left:"Left — orthographic",right:"Right — orthographic",iso:"Isometric",free:"Free camera"};
 function setCamProj(mode){
   if(!T3)return;
   T3.camMode=mode;
@@ -7225,21 +7269,296 @@ function setCamProj(mode){
 function syncCamButtons(){
   if(!T3)return;
   document.querySelectorAll("[data-cam]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-cam")===T3.camName)});
+  /* The 3D bar's Viewpoint control is a dropdown now: keep its shown
+     view in sync with the camera, whichever way the view changed —
+     dropdown choice, view-cube click / drag, or Camera panel. */
+  var vs=$("v3Viewpoint"); if(vs&&vs.value!==T3.camName)vs.value=T3.camName;
 }
 function applyCamPreset(name){
   if(!T3)return;
   var g=T3.goal;
-  T3.camName=name; T3.topView=false;
+  T3.camName=name; T3.topView=false; T3.bottomView=false;
   T3.freeCam=(name==="free");
   if(name==="front"){g.theta=0; g.phi=Math.PI/2; setCamProj("ortho")}
+  else if(name==="back"){g.theta=Math.PI; g.phi=Math.PI/2; setCamProj("ortho")}
   else if(name==="top"){g.theta=0; g.phi=0.02; T3.topView=true; setCamProj("ortho")}
+  else if(name==="bottom"){g.theta=0; g.phi=Math.PI-0.02; T3.bottomView=true; setCamProj("ortho")}
   else if(name==="left"){g.theta=-Math.PI/2; g.phi=Math.PI/2; setCamProj("ortho")}
   else if(name==="right"||name==="side"){g.theta=Math.PI/2; g.phi=Math.PI/2; setCamProj("ortho")}
   else if(name==="free"){setCamProj("persp")}
-  else {g.theta=-0.65; g.phi=1.02; setCamProj("persp")}
-  syncCamButtons(); syncCamPanel();
+  else {name="iso"; T3.camName="iso"; g.theta=-0.65; g.phi=1.02; setCamProj("persp")}
+  syncCamButtons(); syncCamPanel(); updateViewCube(true);
   updateV3Readout("Camera — "+(CAM_LABELS[name]||name)+(name==="free"?". Full control: drag to orbit / tilt (all the way over), right-drag or Shift-drag to pan in the screen plane, scroll to dolly — or use the Camera sliders in the 3D tab.":". Drag to orbit away from it, scroll to zoom, right-drag to pan — or press Free for the fully unlocked camera."));
 }
+/* ══════════ VIEW CUBE — Maya / ZBrush-style orientation gizmo ══════════
+   A small cube in the top-right corner of the 3D viewport (markup:
+   #viewCube, styles at the 3D bar). It is drawn on a plain 2D canvas
+   from the camera's own basis every frame: the smoothed rig
+   (T3.cam theta / phi, plus the Top / Bottom up-vector flags the
+   real camera uses in applyCam3D) is turned into right / up / back
+   vectors, the unit cube's corners are projected orthographically
+   with them, and the TRANSPARENT cube is painted back-to-front:
+   away-facing faces show through as a faint glass tint under
+   translucent camera-facing faces with clear light edges, so the
+   stage behind the cube is never blocked. Each face label is drawn
+   IN its face's own plane (transformed by the face's projected
+   axes), so the word stays glued to its side — it rotates, skews
+   and foreshortens with the face, goes edge-on or vanishes as the
+   face turns away, and is never billboarded toward the viewer.
+   Because it is
+   projected from T3.cam, it shows the CURRENT camera orientation
+   at all times and turns with every orbit — viewport drags, Camera
+   sliders, Viewpoint buttons and its own drags alike.
+   Interactions (attached below the state):
+   • Drag — orbits the Free camera on the shared rig, exactly like
+     dragging the viewport: the first real movement switches the
+     camera to Free (perspective, tilt unlocked) through the same
+     state the Viewpoint Free choice uses, so syncCamButtons shows
+     Free in the Viewpoint dropdown and the Camera panel follows.
+   • Click a face — snaps to that face's true orthographic camera
+     through applyCamPreset (Front / Back / Top / Bottom / Left /
+     Right — Back and Bottom were cube-first presets and are now
+     also choices in the Viewpoint dropdown, which syncCamButtons
+     keeps showing the current view); choosing a view in the
+     Viewpoint dropdown in turn moves the cube, via the same
+     preset + the per-frame redraw.
+   • Click a corner / edge — the strip near a projected vertex or
+     edge counts as a corner grab and snaps to Isometric. */
+var VC_CORNERS=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+/* Each face carries the RGB tint used for its translucent fill and
+   its own in-plane axes: u = the direction the label's text runs,
+   v = the direction the top of the letters points. u × v = normal,
+   so a label drawn in the (u, v) plane reads correctly — never
+   mirrored — from outside that face, and turns / foreshortens /
+   disappears with the face exactly like a real view cube. */
+var VC_FACES=[
+  {id:"front",label:"Front",normal:[0,0,1],verts:[4,5,6,7],rgb:[238,241,246],u:[1,0,0],v:[0,1,0]},
+  {id:"back",label:"Back",normal:[0,0,-1],verts:[1,0,3,2],rgb:[203,213,225],u:[-1,0,0],v:[0,1,0]},
+  {id:"top",label:"Top",normal:[0,1,0],verts:[7,6,2,3],rgb:[255,255,255],u:[1,0,0],v:[0,0,-1]},
+  {id:"bottom",label:"Bottom",normal:[0,-1,0],verts:[0,1,5,4],rgb:[191,203,219],u:[1,0,0],v:[0,0,1]},
+  {id:"right",label:"Right",normal:[1,0,0],verts:[5,1,2,6],rgb:[219,227,238],u:[0,0,-1],v:[0,1,0]},
+  {id:"left",label:"Left",normal:[-1,0,0],verts:[0,4,7,3],rgb:[229,235,243],u:[0,0,1],v:[0,1,0]}
+];
+var VC_SHORT={front:"Front",back:"Back",top:"Top",bottom:"Bottom",left:"Left",right:"Right",iso:"Isometric",free:"Free camera"};
+var vcState={hover:null,hoverCorner:false,down:null,dragging:false,moved:0,lastX:0,lastY:0,hitFaces:[],hitVerts:[],lastKey:"",label:""};
+function vcCross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}
+function vcDot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}
+function vcNorm(a){var l=Math.hypot(a[0],a[1],a[2]); return l<1e-9?null:[a[0]/l,a[1]/l,a[2]/l]}
+function vcBasis(){
+  var th=(T3&&T3.cam)?T3.cam.theta:-0.65, ph=(T3&&T3.cam)?T3.cam.phi:1.02;
+  var sp=Math.sin(ph);
+  var back=[sp*Math.sin(th),Math.cos(ph),sp*Math.cos(th)];
+  var fwd=[-back[0],-back[1],-back[2]];
+  var wUp=(T3&&T3.topView)?[0,0,-1]:((T3&&T3.bottomView)?[0,0,1]:[0,1,0]);
+  var right=vcNorm(vcCross(fwd,wUp))||[1,0,0];
+  var up=vcNorm(vcCross(back,right))||[0,1,0];
+  return {right:right,up:up,back:back};
+}
+function vcSetLabel(txt){
+  if(txt===vcState.label)return; vcState.label=txt;
+  var el=$("viewCubeLabel"); if(el)el.textContent=txt;
+}
+function drawViewCube(){
+  var cv=$("viewCubeCanvas"); if(!cv)return;
+  var ctx=cv.getContext("2d"); if(!ctx)return;
+  var W=cv.width,H=cv.height,cx=W/2,cy=H/2,S=46;
+  var B=vcBasis();
+  var proj=VC_CORNERS.map(function(v){
+    return {x:cx+vcDot(v,B.right)*S, y:cy-vcDot(v,B.up)*S, d:vcDot(v,B.back)};
+  });
+  ctx.clearRect(0,0,W,H);
+  function facePath(pts){
+    ctx.beginPath();
+    pts.forEach(function(p,i){if(i===0)ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y)});
+    ctx.closePath();
+  }
+  /* TRANSPARENT cube: the faces are translucent glass, so the stage
+     behind the cube stays visible through it, and the far side's
+     faces show through faintly underneath the near side — the cube
+     reads from its clear edges, not from solid fills. Away-facing
+     faces are painted first, faintest; camera-facing faces on top,
+     back-to-front, still translucent. Only the camera-facing faces
+     are hit-testable (vcState.hitFaces), as before. */
+  var away=[], faces=[];
+  VC_FACES.forEach(function(f){
+    var facing=vcDot(f.normal,B.back);
+    var pts=f.verts.map(function(vi){return proj[vi]});
+    var depth=pts.reduce(function(s,p){return s+p.d},0)/pts.length;
+    if(facing<-0.02)away.push({f:f,pts:pts,depth:depth,facing:facing});
+    else if(facing>0.02)faces.push({f:f,pts:pts,depth:depth,facing:facing});
+  });
+  away.sort(function(a,b){return a.depth-b.depth});
+  faces.sort(function(a,b){return a.depth-b.depth});
+  vcState.hitFaces=faces; vcState.hitVerts=proj;
+  away.forEach(function(it){
+    facePath(it.pts);
+    var c=it.f.rgb;
+    ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+",0.05)";
+    ctx.fill();
+    ctx.strokeStyle="rgba(226,232,240,0.16)";
+    ctx.lineWidth=1;
+    ctx.stroke();
+  });
+  faces.forEach(function(it){
+    facePath(it.pts);
+    var isHover=vcState.hover===it.f.id&&!vcState.hoverCorner;
+    var c=it.f.rgb;
+    ctx.fillStyle=isHover?"rgba(253,230,138,0.5)":"rgba("+c[0]+","+c[1]+","+c[2]+",0.30)";
+    ctx.fill();
+    /* Clear outline / edges — light and crisp over the dark
+       viewport, amber on the hovered face or corner grab. */
+    ctx.strokeStyle=(vcState.hoverCorner||isHover)?"#f59e0b":"rgba(241,245,249,0.92)";
+    ctx.lineWidth=(vcState.hoverCorner||isHover)?2.4:1.6;
+    ctx.lineJoin="round";
+    ctx.stroke();
+    /* Face label, drawn IN the face's own plane: the canvas
+       transform is built from the face's projected (u, v) axes, so
+       the word is glued to its side of the cube — it rotates,
+       skews and foreshortens with the face, goes edge-on as the
+       face turns away, and is never drawn on a face turned away
+       from the camera. It is NOT billboarded to face the viewer.
+       Local units: the face spans 200 × 200, so a 600-weight
+       Archivo word auto-shrinks to fit inside its own face with
+       margin — centred, no overlap, no clipping. */
+    if(it.facing>0.12){
+      var mx=it.pts.reduce(function(s,p){return s+p.x},0)/4, my=it.pts.reduce(function(s,p){return s+p.y},0)/4;
+      var au={x:vcDot(it.f.u,B.right)*S/100, y:-vcDot(it.f.u,B.up)*S/100};
+      var av={x:vcDot(it.f.v,B.right)*S/100, y:-vcDot(it.f.v,B.up)*S/100};
+      ctx.save();
+      /* Local +x runs along u; local +y (canvas text runs downward)
+         runs along −v, so the top of the letters points along +v. */
+      ctx.setTransform(au.x,au.y,-av.x,-av.y,mx,my);
+      var fs=46;
+      ctx.font="600 "+fs+"px Archivo, Inter, sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      var tw=ctx.measureText(it.f.label).width;
+      if(tw>168){fs=Math.max(20,Math.floor(fs*168/tw)); ctx.font="600 "+fs+"px Archivo, Inter, sans-serif"}
+      /* Fade gently as the face turns oblique, so a nearly
+         edge-on label never shouts over a front-facing one. */
+      ctx.fillStyle="rgba(15,23,42,"+(0.45+0.55*Math.min(1,it.facing)).toFixed(3)+")";
+      ctx.fillText(it.f.label,0,2);
+      ctx.restore();
+    }
+  });
+}
+function updateViewCube(force){
+  if(!view3dOpen)return;
+  if(typeof renderMode!=="undefined"&&renderMode){vcSetLabel("Isometric"); return}
+  var th=(T3&&T3.cam)?T3.cam.theta:0, ph=(T3&&T3.cam)?T3.cam.phi:0;
+  var key=th.toFixed(3)+"|"+ph.toFixed(3)+"|"+(T3?(T3.camName+"|"+(T3.topView?1:0)+(T3.bottomView?1:0)):"")+"|"+(vcState.hover||"")+"|"+(vcState.hoverCorner?1:0)+"|"+(vcState.dragging?1:0);
+  if(!force&&key===vcState.lastKey)return;
+  vcState.lastKey=key;
+  drawViewCube();
+  if(vcState.dragging)vcSetLabel("Free camera");
+  else if(vcState.hoverCorner)vcSetLabel("Isometric");
+  else if(vcState.hover){var hf=null; VC_FACES.forEach(function(f){if(f.id===vcState.hover)hf=f}); vcSetLabel(hf?hf.label:vcState.hover)}
+  else vcSetLabel((T3&&VC_SHORT[T3.camName])||"Isometric");
+}
+function vcPointInPoly(x,y,pts){
+  var inside=false;
+  for(var i=0,j=pts.length-1;i<pts.length;j=i++){
+    var xi=pts[i].x,yi=pts[i].y,xj=pts[j].x,yj=pts[j].y;
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
+  }
+  return inside;
+}
+function vcSegDist(x,y,a,b){
+  var dx=b.x-a.x, dy=b.y-a.y, l2=dx*dx+dy*dy;
+  var t=l2>0?Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy)/l2)):0;
+  return Math.hypot(x-(a.x+t*dx),y-(a.y+t*dy));
+}
+function vcHit(ev){
+  var cv=$("viewCubeCanvas"); if(!cv||!vcState.hitFaces.length)return null;
+  var r=cv.getBoundingClientRect(); if(!r.width||!r.height)return null;
+  var x=(ev.clientX-r.left)*(cv.width/r.width), y=(ev.clientY-r.top)*(cv.height/r.height);
+  /* Corner / edge first: near a projected vertex, or on the strip
+     of an edge SHARED by two visible faces, the grab means
+     Isometric, whichever face is under it. A silhouette edge (one
+     visible face only) still belongs to that face. */
+  var nearVert=false;
+  vcState.hitVerts.forEach(function(p){if(Math.hypot(x-p.x,y-p.y)<26)nearVert=true});
+  var edgeCount={};
+  vcState.hitFaces.forEach(function(it){
+    var vs=it.f.verts;
+    for(var e=0;e<4;e++){var a=vs[e],b=vs[(e+1)%4],k=a<b?a+"-"+b:b+"-"+a; edgeCount[k]=(edgeCount[k]||0)+1}
+  });
+  var nearSharedEdge=false, faceHit=null;
+  for(var i=vcState.hitFaces.length-1;i>=0;i--){
+    var it2=vcState.hitFaces[i], vs2=it2.f.verts;
+    for(var e2=0;e2<4;e2++){
+      var a2=vs2[e2],b2=vs2[(e2+1)%4],k2=a2<b2?a2+"-"+b2:b2+"-"+a2;
+      if(edgeCount[k2]>=2&&vcSegDist(x,y,it2.pts[e2],it2.pts[(e2+1)%4])<9)nearSharedEdge=true;
+    }
+    if(!faceHit&&vcPointInPoly(x,y,it2.pts))faceHit=it2.f.id;
+  }
+  if(!faceHit&&!nearVert&&!nearSharedEdge)return null;
+  return {face:faceHit,corner:nearVert||nearSharedEdge};
+}
+(function(){
+  var cv=$("viewCubeCanvas"); if(!cv)return;
+  function vcSwitchFree(){
+    if(!T3)return;
+    if(T3.camName!=="free"){T3.camName="free"; T3.freeCam=true; T3.topView=false; T3.bottomView=false; setCamProj("persp"); syncCamButtons(); syncCamPanel()}
+  }
+  cv.addEventListener("pointerdown",function(ev){
+    ev.preventDefault(); ev.stopPropagation();
+    if(!T3){toast("The view cube needs the 3D view — the 3D library didn't load, so there is no camera to move yet."); return}
+    try{cv.setPointerCapture(ev.pointerId)}catch(e){}
+    vcState.down={x:ev.clientX,y:ev.clientY,hit:vcHit(ev)};
+    vcState.lastX=ev.clientX; vcState.lastY=ev.clientY;
+    vcState.moved=0; vcState.dragging=false;
+  });
+  cv.addEventListener("pointermove",function(ev){
+    if(vcState.down){
+      var dx=ev.clientX-vcState.lastX, dy=ev.clientY-vcState.lastY;
+      vcState.lastX=ev.clientX; vcState.lastY=ev.clientY;
+      vcState.moved=Math.abs(ev.clientX-vcState.down.x)+Math.abs(ev.clientY-vcState.down.y);
+      if(vcState.moved>6){
+        if(!vcState.dragging){vcState.dragging=true; vcSwitchFree()}
+        if(T3&&T3.goal){
+          T3.goal.theta-=dx*0.0075;
+          T3.goal.phi=clamp(T3.goal.phi-dy*0.0075,0.02,Math.PI-0.02);
+          syncCamPanel();
+        }
+        vcState.lastKey=""; updateViewCube(true);
+      }
+      return;
+    }
+    var hit=vcHit(ev);
+    var nh=hit?hit.face:null, nc=hit?!!hit.corner:false;
+    if(nh!==vcState.hover||nc!==vcState.hoverCorner){vcState.hover=nh; vcState.hoverCorner=nc; vcState.lastKey=""; updateViewCube(true)}
+    cv.style.cursor=vcState.dragging?"grabbing":(hit?"pointer":"grab");
+  });
+  function vcUp(ev){
+    if(!vcState.down)return;
+    var wasDrag=vcState.dragging, downHit=vcState.down.hit;
+    vcState.down=null; vcState.dragging=false; vcState.moved=0;
+    vcState.lastKey=""; updateViewCube(true);
+    if(wasDrag){
+      if(T3){syncCamPanel(); updateV3Readout("Camera — Free camera (view cube drag). Drag to orbit / tilt (all the way over), right-drag or Shift-drag in the viewport to pan in the screen plane, scroll to dolly.")}
+      return;
+    }
+    var hit=vcHit(ev)||downHit;
+    if(!hit||!T3)return;
+    if(hit.corner||!hit.face){applyCamPreset("iso"); return}
+    applyCamPreset(hit.face);
+  }
+  cv.addEventListener("pointerup",vcUp);
+  cv.addEventListener("pointercancel",function(){vcState.down=null; vcState.dragging=false; vcState.lastKey=""; updateViewCube(true)});
+  cv.addEventListener("pointerleave",function(){if(!vcState.down){vcState.hover=null; vcState.hoverCorner=false; vcState.lastKey=""; updateViewCube(true)}});
+  cv.addEventListener("keydown",function(ev){
+    if(!T3)return;
+    var step=0.26, handled=true;
+    if(ev.key==="ArrowLeft"){vcSwitchFree(); T3.goal.theta+=step}
+    else if(ev.key==="ArrowRight"){vcSwitchFree(); T3.goal.theta-=step}
+    else if(ev.key==="ArrowUp"){vcSwitchFree(); T3.goal.phi=clamp(T3.goal.phi-step,0.02,Math.PI-0.02)}
+    else if(ev.key==="ArrowDown"){vcSwitchFree(); T3.goal.phi=clamp(T3.goal.phi+step,0.02,Math.PI-0.02)}
+    else if(ev.key==="Home"||ev.key.toLowerCase()==="i"){applyCamPreset("iso")}
+    else if(ev.key.toLowerCase()==="f"){applyCamPreset("front")}
+    else handled=false;
+    if(handled){ev.preventDefault(); syncCamPanel(); vcState.lastKey=""; updateViewCube(true)}
+  });
+})();
 /* The 3D-tab Camera sliders / target fields drive the same rig the
    pointer drives: orbit = theta, tilt = phi, dolly = radius, and the
    target is tx / ty / tz (what panning moves). */
@@ -7292,7 +7611,7 @@ function applyCam3D(){
   /* Top view: the camera sits almost on the +Y axis, where the default
      up (0,1,0) is parallel to the view direction — use −Z as up there
      (stage-up on screen = upstage), like a plan drawing. */
-  if(T3.topView)T3.camera.up.set(0,0,-1); else T3.camera.up.set(0,1,0);
+  if(T3.topView)T3.camera.up.set(0,0,-1); else if(T3.bottomView)T3.camera.up.set(0,0,1); else T3.camera.up.set(0,1,0);
   T3.camera.position.set(c.tx+c.radius*sp*Math.sin(c.theta), c.ty+c.radius*Math.cos(c.phi), c.tz+c.radius*sp*Math.cos(c.theta));
   T3.camera.lookAt(c.tx,c.ty,c.tz);
   if(T3.camMode==="ortho")syncOrthoFrustum(false);
@@ -7306,6 +7625,7 @@ function loop3D(){
   if(T3.lightPreview)T3.lightPreview.visible=!renderMode; /* the Suggest lights ghost, same rule */
   if(renderMode){if(T3.selBox)T3.selBox.visible=false; if(T3.measure)T3.measure.visible=false; if(T3.gizmo)T3.gizmo.visible=false; (T3.nameTags||[]).forEach(function(s){s.visible=false})}
   applyCam3D();
+  updateViewCube(false);
   if(pv.on&&pvIsLive())refreshPvSlices3D();
   positionGizmo3D();
   animateModifiers3D(performance.now()/1000);
@@ -7351,7 +7671,7 @@ function initThree(){
     edgeMat=new THREE.MeshBasicMaterial({color:0xf59e0b});
     unitBox=new THREE.BoxGeometry(1,1,1);
     unitPlane=new THREE.PlaneGeometry(1,1);
-    T3={renderer:renderer,scene:scene,camera:camera,perspCam:camera,orthoCam:orthoCam,camMode:"persp",camName:"iso",freeCam:false,topView:false,grid:grid,groups:{},hitMeshes:[],gizmo:null,gizmoHit:[],displaysGroup:null,deck:null,edge:null,selBox:null,measure:null,castShadows:true,pvTex:[],modHit:[],modGroups:{},
+    T3={renderer:renderer,scene:scene,camera:camera,perspCam:camera,orthoCam:orthoCam,camMode:"persp",camName:"iso",freeCam:false,topView:false,bottomView:false,grid:grid,groups:{},hitMeshes:[],gizmo:null,gizmoHit:[],displaysGroup:null,deck:null,edge:null,selBox:null,measure:null,castShadows:true,pvTex:[],modHit:[],modGroups:{},
         cam:{theta:-0.65,phi:1.02,radius:16,tx:0,ty:1,tz:0},goal:{theta:-0.65,phi:1.02,radius:16,tx:0,ty:1,tz:0}};
     T3.sun=sun; T3.fill=fill; T3.hemi=hemi;
     attach3DPointer(renderer.domElement);
@@ -8929,7 +9249,7 @@ function attach3DPointer(el){
          above-horizon range so a stray drag never flips the stage. */
       if(T3.freeCam)T3.goal.phi=clamp(T3.goal.phi-dy*0.0052,0.02,Math.PI-0.02);
       else T3.goal.phi=clamp(T3.goal.phi-dy*0.0052,0.06,1.52);
-      if(T3.camName&&T3.camName!=="iso"&&T3.camName!=="free")T3.topView=false;
+      if(T3.camName&&T3.camName!=="iso"&&T3.camName!=="free"){T3.topView=false; T3.bottomView=false}
     }
     else if(dragMode==="pan"){
       var s=T3.goal.radius*0.0016, th=T3.goal.theta;
@@ -10180,6 +10500,11 @@ document.addEventListener("pointerdown",function(ev){
 });
 ["snapStr","snapStr3d"].forEach(function(id){var el=$(id); if(el)el.addEventListener("input",function(){state.snapStrength=clamp(+this.value||0,0,100); updateSnapUI()})});
 document.querySelectorAll("[data-cam]").forEach(function(b){b.addEventListener("click",function(){if(!view3dOpen)toggle3D(true); applyCamPreset(b.getAttribute("data-cam"))})});
+/* 3D bar Viewpoint dropdown — choosing a view runs the exact same
+   camera preset the old Viewpoint icon buttons ran; syncCamButtons
+   keeps the dropdown showing the current view when the view cube or
+   the Camera panel changes it instead. */
+var vps=$("v3Viewpoint"); if(vps)vps.addEventListener("change",function(){if(!view3dOpen)toggle3D(true); applyCamPreset(this.value)});
 /* Camera sliders / target fields (3D tab) — they drive T3.goal, the
    same rig the pointer drives, and read back through syncCamPanel(). */
 [["camOrbit","camOrbitOut",function(g,v){g.theta=v*Math.PI/180},function(v){return v+"°"}],
@@ -13238,6 +13563,14 @@ function fillCommentSqlBlocks(){
    account button lives in the top bar, which client view hides. */
 var AUTH_STORE_KEY="lutasLED.authSession";
 var authUser=null, authSession=null, authMode="in";
+/* Set the moment the visitor dismisses the login popup while
+   signed out (Continue as guest, the signed-in Close is separate).
+   authAutoOpen checks it, so a late async session check finishing
+   after the dismissal can never re-open the popup the visitor just
+   closed. It only lives for this page view: a fresh load still
+   auto-opens the popup as designed, and the top-bar Sign in button
+   (openAuthDialog directly) always reopens it on demand. */
+var authGuestDismissed=false;
 function authHeaders(extra){
   var tok=(authSession&&authSession.access_token)||SUPABASE_ANON_KEY;
   var h={"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+tok,"Content-Type":"application/json"};
@@ -13362,7 +13695,7 @@ function isClientViewRequest(){
    as guest / backdrop) signs nobody in — the top-bar Sign in button
    reopens it. */
 function authAutoOpen(){
-  if(isClientViewRequest()||authUser)return;
+  if(isClientViewRequest()||authUser||authGuestDismissed)return;
   openAuthDialog();
 }
 function openAuthDialog(){
@@ -13371,7 +13704,13 @@ function openAuthDialog(){
   syncAuthDialog();
   $("authModal").classList.add("open");
 }
-function closeAuthDialog(){$("authModal").classList.remove("open")}
+function closeAuthDialog(){
+  /* Closing the popup while signed out IS the guest choice: record
+     it so no pending auth check can auto-open the popup again
+     during this page view. */
+  if(!authUser)authGuestDismissed=true;
+  $("authModal").classList.remove("open");
+}
 function syncAuthDialog(){
   var out=$("authSignedOut"), inn=$("authSignedIn");
   if(!out||!inn)return;
