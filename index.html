@@ -1,9 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="color-scheme" content="light dark"/>
+<script>/* Theme boot: Dark is the default; a theme previously chosen in
+   Preferences (Dark / Gray / Light) is stored on this device and
+   re-applied before first paint, so the editor opens in the chosen
+   theme with no flash of another one. */
+try{var _th=localStorage.getItem("lutasLED.theme");if(_th==="gray"||_th==="light"||_th==="dark")document.documentElement.setAttribute("data-theme",_th)}catch(e){}</script>
 <link rel="icon" type="image/png" href="data:image/png;base64,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"/>
 <link rel="apple-touch-icon" href="data:image/png;base64,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"/>
 <title>LUTAS LED — Multi-Screen Layout, Signal Map & Actual-Size PNG Export</title>
@@ -14,7 +19,7 @@
   --bg:#eef0f3; --panel:#ffffff; --panel2:#f6f7f9; --line:#dde1e8; --line2:#cbd2dd;
   --text:#11151c; --muted:#687284; --muted2:#8a95a8;
   --accent:#e8890c; --accent2:#0ea5a4;
-  --stage:#10141b; --stage2:#171d27;
+  --stage:#dfe3e9; --stage2:#e9edf2; --stage-dot:rgba(17,21,28,.13);
   --input:#fff; --chip:#eef1f5;
   --shadow:0 10px 30px rgba(16,24,40,.08);
   --radius:14px;
@@ -27,7 +32,7 @@
     --bg:#0b0e13; --panel:#141922; --panel2:#1a212e; --line:#242e3e; --line2:#2f3b4f;
     --text:#eef1f6; --muted:#9aa6b8; --muted2:#748198;
     --accent:#f59e0b; --accent2:#22d3ee;
-    --stage:#080b0f; --stage2:#10141b;
+    --stage:#080b0f; --stage2:#10141b; --stage-dot:rgba(255,255,255,.13);
     --input:#0f141d; --chip:#1d2736;
     --shadow:0 12px 32px rgba(0,0,0,.35);
   }
@@ -120,7 +125,7 @@ input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
 
 /* CANVAS (centre, the hero) */
 .stage-col{display:flex;flex-direction:column;min-width:0;min-height:0}
-.canvas-area{position:relative;flex:1;background:var(--stage);background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,.13) 1px, transparent 0);background-size:22px 22px;overflow:hidden;min-width:0;min-height:0;touch-action:none}
+.canvas-area{position:relative;flex:1;background:var(--stage);background-image:radial-gradient(circle at 1px 1px, var(--stage-dot,rgba(255,255,255,.13)) 1px, transparent 0);background-size:22px 22px;overflow:hidden;min-width:0;min-height:0;touch-action:none}
 .canvas-chip{position:absolute;z-index:12;background:rgba(10,14,20,.85);border:1px solid rgba(255,255,255,.14);color:#e2e8f0;border-radius:10px;padding:8px 11px;backdrop-filter:blur(4px)}
 .canvas-chip.tl{top:12px;left:12px;max-width:min(460px,calc(100% - 24px))}
 .canvas-chip.tl b{font-family:Archivo,sans-serif;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -925,16 +930,45 @@ body.tape-on #canvasArea{cursor:crosshair}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ── Preferences (File → Preferences) ────────────────────────────────
-   Forced theme: [data-theme] on <html> beats the system media query
-   (higher specificity), so Light / Dark can be pinned either way. */
-:root[data-theme="dark"]{--bg:#0b0e13;--panel:#141922;--panel2:#1a212e;--line:#242e3e;--line2:#2f3b4f;--text:#eef1f6;--muted:#9aa6b8;--muted2:#748198;--accent:#f59e0b;--accent2:#22d3ee;--stage:#080b0f;--stage2:#10141b;--input:#0f141d;--chip:#1d2736;--shadow:0 12px 32px rgba(0,0,0,.35)}
-:root[data-theme="light"]{--bg:#eef0f3;--panel:#ffffff;--panel2:#f6f7f9;--line:#dde1e8;--line2:#cbd2dd;--text:#11151c;--muted:#687284;--muted2:#8a95a8;--accent:#e8890c;--accent2:#0ea5a4;--stage:#10141b;--stage2:#171d27;--input:#fff;--chip:#eef1f5;--shadow:0 10px 30px rgba(16,24,40,.08)}
+   Theme: [data-theme] on <html> pins one of exactly three editor
+   themes — Dark (the default, the app's original look), Gray (a
+   neutral mid-gray UI: gray panels, toolbars and canvas, dark text
+   and icons) and Light (light panels and canvas, dark text and
+   icons). The theme recolours only the editor chrome through the
+   --* variables — panels, top bar, Tools rail, tabs, popups and the
+   2D canvas background. Screen colours, port colours and the LED
+   layout itself never read these variables, exports are unaffected,
+   and the 3D / Render stage keeps its own dark backdrop (#view3d
+   and the v3d bars are hard-coded dark, not themed). The amber
+   accent stays amber in all three themes. */
+:root[data-theme="dark"]{--bg:#0b0e13;--panel:#141922;--panel2:#1a212e;--line:#242e3e;--line2:#2f3b4f;--text:#eef1f6;--muted:#9aa6b8;--muted2:#748198;--accent:#f59e0b;--accent2:#22d3ee;--stage:#080b0f;--stage2:#10141b;--stage-dot:rgba(255,255,255,.13);--input:#0f141d;--chip:#1d2736;--shadow:0 12px 32px rgba(0,0,0,.35)}
+:root[data-theme="gray"]{--bg:#787e87;--panel:#a2a7af;--panel2:#9399a2;--line:#767c85;--line2:#646a73;--text:#171b21;--muted:#333a44;--muted2:#454d58;--accent:#d97706;--accent2:#0f766e;--stage:#70767f;--stage2:#7d838c;--stage-dot:rgba(22,26,33,.18);--input:#b4b9c0;--chip:#878d96;--shadow:0 10px 30px rgba(23,28,36,.22)}
+:root[data-theme="light"]{--bg:#eef0f3;--panel:#ffffff;--panel2:#f6f7f9;--line:#dde1e8;--line2:#cbd2dd;--text:#11151c;--muted:#687284;--muted2:#8a95a8;--accent:#e8890c;--accent2:#0ea5a4;--stage:#dfe3e9;--stage2:#e9edf2;--stage-dot:rgba(17,21,28,.13);--input:#fff;--chip:#eef1f5;--shadow:0 10px 30px rgba(16,24,40,.08)}
 :root[data-theme="dark"] .btn.primary{background:#f59e0b;color:#111827;border-color:#f59e0b}
-:root[data-theme="light"] .btn.primary{background:#111827;color:#fff;border-color:#111827}
+:root[data-theme="gray"] .btn.primary,:root[data-theme="light"] .btn.primary{background:#111827;color:#fff;border-color:#111827}
 :root[data-theme="dark"] .chip.on{background:#f59e0b;color:#161006;border-color:#f59e0b}
-:root[data-theme="light"] .chip.on{background:#111827;color:#fff;border-color:#111827}
+:root[data-theme="gray"] .chip.on,:root[data-theme="light"] .chip.on{background:#111827;color:#fff;border-color:#111827}
 :root[data-theme="dark"] .seg button.on{background:#eef1f6;color:#111827;border-color:#eef1f6}
-:root[data-theme="light"] .seg button.on{background:#111827;color:#fff;border-color:#111827}
+:root[data-theme="gray"] .seg button.on,:root[data-theme="light"] .seg button.on{background:#111827;color:#fff;border-color:#111827}
+/* Status colours follow the chosen theme too, not the OS scheme:
+   Gray and Light take the dark-on-light values, Dark the light-on-dark
+   ones, whichever way the system preference points. */
+:root[data-theme="gray"] .cc-err,:root[data-theme="light"] .cc-err{color:#b91c1c}
+:root[data-theme="gray"] .cc-ok,:root[data-theme="light"] .cc-ok{color:#15803d}
+:root[data-theme="gray"] .notif-status.err,:root[data-theme="light"] .notif-status.err{color:#b91c1c}
+:root[data-theme="gray"] .notif-status.ok,:root[data-theme="light"] .notif-status.ok{color:#15803d}
+:root[data-theme="gray"] .share-status.warn,:root[data-theme="light"] .share-status.warn{color:#b45309}
+:root[data-theme="gray"] .auth-err,:root[data-theme="light"] .auth-err{color:#dc2626}
+:root[data-theme="gray"] .rig-flag.bad,:root[data-theme="light"] .rig-flag.bad{color:#b91c1c}
+:root[data-theme="gray"] .rig-flag.warn,:root[data-theme="light"] .rig-flag.warn{color:#92400e}
+:root[data-theme="gray"] .rig-flag.ok,:root[data-theme="light"] .rig-flag.ok{color:#166534}
+:root[data-theme="dark"] .notif-status.err{color:#fca5a5}
+:root[data-theme="dark"] .notif-status.ok{color:#4ade80}
+:root[data-theme="dark"] .share-status.warn{color:#fbbf24}
+:root[data-theme="dark"] .auth-err{color:#f87171}
+:root[data-theme="dark"] .rig-flag.bad{color:#fca5a5}
+:root[data-theme="dark"] .rig-flag.warn{color:#fcd34d}
+:root[data-theme="dark"] .rig-flag.ok{color:#86efac}
 
 .seg.c3{grid-template-columns:1fr 1fr 1fr}
 #shadeSeg button{display:grid;place-items:center;padding:9px 6px}
@@ -2272,9 +2306,9 @@ body:not(.learning-on) .learn{display:none}
         
         <label class="lab">Appearance — theme</label>
         <div class="seg c3" id="themeSeg">
-          <button data-theme-opt="auto">Auto — system</button>
-          <button data-theme-opt="light"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg> Light</button>
           <button data-theme-opt="dark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg> Dark</button>
+          <button data-theme-opt="gray"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg> Gray</button>
+          <button data-theme-opt="light"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg> Light</button>
         </div>
         <div class="divider"></div>
         <label class="lab">Measurement units</label>
@@ -2794,6 +2828,16 @@ function applyFamilyTo(d,id){
   d.cabW=f.cabW; d.cabH=f.cabH; d.weight=f.weight; d.power=f.power; d.pitch=f.pitch;
   if(f.pitch==="custom"){d.resX=f.resX; d.resY=f.resY}else applyPitchTo(d);
 }
+/* ── Editor theme (Preferences → General): exactly three themes —
+   "dark" (the default, the app's original look), "gray" (neutral
+   mid-gray chrome) and "light". The choice lives in state.prefs.theme
+   (so it is saved with the layout JSON like every preference) AND in
+   a small device store, so it also sticks when the app is reopened
+   fresh, in a new session, with no layout loaded. applyPrefs() is
+   the one place that writes the store. */
+var THEME_KEY="lutasLED.theme";
+function validTheme(v){return (v==="dark"||v==="gray"||v==="light")?v:null}
+function storedTheme(){try{return validTheme(localStorage.getItem(THEME_KEY))}catch(e){return null}}
 var state={
   project:"Main Stage — LED Layout",
   displays:[makeDisplay({name:"Screen 1"})],
@@ -2813,10 +2857,12 @@ var state={
      from the magnet (gizmoSnap), which snaps drags to the grid /
      angle steps; both can be on at once. */
   snapScreens:false,
-  /* Preferences (File → Preferences): theme pins <html data-theme> (auto =
-     follow the system), learning mode shows the additional guidance info
-     (hidden by default for a clean UI), ui* toggles are interface options. */
-  prefs:{theme:"auto",learning:false,uiChip:true,uiLegend:true,uiCabDetail:true,uiGrid:true,measureUnit:"m",shortcuts:{}},
+  /* Preferences (File → Preferences): theme pins <html data-theme> to
+     dark / gray / light (dark is the default; a stored choice from a
+     previous session wins over the default), learning mode shows the
+     additional guidance info (hidden by default for a clean UI), ui*
+     toggles are interface options. */
+  prefs:{theme:storedTheme()||"dark",learning:false,uiChip:true,uiLegend:true,uiCabDetail:true,uiGrid:true,measureUnit:"m",shortcuts:{}},
   vmode:"view", stage3d:{deck:0.6,margin:1,show:true,grid:true},
   /* Layout Link — whether the 2D layout and the 3D stage share one
      arrangement. "independent" (the default): position and facing
@@ -5029,8 +5075,16 @@ $("statsModal").addEventListener("click",function(ev){if(ev.target===this)this.c
 function setPrefTgl(id,on){var b=$(id);if(!b)return;b.classList.toggle("on",!!on);b.textContent=on?"On":"Off"}
 function applyPrefs(){
   var p=state.prefs,root=document.documentElement;
-  if(p.theme==="light"||p.theme==="dark"){root.setAttribute("data-theme",p.theme);root.style.colorScheme=p.theme}
-  else{root.removeAttribute("data-theme");root.style.colorScheme=""}
+  /* Theme: a valid prefs theme wins; anything else (an old layout's
+     "auto", a missing value) falls back to the stored choice, then to
+     Dark — so loading a layout never resets the user's theme, while a
+     layout saved with a theme restores that theme. The resolved theme
+     is stored back, which is what makes the choice persist across
+     sessions. Gray takes the light colour scheme (dark text/icons). */
+  p.theme=validTheme(p.theme)||storedTheme()||"dark";
+  root.setAttribute("data-theme",p.theme);
+  root.style.colorScheme=(p.theme==="dark")?"dark":"light";
+  try{localStorage.setItem(THEME_KEY,p.theme)}catch(e){}
   document.body.classList.toggle("learning-on",!!p.learning);
   var chip=$("stageChip"); if(chip)chip.style.display=p.uiChip?"":"none";
   var leg=$("legend"); if(leg)leg.style.display=p.uiLegend?"":"none";
