@@ -87,6 +87,19 @@ button{cursor:pointer}
 .menu button:disabled{opacity:.45;cursor:default}
 .menu button:disabled:hover{background:transparent}
 .menu .mi-key{margin-left:auto;color:var(--muted);font-size:11px;font-weight:500}
+.menu .mi-arrow{margin-left:auto;color:var(--muted);font-weight:700;flex:none}
+/* File-menu submenus (Open recent, Export): fly out to the right on
+   hover / when opened by click; on narrow screens the opened
+   submenu drops below its parent item instead of leaving the
+   viewport. */
+.menu-sub{position:relative}
+.menu-sub .submenu{position:absolute;left:calc(100% + 3px);top:-6px;min-width:264px;max-width:min(340px,86vw);max-height:72vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;display:none;z-index:70}
+.menu-sub:hover .submenu,.menu-sub.open .submenu{display:block}
+@media(max-width:700px){.menu-sub.open .submenu{left:0;top:calc(100% + 2px)}}
+.menu .menu-note{font-size:12px;color:var(--muted);line-height:1.55;padding:8px 9px;max-width:280px}
+.menu .recent-item{flex-direction:column;align-items:flex-start;gap:1px}
+.menu .recent-t{font-weight:600;font-size:13px;color:var(--text);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu .recent-d{font-size:11px;color:var(--muted)}
 .proj{flex:1;min-width:110px}
 .proj input{width:100%;max-width:460px;background:var(--input);border:1px solid var(--line);border-radius:9px;padding:8px 11px;color:var(--text);font-weight:600;font-size:13px;outline:none}
 .proj input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,158,11,.18)}
@@ -663,10 +676,22 @@ html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:fle
 #clientComments .field span{color:#94a3b8}
 #clientComments .field input,#clientComments .field textarea{color:#e2e8f0}
 .field textarea{width:100%;border:0;background:transparent;color:var(--text);font-weight:600;font-size:13.5px;outline:none;padding:2px 0 0;font-family:Inter,sans-serif;resize:vertical;min-height:56px;line-height:1.5}
-.cc-kind{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px}
-@media(min-width:380px){.cc-kind{grid-template-columns:repeat(3,1fr)}}
-.cc-kind button{border:1px solid var(--cc-line,var(--line));background:var(--cc-surface,var(--panel2));padding:8px 6px;border-radius:9px;font-size:11.5px;font-weight:700;color:var(--cc-text,var(--text));cursor:pointer;line-height:1.35}
-.cc-kind button.on{background:#f59e0b;color:#111827;border-color:#fbbf24}
+.cc-badge.done{color:#4ade80;border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.12)}
+.cc-badge.react{color:var(--cc-text,var(--text));border-color:var(--cc-line,var(--line2));background:var(--cc-surface,var(--panel2));text-transform:none;letter-spacing:0;font-size:12px;padding:1px 7px}
+.cc-badge.remind{color:#fbbf24;border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.12)}
+.cc-reminded{font-size:11.5px;color:var(--cc-muted,var(--muted));margin-top:6px;line-height:1.5}
+.cc-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:9px;border-top:1px dashed var(--cc-line,var(--line));padding-top:8px}
+.cc-act{border:1px solid var(--cc-line,var(--line));background:var(--cc-surface,var(--panel2));color:var(--cc-text,var(--text));border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:700;cursor:pointer;line-height:1.4}
+.cc-act:hover{border-color:var(--cc-text,var(--text))}
+.cc-act:disabled{opacity:.55;cursor:default}
+.cc-act.liked{background:#f59e0b;border-color:#fbbf24;color:#111827}
+.cc-act.done-btn[aria-pressed="true"]{color:#4ade80;border-color:rgba(74,222,128,.55)}
+.cc-reacts{display:inline-flex;gap:4px;align-items:center}
+.cc-reacts .cc-lab{font-size:11px;color:var(--cc-muted,var(--muted));font-weight:700;margin-right:1px}
+.cc-react{border:1px solid var(--cc-line,var(--line));background:transparent;border-radius:999px;padding:3px 8px;font-size:13px;cursor:pointer;line-height:1.35}
+.cc-react:hover{border-color:var(--cc-text,var(--text))}
+.cc-react.on{background:#f59e0b;border-color:#fbbf24}
+.cc-act-status{font-size:11.5px;color:var(--cc-muted,var(--muted));width:100%;line-height:1.5}
 .cc-err{display:none;font-size:12.5px;color:#b91c1c;margin:10px 0 0;line-height:1.5}
 .cc-err.show{display:block}
 #clientComments .cc-err{color:#fca5a5}
@@ -1228,17 +1253,39 @@ body:not(.learning-on) .learn{display:none}
     <div class="menu-wrap" id="wrapFile">
       <button class="menu-btn" data-menu="wrapFile">File</button>
       <div class="menu">
-        <button id="mNew">▢ New layout</button>
-        <button id="mSave">↓ Save layout (.ledx)</button>
-        <button id="mLoad" type="button">↑ Load layout (.ledx)</button>
-        <button id="mProjects">Projects…</button>
+        <button id="mNew">▢ New project</button>
+        <button id="mOpenProject">Open project…</button>
+        <div class="menu-sub" id="recentSub">
+          <button id="mRecent" type="button" aria-haspopup="true" aria-expanded="false">Open recent<span class="mi-arrow">▸</span></button>
+          <div class="submenu" id="recentMenu" role="menu" aria-label="Open recent project">
+            <div class="menu-cap">Recent projects</div>
+            <div id="recentList"><div class="menu-note">Loading…</div></div>
+          </div>
+        </div>
         <div class="sep"></div>
-        <button id="mExport"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export PNG — actual size</button>
-        <button id="mExportClean"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export clean PNG — actual size, no margins</button>
-        <button id="mExportPsd"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> Export PSD — screens as separate layers</button>
-        <button id="mCsv">↓ Download cabling CSV</button>
+        <button id="mSave">↓ Save</button>
+        <button id="mSaveAs">Save as…</button>
+        <div class="sep"></div>
+        <button id="mImportProps">Import props…</button>
+        <div class="menu-sub" id="exportSub">
+          <button id="mExportMenu" type="button" aria-haspopup="true" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export<span class="mi-arrow">▸</span></button>
+          <div class="submenu" id="exportMenu" role="menu" aria-label="Export">
+            <button id="mExportClean">PNG — clean, actual size</button>
+            <button id="mExport">PNG — framed, actual size</button>
+            <button id="mExportPsd">PSD — screens as separate layers</button>
+            <button id="mExpArenaJson">Arena JSON — slices</button>
+            <div class="sep"></div>
+            <button id="mExpGlb">GLB — binary glTF</button>
+            <button id="mExpGltf">glTF — .gltf</button>
+            <button id="mExpObj">OBJ — .obj</button>
+            <button id="mExpFbx">FBX — ASCII .fbx</button>
+            <div class="sep"></div>
+            <button id="mCsv">↓ Cabling CSV</button>
+          </div>
+        </div>
         <div class="sep"></div>
         <button id="mPrefs"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></svg> Preferences…</button>
+        <button id="mLogout" disabled>Log out</button>
       </div>
     </div>
     <div class="menu-wrap" id="wrapEdit">
@@ -1297,7 +1344,7 @@ body:not(.learning-on) .learn{display:none}
     <button id="btnRender" aria-pressed="false" title="Render — a look-only cinematic view of the 3D stage: no editing features, just camera navigation and a Capture (PNG) of the frame">Render</button>
   </div>
   <div class="notif-wrap" id="notifWrap" hidden>
-    <button class="notif-btn" type="button" id="notifBtn" aria-haspopup="dialog" aria-expanded="false" title="Notifications — new client comments and reviews on your shared links, with reply"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="notif-badge" id="notifBadge" hidden>0</span></button>
+    <button class="notif-btn" type="button" id="notifBtn" aria-haspopup="dialog" aria-expanded="false" title="Notifications — new client comments and reminders on your shared links, with reply, reactions and Done"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="notif-badge" id="notifBadge" hidden>0</span></button>
   </div>
 </header>
 <div class="autosave-bar" id="autosaveBar" hidden>
@@ -1320,10 +1367,10 @@ body:not(.learning-on) .learn{display:none}
      share codes created in this browser (kept in localStorage).
      Read state is local to this browser too — the panel says
      so plainly. -->
-<div id="notifPanel" hidden role="dialog" aria-label="Notifications — client comments and reviews">
+<div id="notifPanel" hidden role="dialog" aria-label="Notifications — client comments and reminders">
   <div class="notif-head"><b>Notifications</b><button class="btn small" type="button" id="notifClose">Close</button></div>
   <p class="notif-note" id="notifSignInNote" hidden></p>
-  <p class="notif-note">Comments and reviews from clients on your shared links, grouped by project / shared link with the newest activity first. Tap a project name to open that design in client view in a new tab. Names are self-reported, not verified. Notifications are per-device / per-browser: read state is kept in this browser only, is not synced across devices, and there is no push or email alert — new comments are checked when the app opens, when this panel opens, and every few minutes while the app is open.</p>
+  <p class="notif-note">Comments from clients on your shared links, grouped by project / shared link with the newest activity first. A client's Reminder appears here as a new notification on the comment it belongs to. You can Like a comment, react to it, or mark it Done — the client sees your reaction and the Done tick in their view. Tap a project name to open that design in client view in a new tab. Names are self-reported, not verified. Notifications are per-device / per-browser: read state is kept in this browser only, is not synced across devices, and there is no push or email alert — new comments are checked when the app opens, when this panel opens, and every few minutes while the app is open.</p>
   <p class="cc-err" id="notifErr"></p>
   <div class="cc-list" id="notifList"></div>
 </div>
@@ -1408,7 +1455,7 @@ body:not(.learning-on) .learn{display:none}
         <div class="client-bar">
           <div class="client-id"><b id="clientTitle">Stage design</b><span class="client-tag">Client view · view only</span></div>
           <div class="v3d-group"><span class="cap">Camera</span><button data-cam="front" class="iconly" title="Front — orthographic elevation, no perspective" aria-label="Front camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="4,8.5 16,8.5 16,20.5 4,20.5" fill="currentColor" stroke="none"/><path d="M4 8.5 7 4h12v12l-3 4.5H4Z"/><path d="M4 8.5h12M16 8.5 19 4M16 8.5v12"/></svg></button><button data-cam="top" class="iconly" title="Top — orthographic plan view" aria-label="Top camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,2.8 20.5,7.4 12,12 3.5,7.4" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="left" class="iconly" title="Left — orthographic, from stage left" aria-label="Left camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3.5,7.4 12,12 12,21.2 3.5,16.6" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="right" class="iconly" title="Right — orthographic, from stage right" aria-label="Right camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,12 20.5,7.4 20.5,16.6 12,21.2" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="iso" class="iconly" title="Isometric — perspective three-quarter view" aria-label="Isometric camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="free" class="iconly" title="Free camera — orbit, tilt, pan and zoom freely" aria-label="Free camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6.5" width="13" height="11" rx="2"/><path d="m15.5 10.8 6-3.3v9l-6-3.3"/></svg></button></div>
-          <button type="button" class="client-comments-btn" id="clientCommentsBtn" hidden title="Comments and reviews for this share — leave a comment, or review the design: approve it or request changes"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>Comments</button>
+          <button type="button" class="client-comments-btn" id="clientCommentsBtn" hidden title="Comments for this share — leave a comment, like a comment, or send the designer a reminder about one"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>Comments</button>
           <div class="client-expiry" id="clientExpiry" hidden>This preview stays only 30 days</div>
           <div class="client-hint">Drag to orbit · Scroll to zoom · Right-drag to pan</div>
         </div>
@@ -1993,10 +2040,10 @@ body:not(.learning-on) .learn{display:none}
     </div>
     <p class="share-status" id="shareShortNote">Creating a short link…</p>
     <div id="shareCommentsBox" hidden style="margin-top:12px">
-      <button class="btn small" type="button" id="shareCommentsBtn" title="See the comments and reviews clients posted on this share's client view, and reply">View comments</button>
+      <button class="btn small" type="button" id="shareCommentsBtn" title="See the comments clients posted on this share's client view, reply, react, or mark them Done">View comments</button>
       <div id="shareCommentsPanel" hidden style="margin-top:10px">
         <div class="field" id="scPickField" hidden style="margin-bottom:10px"><span>Comments for share</span><select id="scSharePick"></select></div>
-        <p class="share-note">Comments and reviews posted on the selected share's client view, newest first. Names are self-reported, not verified.</p>
+        <p class="share-note">Comments posted on the selected share's client view, newest first. Like a comment, react to it, or mark it Done — the client sees your reaction and the Done tick on that comment. Names are self-reported, not verified.</p>
         <div class="cc-list" id="scList"></div>
         <div class="field" style="margin-top:10px"><span>Your reply — posted as <b id="scReplyAs">Owner</b></span><textarea id="scBody" rows="3" placeholder="Reply to your client…"></textarea></div>
         <p class="cc-err" id="scErr"></p>
@@ -2145,6 +2192,24 @@ body:not(.learning-on) .learn{display:none}
   </div>
 </div>
 
+<!-- SAVE AS — File → Save as: asks for a new title, then saves the
+     current layout as a NEW project under that title (a new cloud
+     design row when signed in, a new .ledx download when signed
+     out). The project it was saved from is never overwritten; the
+     new title / project becomes the current one. -->
+<div class="modal-bg" id="saveAsModal" style="z-index:140">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="saveAsTitle">
+    <h2 id="saveAsTitle">Save as</h2>
+    <p class="sub">Save this layout as a new project with its own title. The project you are working on now stays as it was.</p>
+    <div class="field" style="margin-top:12px"><span>New title</span><input type="text" id="saveAsInput" autocomplete="off" placeholder="Project title"></div>
+    <p class="cc-err" id="saveAsErr"></p>
+    <div class="mrow">
+      <button class="btn" type="button" id="saveAsNo">Cancel</button>
+      <button class="btn primary" type="button" id="saveAsYes">Save as new project</button>
+    </div>
+  </div>
+</div>
+
 <!-- CLIENT GATE — private shares only: a full-screen name + passkey
      gate shown in the client view before the render loads. The
      render underneath stays hidden until the passkey matches. -->
@@ -2181,25 +2246,20 @@ body:not(.learning-on) .learn{display:none}
      while views never do. Long-link shares have no share code, so
      the button — and this drawer — never appear for them. -->
 <div id="clientComments" role="dialog" aria-modal="false" aria-labelledby="ccTitle">
-  <div class="cc-head"><h2 id="ccTitle">Comments &amp; reviews</h2><button class="btn small" type="button" id="ccClose">Close</button></div>
-  <p class="cc-note">Names here are self-reported — typed by the person posting, not verified.</p>
+  <div class="cc-head"><h2 id="ccTitle">Comments</h2><button class="btn small" type="button" id="ccClose">Close</button></div>
+  <p class="cc-note">Names here are self-reported — typed by the person posting, not verified. Like a comment, or press Reminder on it to push the designer to check it again.</p>
   <p class="cc-expiry-line" id="ccExpiryLine" hidden></p>
   <div class="cc-list" id="ccList"><div class="cc-empty">Loading comments…</div></div>
   <div class="cc-form">
     <div class="field"><span>Your name</span><input type="text" id="ccName" autocomplete="name" placeholder="Anonymous"></div>
-    <div class="cc-kind" id="ccKind" role="group" aria-label="Post as">
-      <button type="button" data-cckind="comment" class="on">Comment</button>
-      <button type="button" data-cckind="review_approved">Review — Approve</button>
-      <button type="button" data-cckind="review_changes">Review — Request changes</button>
-    </div>
-    <div class="field"><span>Your comment</span><textarea id="ccBody" rows="3" placeholder="Write a comment, or what needs to change…"></textarea></div>
+    <div class="field"><span>Your comment</span><textarea id="ccBody" rows="3" placeholder="Write a comment…"></textarea></div>
     <p class="cc-err" id="ccErr"></p>
     <div class="cc-sql" id="ccSql" hidden>
       <p>Posting isn't available for this share right now — the share service is refusing new comments. Please let the designer know; they can switch posting on from their side. Your comment wasn't posted.</p>
     </div>
     <p class="cc-ok" id="ccOk"></p>
     <button class="cc-post" type="button" id="ccPost">Post</button>
-    <p class="cc-note">Posting a comment or review keeps this preview alive for 30 days from now. Just viewing it does not extend it.</p>
+    <p class="cc-note">Posting a comment keeps this preview alive for 30 days from now. Just viewing it does not extend it.</p>
   </div>
 </div>
 
@@ -4209,6 +4269,44 @@ function exportResolumeSlices(){
   downloadTextFile(L.join("\n"),mappingFileBase()+"-resolume-video-slices.xml","text/xml",
     "Resolume Arena video slices exported (.xml) — "+items.length+" video slice(s), one per screen in layout order, on a "+fmt(W)+" × "+fmt(H)+" px composition. Set the composition to that size, then load the file in Advanced Output.");
 }
+/* ---------- ARENA JSON EXPORT — the slice layout as JSON ----------
+   A JSON twin of the Arena slice exports above, for tools that
+   consume JSON: the composition size is the layout's total canvas,
+   and there is one slice per LED display in layout order (the same
+   reading order the Arena Video Slices XML uses), named after the
+   screen, with its input rectangle inside the composition and its
+   output rectangle on the output canvas. This sits ALONGSIDE the
+   two Arena XML exports — Resolume Arena itself loads XML, so
+   those stay exactly as they are. */
+function exportArenaJson(){
+  computeAll();
+  var bb=layoutBBox(), W=Math.round(bb.w), H=Math.round(bb.h);
+  if(W<1||H<1||!state.displays.length){toast("Nothing to export yet.");return}
+  var items=state.displays.map(function(d){return {d:d,g:mappingGeom(d,bb)}});
+  items.sort(function(a,b){
+    var dy=a.g.inY-b.g.inY;
+    if(Math.abs(dy)>Math.min(a.g.h,b.g.h)/2)return dy;
+    return a.g.inX-b.g.inX;
+  });
+  function rect(x,y,w,h){return {x:Math.round(x),y:Math.round(y),width:Math.round(w),height:Math.round(h)}}
+  var data={
+    name:(state.project||"LED layout")+" — LUTAS LED",
+    format:"lutas-arena-json",
+    version:1,
+    generatedBy:"LUTAS LED",
+    composition:{width:W,height:H},
+    slices:items.map(function(it){
+      return {
+        name:it.d.name,
+        enabled:true,
+        inputRect:rect(it.g.inX,it.g.inY,it.g.w,it.g.h),
+        outputRect:rect(it.g.outX,it.g.outY,it.g.outW,it.g.outH)
+      };
+    })
+  };
+  downloadTextFile(JSON.stringify(data,null,2),mappingFileBase()+"-arena.json","application/json",
+    "Arena JSON exported — "+items.length+" slice(s), one per screen in layout order, on a "+fmt(W)+" × "+fmt(H)+" px composition. (Resolume Arena itself loads the XML exports; this JSON is the same slice layout for other tools.)");
+}
 /* ---------- PSD EXPORT — actual size, each screen a separate layer ----------
    A small PSD writer in plain JS (8-bit RGB + alpha, PackBits RLE), so a
    designer can open the layout in Photoshop with every screen on its own
@@ -5077,11 +5175,11 @@ document.addEventListener("keydown",function(ev){
   else if((k==="z"&&ev.shiftKey)||k==="y"){ev.preventDefault(); closeMenus(); doRedo()}
 });
 $("mNew").addEventListener("click",function(){
+  /* File → New project: the Projects window's New project path —
+     a blank project titled "Untitled design", asking first only
+     when the current layout has unsaved changes. */
   closeMenus();
-  state.displays=[makeDisplay({name:"Screen 1"})]; state.selId=state.displays[0].id; state.selCab=null; state.modifiers=[]; selModId=null; state.layoutLink="independent"; syncLayoutLinkUI();
-  $("projectName").value="Main Stage — LED Layout"; state.project="Main Stage — LED Layout"; currentProjectId=null; projMarkSaved();
-  render(); fitView(); showScreenDetail("New layout — press the ＋ buttons on its sides to add more screens.");
-  toast("New layout — one display. Add more with the ＋ buttons on its sides.");
+  projNewProject();
 });
 $("mAbout").addEventListener("click",function(){$("aboutModal").classList.add("open")});
 $("aboutClose").addEventListener("click",function(){$("aboutModal").classList.remove("open")});
@@ -13428,9 +13526,177 @@ function saveJson(){
   var base=(state.project||"led-layout").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").toLowerCase()||"led-layout";
   var fname=/\.ledx$/i.test(base)?base:base+".ledx";
   var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:"application/json"})); a.download=fname; document.body.appendChild(a); a.click(); a.remove();
-  toast("Layout saved as .ledx — reload it any time with File → Load layout.");
+  toast("Layout saved as .ledx — reload it any time with File → Open project → Load .ledx file, or by dropping the file onto the window.");
 }
 $("mSave").addEventListener("click",function(){closeMenus(); if(typeof authUser!=="undefined"&&authUser)cloudSaveDesign(); else {saveJson(); projMarkSaved()}});
+/* ══ File menu — Open project / Open recent / Save as / Import
+   props / Export submenu / Log out ═══════════════════════════════
+   Every item routes into the same paths the rest of the app uses:
+   Open project is the Projects window, Open recent loads a cloud
+   design exactly like Projects → Open, Save as creates a NEW
+   project (cloud row or .ledx) under a fresh title without
+   touching the original, Import props opens the Props modifier's
+   own file picker, the Export submenu calls the same export
+   functions as the Export tab, and Log out is the account
+   dialog's sign-out. */
+$("mOpenProject").addEventListener("click",function(){closeMenus(); openProjectsWindow()});
+/* ── Open recent ────────────────────────────────────────────────
+   Signed in: the account's designs, newest first (the same query
+   the Projects window lists), each loading via projOpenProject.
+   Signed out: just the sign-in note — there is no local recent
+   list to show, and none is invented. */
+function fileRecentRender(){
+  var box=$("recentList"); if(!box)return;
+  if(!(typeof authUser!=="undefined"&&authUser&&authUser.id)){
+    box.innerHTML='<div class="menu-note">Sign in to save projects online and see recent projects here.</div>';
+    return;
+  }
+  box.innerHTML='<div class="menu-note">Loading…</div>';
+  var url=SUPABASE_URL+"/rest/v1/designs?owner_id=eq."+encodeURIComponent(authUser.id)+"&order=updated_at.desc&limit=10&select=id,title,updated_at,layout,thumbnail";
+  supaFetch(url,{method:"GET",headers:authHeaders()},15000).then(function(res){
+    if(!res.ok)throw new Error("recent "+res.status);
+    return res.json();
+  }).then(function(rows){
+    rows=Array.isArray(rows)?rows:[];
+    if(!rows.length){box.innerHTML='<div class="menu-note">No saved projects yet — save one and it will appear here.</div>'; return}
+    box.innerHTML="";
+    rows.forEach(function(r){
+      var b=document.createElement("button");
+      b.type="button"; b.className="recent-item";
+      var t=document.createElement("span"); t.className="recent-t"; t.textContent=r.title||"Untitled design"; t.title=r.title||"Untitled design";
+      var d=document.createElement("span"); d.className="recent-d"; d.textContent="Updated "+projFmtDateTime(r.updated_at);
+      b.appendChild(t); b.appendChild(d);
+      b.addEventListener("click",function(){closeMenus(); projOpenProject(r)});
+      box.appendChild(b);
+    });
+  }).catch(function(){
+    box.innerHTML='<div class="menu-note">Couldn\'t load recent projects — check your connection and try again.</div>';
+  });
+}
+(function(){
+  var fb=document.querySelector('.menu-btn[data-menu="wrapFile"]');
+  if(fb)fb.addEventListener("click",function(){fileRecentRender()});
+  var rb=$("mRecent");
+  if(rb)rb.addEventListener("click",function(ev){
+    ev.stopPropagation();
+    var sub=$("recentSub"); if(!sub)return;
+    var open=sub.classList.toggle("open");
+    rb.setAttribute("aria-expanded",String(open));
+    if(open)fileRecentRender();
+  });
+  var eb=$("mExportMenu");
+  if(eb)eb.addEventListener("click",function(ev){
+    ev.stopPropagation();
+    var sub=$("exportSub"); if(!sub)return;
+    var open=sub.classList.toggle("open");
+    eb.setAttribute("aria-expanded",String(open));
+  });
+})();
+/* ── Save as ────────────────────────────────────────────────────
+   Adopts the new title as the current project, then saves as a
+   NEW project: signed in, a fresh designs row (the original row
+   is never patched); signed out, a fresh .ledx download named
+   after the new title. A failed cloud save falls back to the
+   .ledx download, like Save does. */
+function saveAsAdoptTitle(title){
+  state.project=title;
+  var pn=$("projectName"); if(pn)pn.value=title;
+  render();
+}
+function doSaveAs(title){
+  saveAsAdoptTitle(title);
+  if(typeof authUser!=="undefined"&&authUser&&authUser.id){
+    var now=new Date().toISOString();
+    supaFetch(SUPABASE_URL+"/rest/v1/designs",{method:"POST",headers:authHeaders({"Prefer":"return=representation"}),body:JSON.stringify({owner_id:authUser.id,title:title,layout:layoutDataObject(),updated_at:now})},20000)
+      .then(function(res){
+        if(!res.ok)throw new Error("save as "+res.status);
+        return res.json();
+      }).then(function(rows){
+        var row=(Array.isArray(rows)&&rows.length)?rows[0]:null;
+        if(row&&row.id)currentProjectId=row.id;
+        projMarkSaved();
+        toast("Saved as a new project: \u201C"+title+"\u201D.");
+      }).catch(function(){
+        saveJson(); projMarkSaved();
+        toast("Couldn't save to your account — saved \u201C"+title+"\u201D as a .ledx file instead.");
+      });
+    return;
+  }
+  saveJson(); projMarkSaved();
+  toast("Saved as \u201C"+title+"\u201D — downloaded as a .ledx file.");
+}
+(function(){
+  var modal=$("saveAsModal"); if(!modal)return;
+  function openSaveAs(){
+    var inp=$("saveAsInput"), err=$("saveAsErr");
+    if(err){err.textContent=""; err.classList.remove("show")}
+    if(inp){inp.value=(state.project||"").trim()||"Untitled design"}
+    modal.classList.add("open");
+    setTimeout(function(){if(inp){inp.focus(); inp.select()}},0);
+  }
+  function closeSaveAs(){modal.classList.remove("open")}
+  function confirmSaveAs(){
+    var inp=$("saveAsInput"), err=$("saveAsErr");
+    var title=((inp&&inp.value)||"").trim();
+    if(!title){
+      if(err){err.textContent="Give the new project a title first."; err.classList.add("show")}
+      if(inp)inp.focus();
+      return;
+    }
+    closeSaveAs();
+    doSaveAs(title);
+  }
+  var msa=$("mSaveAs"); if(msa)msa.addEventListener("click",function(){closeMenus(); openSaveAs()});
+  $("saveAsYes").addEventListener("click",confirmSaveAs);
+  $("saveAsNo").addEventListener("click",closeSaveAs);
+  modal.addEventListener("click",function(ev){if(ev.target===this)closeSaveAs()});
+  var inp2=$("saveAsInput");
+  if(inp2)inp2.addEventListener("keydown",function(ev){if(ev.key==="Enter"){ev.preventDefault(); confirmSaveAs()}});
+})();
+/* ── Import props ───────────────────────────────────────────────
+   Opens the Props modifier's own picker (#propFileInput, with its
+   .glb/.gltf/.obj/.fbx + sidecar accept list and the usual
+   normalisation / 3 MB embed handling in handlePropFiles). The
+   picker lives in the Modifier panel, so a Props modifier is
+   created / selected first and the 3D view opened to unlock that
+   panel when needed. */
+$("mImportProps").addEventListener("click",function(){
+  closeMenus();
+  var ex=state.modifiers.filter(function(x){return x.type==="props"})[0];
+  if(!ex){addModifier("props"); ex=state.modifiers.filter(function(x){return x.type==="props"})[0]}
+  if(ex)selModId=ex.id;
+  if(!view3dOpen)toggle3D(true);
+  switchTab("modifier");
+  render();
+  var pfi=$("propFileInput");
+  if(pfi)pfi.click();
+  else toast("The Props panel couldn't be opened — open the 3D view, add Props from the Modifier list, then use its Import button.");
+});
+/* ── Export submenu — 3D models (PNG / PSD / Arena JSON / CSV use
+   their existing buttons' wiring: mExportClean, mExport,
+   mExportPsd, mExpArenaJson below and mCsv) ── */
+$("mExpArenaJson").addEventListener("click",function(){closeMenus(); exportArenaJson()});
+[["mExpGlb","glb"],["mExpGltf","gltf"],["mExpObj","obj"],["mExpFbx","fbx"]].forEach(function(pair){
+  var b=$(pair[0]); if(!b)return;
+  b.addEventListener("click",function(){
+    closeMenus();
+    try{
+      if(pair[1]==="glb")exportGltf(true);
+      else if(pair[1]==="gltf")exportGltf(false);
+      else if(pair[1]==="obj")exportObj();
+      else exportFbx();
+    }catch(e){toast("3D model export failed in this browser — "+(e&&e.message?e.message:"unknown error"))}
+  });
+});
+/* ── Log out ────────────────────────────────────────────────────
+   The account dialog's sign-out, in the File menu. Disabled while
+   signed out (kept in step by authSetUser); sign-in stays on the
+   top-bar Account button. */
+$("mLogout").addEventListener("click",function(){
+  if(this.disabled)return;
+  closeMenus();
+  authSignOut();
+});
 /* ══════════ SHARE / CLIENT VIEW ══════════
    Client sharing: camera-only, Public or Private, no social login.
    The Share button opens a dialog whose link field packs the CURRENT
@@ -13699,13 +13965,136 @@ function supaFetchComments(code){
     return res.json().then(function(rows){return Array.isArray(rows)?rows:[]});
   });
 }
-function renderCommentsInto(box,rows,emptyText){
+/* ── Comment actions — likes, reminders, reactions, Done ───────
+   Actions ride in the SAME share_comments table, as extra rows
+   whose kind marks them as actions and whose body names the
+   comment they belong to:
+     kind "action_like"     body {"target":"<comment id>"}
+     kind "action_reminder" body {"target":"<comment id>"}
+     kind "action_reaction" body {"target":"<id>","reaction":"👍"}
+     kind "action_done"     body {"target":"<id>","done":true|false}
+   No new table, column or SQL step is needed: the existing insert
+   and read rules cover these rows exactly like comment rows, and
+   because each action is itself a share_comments insert it counts
+   as share activity for the 30-day expiry, the same way a comment
+   or a reply does. Action rows are aggregated onto their target
+   comment wherever comments render (client drawer, Share dialog,
+   notification bell) and are never listed as comments themselves.
+   For reactions and Done the newest action row wins. A like is
+   one per browser per comment: this browser remembers the comment
+   ids it has liked (in the same device store the app already uses
+   for its session and preferences) and will not post a second one;
+   the count itself is the number of like rows, visible to everyone
+   who can read the share's comments. */
+var CMT_LIKED_KEY="lutasLED.commentLiked.v1";
+var CMT_REACTIONS=["👍","❤️","👏"];
+function cmtIsActionRow(r){return !!r&&String(r.kind||"").indexOf("action_")===0}
+function cmtActionData(r){
+  var raw=String((r&&r.body)||"").trim(), out={};
+  if(raw.charAt(0)==="{"){try{out=JSON.parse(raw)||{}}catch(e){out={}}}
+  if(!out.target&&raw&&raw.charAt(0)!=="{")out.target=raw;
+  out.target=String(out.target||"");
+  return out;
+}
+function cmtAggregate(rows){
+  var agg={comments:[],byId:{},byTarget:{},reminders:[]};
+  (Array.isArray(rows)?rows:[]).forEach(function(r){
+    if(!r)return;
+    if(cmtIsActionRow(r)){return}
+    agg.comments.push(r); agg.byId[String(r.id)]=r;
+  });
+  /* Apply actions oldest first, so the latest reaction / Done
+     state is the one that survives. */
+  var acts=(Array.isArray(rows)?rows:[]).filter(cmtIsActionRow).slice().sort(function(a,b){return String(a.created_at||"").localeCompare(String(b.created_at||""))});
+  acts.forEach(function(r){
+    var d=cmtActionData(r); if(!d.target)return;
+    var st=agg.byTarget[d.target];
+    if(!st){st={likes:0,remindCount:0,lastReminder:"",reaction:"",done:false}; agg.byTarget[d.target]=st}
+    var k=String(r.kind||"");
+    if(k==="action_like")st.likes++;
+    else if(k==="action_reminder"){st.remindCount++; st.lastReminder=r.created_at||st.lastReminder; agg.reminders.push(r)}
+    else if(k==="action_reaction")st.reaction=String(d.reaction||"");
+    else if(k==="action_done")st.done=!!d.done;
+  });
+  agg.reminders.sort(function(a,b){return String(b.created_at||"").localeCompare(String(a.created_at||""))});
+  return agg;
+}
+function cmtLikedIds(){
+  try{var raw=localStorage.getItem(CMT_LIKED_KEY); var a=raw?JSON.parse(raw):[]; return Array.isArray(a)?a.map(String):[]}catch(e){return []}
+}
+function cmtHasLiked(id){return cmtLikedIds().indexOf(String(id))>=0}
+function cmtMarkLiked(id){
+  var a=cmtLikedIds(); if(a.indexOf(String(id))>=0)return;
+  a.push(String(id)); if(a.length>800)a=a.slice(a.length-800);
+  try{localStorage.setItem(CMT_LIKED_KEY,JSON.stringify(a))}catch(e){}
+}
+function cmtStateFor(agg,id){return (agg&&agg.byTarget[String(id)])||{likes:0,remindCount:0,lastReminder:"",reaction:"",done:false}}
+function cmtCommentRowHtml(r,agg,opts){
+  opts=opts||{};
+  var ki=cmtKindInfo(r.kind), st=cmtStateFor(agg,r.id), id=String(r.id), code=String(r.share_code||opts.code||"");
+  var liked=cmtHasLiked(id);
+  var html='<div class="cc-row"><div class="cc-row-top"><b>'+escHtml(r.author_name||"Anonymous")+'</b>'
+    +'<span class="cc-badge '+ki.c+'">'+escHtml(ki.t)+'</span>'
+    +(st.reaction?'<span class="cc-badge react" title="Designer reaction">'+escHtml(st.reaction)+'</span>':"")
+    +(st.done?'<span class="cc-badge done">✓ Done</span>':"")
+    +(opts.context==="designer"&&st.remindCount?'<span class="cc-badge remind">Reminded ×'+st.remindCount+'</span>':"")
+    +(opts.isNew?'<span class="notif-new">New</span>':"")
+    +'<span class="cc-when">'+escHtml(fmtCommentWhen(r.created_at))+'</span></div>'
+    +'<div class="cc-body">'+escHtml(r.body||"")+'</div>';
+  if(opts.context==="designer"&&st.remindCount){
+    html+='<div class="cc-reminded">Reminded '+st.remindCount+(st.remindCount===1?" time":" times")+(st.lastReminder?" · last "+escHtml(fmtCommentWhen(st.lastReminder)):"")+' — the client is still waiting on this one.</div>';
+  }
+  html+='<div class="cc-actions">'
+    +'<button type="button" class="cc-act'+(liked?" liked":"")+'" data-cmt-like="'+escHtml(id)+'" data-cmt-code="'+escHtml(code)+'" '+(liked?"disabled aria-pressed=\"true\"":"aria-pressed=\"false\"")+' title="'+(liked?"You liked this comment":"Like this comment")+'">'+(liked?"Liked":"Like")+(st.likes?" · "+st.likes:"")+'</button>';
+  if(opts.context==="client"){
+    html+='<button type="button" class="cc-act" data-cmt-remind="'+escHtml(id)+'" data-cmt-code="'+escHtml(code)+'" title="Remind the designer about this comment — it appears as a new notification for them">Reminder</button>';
+  }
+  if(opts.context==="designer"){
+    html+='<span class="cc-reacts"><span class="cc-lab">React</span>'+CMT_REACTIONS.map(function(em){
+      return '<button type="button" class="cc-react'+(st.reaction===em?" on":"")+'" data-cmt-react="'+escHtml(id)+'" data-cmt-code="'+escHtml(code)+'" data-cmt-value="'+escHtml(em)+'" aria-pressed="'+(st.reaction===em?"true":"false")+'" title="React with '+escHtml(em)+' — the client sees it on this comment">'+em+'</button>';
+    }).join("")+'</span>'
+    +'<button type="button" class="cc-act done-btn" data-cmt-done="'+escHtml(id)+'" data-cmt-code="'+escHtml(code)+'" data-cmt-value="'+(st.done?"0":"1")+'" aria-pressed="'+(st.done?"true":"false")+'" title="'+(st.done?"Undo Done — the client sees the Done tick come off":"Mark Done — the client sees a Done tick on this comment")+'">'+(st.done?"↩ Undo Done":"✓ Done")+'</button>';
+  }
+  html+='</div></div>';
+  return html;
+}
+function cmtBindActions(box,opts){
+  if(!box||!opts||typeof opts.onAction!=="function")return;
+  function bind(attr,action){
+    var btns=box.querySelectorAll("["+attr+"]");
+    Array.prototype.forEach.call(btns,function(b){
+      b.addEventListener("click",function(){
+        if(b.disabled)return;
+        b.disabled=true;
+        var p=opts.onAction(action,b.getAttribute(attr),b.getAttribute("data-cmt-code")||"",b.getAttribute("data-cmt-value")||"",b);
+        if(p&&p.catch)p.catch(function(){});
+        if(p&&p.then)p.then(function(){},function(){});
+      });
+    });
+  }
+  bind("data-cmt-like","like");
+  bind("data-cmt-remind","reminder");
+  bind("data-cmt-react","reaction");
+  bind("data-cmt-done","done");
+}
+/* Post one action row for a comment. author is the name the acting
+   side posts under (the client's typed name, or the designer's
+   display name / Owner); useAuth mirrors supaPostComment's rule —
+   designer posts try the session token first, client posts use the
+   publishable key. Resolves with the inserted rows. */
+function supaPostCommentAction(code,author,action,targetId,value,useAuth){
+  var data={target:String(targetId)};
+  var kind="action_"+action;
+  if(action==="reaction")data.reaction=String(value||"");
+  if(action==="done")data.done=(value==="1"||value===true||value===1);
+  return supaPostComment(code,author,kind,JSON.stringify(data),useAuth);
+}
+function renderCommentsInto(box,rows,emptyText,opts){
   if(!box)return;
-  if(!rows||!rows.length){box.innerHTML='<div class="cc-empty">'+escHtml(emptyText||"No comments yet.")+'</div>'; return}
-  box.innerHTML=rows.map(function(r){
-    var ki=cmtKindInfo(r.kind);
-    return '<div class="cc-row"><div class="cc-row-top"><b>'+escHtml(r.author_name||"Anonymous")+'</b><span class="cc-badge '+ki.c+'">'+escHtml(ki.t)+'</span><span class="cc-when">'+escHtml(fmtCommentWhen(r.created_at))+'</span></div><div class="cc-body">'+escHtml(r.body||"")+'</div></div>';
-  }).join("");
+  var agg=cmtAggregate(rows);
+  if(!agg.comments.length){box.innerHTML='<div class="cc-empty">'+escHtml(emptyText||"No comments yet.")+'</div>'; return}
+  box.innerHTML=agg.comments.map(function(r){return cmtCommentRowHtml(r,agg,opts||{})}).join("");
+  cmtBindActions(box,opts);
 }
 /* Insert one comment / review row. Owner replies from the main app
    go out with the signed-in session token when there is one;
@@ -13798,6 +14187,7 @@ function authSetUser(u){
   authUser=u||null;
   var b=$("btnAccount");
   if(b)b.textContent=authUser?authDisplayName(authUser):"Sign in";
+  var lo=$("mLogout"); if(lo)lo.disabled=!authUser;
   var md=$("mMyDesigns"); if(md)md.hidden=!authUser;
   syncAuthDialog();
   /* The notifications bell tracks this user's shares: re-check
@@ -14601,11 +14991,11 @@ $("shareModal").addEventListener("click",function(ev){if(ev.target===this)this.c
    short Supabase share (clientShareCode set). The owner panel lives
    in the Share dialog and is wired at the bottom of this block; it
    is shown only while the dialog holds a short share code. */
-var ccKindSel="comment", ccInitDone=false;
+var ccInitDone=false;
 function ccSyncExpiryLine(){
   var line=$("ccExpiryLine"); if(!line)return;
   var expTxt=fmtShareDate(clientShareExpiresAt);
-  line.textContent=expTxt?("This preview currently expires "+expTxt+". A comment or review extends it by 30 days."):"";
+  line.textContent=expTxt?("This preview currently expires "+expTxt+". Posting a comment extends it by 30 days."):"";
   line.hidden=!expTxt;
 }
 function ccRefreshExpiry(){
@@ -14624,11 +15014,34 @@ function ccRefreshExpiry(){
     ccSyncExpiryLine();
   });
 }
+function ccCommentAction(action,targetId,code,value){
+  var author=(($("ccName")&&$("ccName").value)||"").trim()||clientGateName||"Anonymous";
+  var okEl=$("ccOk"), errEl=$("ccErr");
+  function showOk(m){if(okEl){okEl.textContent=m||""; okEl.classList.toggle("show",!!m)}}
+  function showErr(m){if(errEl){errEl.textContent=m||""; errEl.classList.toggle("show",!!m)}}
+  showErr("");
+  return supaPostCommentAction(code||clientShareCode,author,action,targetId,value,false).then(function(){
+    if(action==="like")cmtMarkLiked(targetId);
+    return ccLoadList().then(function(){
+      if(action==="reminder"){
+        showOk("Reminder sent — the designer gets a new notification about this comment, so they can fix it or do it again.");
+        ccRefreshExpiry();
+      }else if(action==="like"){
+        showOk("Liked — the designer can see the like count on this comment.");
+        ccRefreshExpiry();
+      }
+    });
+  }).catch(function(){
+    showErr(action==="reminder"
+      ? "The reminder couldn't be sent — the share service could not be reached. Check your connection and try again."
+      : "That couldn't be saved — the share service could not be reached. Check your connection and try again.");
+  });
+}
 function ccLoadList(){
   var box=$("ccList"); if(!box)return Promise.resolve(null);
   box.innerHTML='<div class="cc-empty">Loading comments…</div>';
   return supaFetchComments(clientShareCode).then(function(rows){
-    renderCommentsInto(box,rows,"No comments yet — be the first to comment or review this design.");
+    renderCommentsInto(box,rows,"No comments yet — be the first to comment on this design.",{context:"client",code:clientShareCode,onAction:ccCommentAction});
     return rows;
   }).catch(function(){
     box.innerHTML='<div class="cc-empty">Comments couldn\'t be loaded — the share service could not be reached. Close and reopen to try again.</div>';
@@ -14651,13 +15064,6 @@ function initClientComments(){
     if(opening){ccLoadList(); ccSyncExpiryLine()}
   });
   $("ccClose").addEventListener("click",function(){drawer.classList.remove("open")});
-  var kindBtns=drawer.querySelectorAll("[data-cckind]");
-  Array.prototype.forEach.call(kindBtns,function(b){
-    b.addEventListener("click",function(){
-      ccKindSel=b.getAttribute("data-cckind")||"comment";
-      Array.prototype.forEach.call(kindBtns,function(x){x.classList.toggle("on",x===b)});
-    });
-  });
   $("ccPost").addEventListener("click",function(){
     var errEl=$("ccErr"), okEl=$("ccOk"), sqlEl=$("ccSql"), postBtn=$("ccPost");
     function showErr(m){errEl.textContent=m||""; errEl.classList.toggle("show",!!m)}
@@ -14667,7 +15073,7 @@ function initClientComments(){
     var author=($("ccName").value||"").trim()||"Anonymous";
     showErr(""); showOk(""); sqlEl.hidden=true;
     postBtn.disabled=true; postBtn.textContent="Posting…";
-    supaPostComment(clientShareCode,author,ccKindSel,body,false).then(function(rows){
+    supaPostComment(clientShareCode,author,"comment",body,false).then(function(rows){
       postBtn.disabled=false; postBtn.textContent="Post";
       $("ccBody").value="";
       /* Confirm the saved row is actually visible in the re-read
@@ -14747,6 +15153,32 @@ function scPopulatePicker(){
   }
 }
 function scViewCode(){return scViewCodeVal||shareCode}
+function scCommentAction(action,targetId,code,value){
+  var viewCode=code||scViewCode();
+  var author=(typeof authUser!=="undefined"&&authUser)?authDisplayName(authUser):"Owner";
+  var okEl=$("scOk"), errEl=$("scErr"), noteEl=$("scNote");
+  function showOk(m){if(okEl){okEl.textContent=m||""; okEl.classList.toggle("show",!!m)}}
+  function showErr(m){if(errEl){errEl.textContent=m||""; errEl.classList.toggle("show",!!m)}}
+  showErr("");
+  return supaPostCommentAction(viewCode,author,action,targetId,value,true).then(function(){
+    if(action==="like")cmtMarkLiked(targetId);
+    showOk(action==="done"
+      ? (value==="1"?"Marked Done — the client now sees the Done tick on this comment.":"Done removed — the client no longer sees a Done tick on this comment.")
+      : action==="reaction"?"Reaction saved — the client now sees it on this comment."
+      : "Liked — the client sees the like count on this comment.");
+    scLoadList();
+    /* The action extended this share's expiry server-side, like a
+       reply does; refresh the date shown for public shares. */
+    supaFetchPublicShare(viewCode).then(function(row){
+      if(row&&row.expires_at){if(viewCode===shareCode)shareExpiresAt=row.expires_at; if(noteEl)noteEl.textContent="This share now expires "+fmtShareDate(row.expires_at)+"."}
+      else if(noteEl)noteEl.textContent="This share's expiry was extended by 30 days from now.";
+    },function(){if(noteEl)noteEl.textContent="This share's expiry was extended by 30 days from now."});
+  }).catch(function(err){
+    showErr(err&&err.rls
+      ? "That couldn't be saved — the share service refused it."
+      : "That couldn't be saved — Supabase could not be reached. Check your connection and try again.");
+  });
+}
 function scLoadList(){
   var box=$("scList"); if(!box)return;
   var code=scViewCode();
@@ -14756,7 +15188,7 @@ function scLoadList(){
     var multi=!$("scPickField").hidden;
     renderCommentsInto(box,rows,multi
       ? "No comments on this share yet. If your client commented on a different link, choose it under \u201CComments for share\u201D above."
-      : "No comments on this share yet. Clients can comment or review from the client view's Comments button.");
+      : "No comments on this share yet. Clients can comment from the client view's Comments button.",{context:"designer",code:code,onAction:scCommentAction});
   }).catch(function(){
     box.innerHTML='<div class="cc-empty">Comments couldn\'t be loaded — Supabase could not be reached.</div>';
   });
@@ -14847,7 +15279,7 @@ var NOTIF_LOCAL_SHARES_KEY="lutasLED.myShares";
 var NOTIF_SEEN_KEY="lutasLED.notifSeenIds";
 var NOTIF_OWN_KEY="lutasLED.notifOwnIds";
 var NOTIF_CHECK_KEY="lutasLED.notifLastCheck";
-var notifState={shares:[],byCode:{},comments:[],unread:0,loading:false,loaded:false,err:"",sharesErr:"",openReply:{},drafts:{},status:{}};
+var notifState={shares:[],byCode:{},comments:[],reminders:[],agg:null,unread:0,loading:false,loaded:false,err:"",sharesErr:"",openReply:{},drafts:{},status:{}};
 function notifStoreGet(key,fallback){
   try{var raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback}catch(e){return fallback}
 }
@@ -14924,7 +15356,12 @@ function notifSyncVisibility(){
 }
 function notifComputeUnread(){
   var seen=notifIdSet(NOTIF_SEEN_KEY);
-  notifState.unread=notifState.comments.filter(function(c){return !notifIsOwn(c)&&!seen[String(c.id)]}).length;
+  var n=notifState.comments.filter(function(c){return !notifIsOwn(c)&&!seen[String(c.id)]}).length;
+  /* A reminder is a push in its own right: every reminder row the
+     designer has not seen yet counts as one more unread item, on
+     top of the comment it belongs to. */
+  n+=(notifState.reminders||[]).filter(function(r){return !seen[String(r.id)]}).length;
+  notifState.unread=n;
 }
 function notifRenderBadge(){
   var badge=$("notifBadge"); if(!badge)return;
@@ -15000,7 +15437,7 @@ function notifRefresh(){
   if(isClientViewRequest())return Promise.resolve();
   notifSyncVisibility();
   if(!notifHasSources()){
-    notifState.shares=[]; notifState.byCode={}; notifState.comments=[]; notifState.unread=0; notifState.err=""; notifState.sharesErr="";
+    notifState.shares=[]; notifState.byCode={}; notifState.comments=[]; notifState.reminders=[]; notifState.agg=null; notifState.unread=0; notifState.err=""; notifState.sharesErr="";
     notifRenderBadge();
     var p0=$("notifPanel"); if(p0&&!p0.hidden)notifRenderList();
     return Promise.resolve();
@@ -15027,9 +15464,17 @@ function notifRefresh(){
     local.forEach(function(r){if(r&&r.code)mergeShare(r.code,r.project_name,r.mode,r.expires_at)});
     notifState.shares=shares; notifState.byCode=byCode;
     var codes=shares.map(function(s){return s.code});
-    if(!codes.length){notifState.comments=[]; notifState.err=""; return null}
+    if(!codes.length){notifState.comments=[]; notifState.reminders=[]; notifState.agg=null; notifState.err=""; return null}
     return supaFetchCommentsBulk(codes).then(function(rows){
-      notifState.comments=rows; notifState.err="";
+      /* Split the raw rows: action rows (likes / reminders /
+         reactions / Done) are aggregated onto their comments, and
+         reminder rows are kept as notification items of their own.
+         Only real comments land in notifState.comments. */
+      var agg=cmtAggregate(rows);
+      notifState.agg=agg;
+      notifState.comments=agg.comments;
+      notifState.reminders=agg.reminders;
+      notifState.err="";
     }).catch(function(err){
       notifState.err=err;
     });
@@ -15053,6 +15498,7 @@ function notifMarkShownRead(){
   if(!Array.isArray(seen))seen=[];
   var have={}; seen.forEach(function(id){have[String(id)]=true});
   notifState.comments.forEach(function(c){if(!notifIsOwn(c)&&!have[String(c.id)]){seen.push(String(c.id)); have[String(c.id)]=true}});
+  (notifState.reminders||[]).forEach(function(r){if(!have[String(r.id)]){seen.push(String(r.id)); have[String(r.id)]=true}});
   if(seen.length>800)seen=seen.slice(seen.length-800);
   notifStoreSet(NOTIF_SEEN_KEY,seen);
   notifComputeUnread();
@@ -15084,13 +15530,13 @@ function notifRenderList(){
   var tas=list.querySelectorAll("textarea[data-notif-draft]");
   Array.prototype.forEach.call(tas,function(t){notifState.drafts[t.getAttribute("data-notif-draft")]=t.value});
   if(!notifHasSources()){
-    list.innerHTML='<div class="cc-empty">Nothing to track yet. Sign in, or create a share link in this browser, and client comments and reviews on your shares will appear here.</div>';
+    list.innerHTML='<div class="cc-empty">Nothing to track yet. Sign in, or create a share link in this browser, and client comments and reminders on your shares will appear here.</div>';
     return;
   }
   if(notifState.loading&&!notifState.loaded){list.innerHTML='<div class="cc-empty">Loading notifications…</div>'; return}
   if(errMsg&&!notifState.comments.length){list.innerHTML=""; return}
-  if(!notifState.comments.length){
-    list.innerHTML='<div class="cc-empty">No comments or reviews yet on your shares. When a client comments or reviews from a client view, it will appear here.</div>';
+  if(!notifState.comments.length&&!(notifState.reminders||[]).length){
+    list.innerHTML='<div class="cc-empty">No comments yet on your shares. When a client comments from a client view — or presses Reminder on a comment — it will appear here.</div>';
     return;
   }
   var seen=notifIdSet(NOTIF_SEEN_KEY);
@@ -15101,16 +15547,28 @@ function notifRenderList(){
      by newest activity first, and the comments inside each
      section newest first. */
   var groupsByCode={}, groups=[];
-  notifState.comments.forEach(function(c){
-    var code=String(c.share_code||"");
+  function groupFor(code){
+    code=String(code||"");
     var g=groupsByCode[code];
     if(!g){
       var sh=notifState.byCode[code]||{code:code,project_name:"",mode:"",expires_at:""};
-      g={code:code,share:sh,items:[],latest:""};
+      g={code:code,share:sh,items:[],commentCount:0,latest:""};
       groupsByCode[code]=g; groups.push(g);
     }
-    g.items.push(c);
+    return g;
+  }
+  notifState.comments.forEach(function(c){
+    var g=groupFor(c.share_code);
+    g.items.push(c); g.commentCount++;
     if(!g.latest||String(c.created_at||"")>g.latest)g.latest=String(c.created_at||"");
+  });
+  /* Reminder rows join their share's section as notification items
+     of their own — that is the push the client asked for — even if
+     the comment they belong to is not in this fetch. */
+  (notifState.reminders||[]).forEach(function(r){
+    var g=groupFor(r.share_code);
+    g.items.push(r);
+    if(!g.latest||String(r.created_at||"")>g.latest)g.latest=String(r.created_at||"");
   });
   groups.forEach(function(g){g.items.sort(function(x,y){return String(y.created_at||"").localeCompare(String(x.created_at||""))})});
   groups.sort(function(a,b){return String(b.latest||"").localeCompare(String(a.latest||""))});
@@ -15120,14 +15578,17 @@ function notifRenderList(){
     var label=notifProjectLabel(share);
     var modeTxt=notifModeLabel(share.mode);
     var expTxt=share.expires_at?(typeof fmtShareDate==="function"?fmtShareDate(share.expires_at):""):"";
-    var unreadInGroup=g.items.filter(function(c){return !notifIsOwn(c)&&!seen[String(c.id)]}).length;
+    var unreadInGroup=g.items.filter(function(c){
+      if(c.kind==="action_reminder")return !seen[String(c.id)];
+      return !notifIsOwn(c)&&!seen[String(c.id)];
+    }).length;
     var codeKey=g.code;
     var open=!!notifState.openReply[codeKey];
     var st=notifState.status[codeKey]||{};
     var metaHtml='<span class="code">'+escHtml(g.code||"—")+'</span>'
       +(modeTxt?'<span class="mode-pill">'+escHtml(modeTxt)+'</span>':"")
       +(expTxt?'<span>Expires '+escHtml(expTxt)+'</span>':"")
-      +'<span>'+g.items.length+(g.items.length===1?" comment":" comments")+'</span>';
+      +'<span>'+g.commentCount+(g.commentCount===1?" comment":" comments")+'</span>';
     var html='<section class="notif-group" aria-label="'+escHtml(label)+'">'
       +'<div class="notif-group-head"><div class="notif-group-title-row">'
       +'<a class="notif-group-link" href="'+escHtml(notifClientHref(g.code))+'" target="_blank" rel="noopener noreferrer" title="Open this design in client view (new tab)">'+escHtml(label)+extSvg+'</a>'
@@ -15135,13 +15596,19 @@ function notifRenderList(){
       +'</div><div class="notif-group-meta">'+metaHtml+'</div></div>'
       +'<div class="notif-group-body">';
     html+=g.items.map(function(c){
-      var ki=cmtKindInfo(c.kind);
+      if(c.kind==="action_reminder"){
+        var rd=cmtActionData(c), tgt=(notifState.agg&&notifState.agg.byId[rd.target])||null;
+        var rNew=!seen[String(c.id)];
+        var excerpt=tgt?String(tgt.body||""):"";
+        if(excerpt.length>160)excerpt=excerpt.slice(0,160)+"…";
+        return '<div class="cc-row"><div class="cc-row-top"><b>'+escHtml(c.author_name||"Anonymous")+'</b>'
+          +'<span class="cc-badge remind">Reminder</span>'
+          +(rNew?'<span class="notif-new">New</span>':"")
+          +'<span class="cc-when">'+escHtml(fmtCommentWhen(c.created_at))+'</span></div>'
+          +'<div class="cc-body">Reminder — please check this comment again'+(tgt?(", from <b>"+escHtml(tgt.author_name||"Anonymous")+"</b>: \u201C"+escHtml(excerpt)+"\u201D"):"")+'.</div></div>';
+      }
       var isNew=!notifIsOwn(c)&&!seen[String(c.id)];
-      return '<div class="cc-row"><div class="cc-row-top"><b>'+escHtml(c.author_name||"Anonymous")+'</b>'
-        +'<span class="cc-badge '+ki.c+'">'+escHtml(ki.t)+'</span>'
-        +(isNew?'<span class="notif-new">New</span>':"")
-        +'<span class="cc-when">'+escHtml(fmtCommentWhen(c.created_at))+'</span></div>'
-        +'<div class="cc-body">'+escHtml(c.body||"")+'</div></div>';
+      return cmtCommentRowHtml(c,notifState.agg,{context:"designer",code:g.code,isNew:isNew});
     }).join("");
     /* One Reply box per share / section: it posts to this
        section's share and extends that share's 30-day expiry. */
@@ -15198,6 +15665,31 @@ function notifPostReply(shareCodeKey){
     notifRenderList();
   });
 }
+/* Designer comment actions from the bell: Like, react, Done /
+   Undo Done on one comment of one share. Each posts an action row
+   to that share (which also extends its 30-day expiry, like a
+   reply), then refreshes so the counts, reaction badge, Done tick
+   and Reminded state shown here match what the client now sees. */
+function notifCommentAction(action,targetId,code,value,btn){
+  code=String(code||"");
+  if(!code||!targetId)return;
+  if(btn)btn.disabled=true;
+  supaPostCommentAction(code,notifReplyAuthor(),action,targetId,value,true).then(function(){
+    if(action==="like")cmtMarkLiked(targetId);
+    return notifRefresh();
+  }).then(function(){
+    notifState.status[code]={err:false,msg:action==="done"
+      ? (value==="1"?"Marked Done — the client now sees the Done tick on that comment.":"Done removed — the client no longer sees a Done tick on that comment.")
+      : action==="reaction"?"Reaction saved — the client now sees it on that comment."
+      : "Liked — the client sees the like count on that comment."};
+    notifRenderList();
+  }).catch(function(err){
+    notifState.status[code]={err:true,msg:(err&&err.rls)
+      ? "That couldn't be saved — Supabase's security rules refused it. The share_comments insert rule in Supabase needs to allow posting."
+      : "That couldn't be saved — Supabase could not be reached. Check your connection and try again."};
+    notifRenderList();
+  });
+}
 var notifInitDone=false;
 function initNotifications(){
   if(isClientViewRequest()||notifInitDone)return; /* designer / main app only — never client view */
@@ -15225,6 +15717,14 @@ function initNotifications(){
       if(t&&t.getAttribute&&t.getAttribute("data-notif-draft")!=null)notifState.drafts[t.getAttribute("data-notif-draft")]=t.value;
     });
     list.addEventListener("click",function(ev){
+      var ab=ev.target&&ev.target.closest?ev.target.closest("[data-cmt-like],[data-cmt-react],[data-cmt-done]"):null;
+      if(ab){
+        if(ab.disabled)return;
+        var act=ab.hasAttribute("data-cmt-like")?"like":ab.hasAttribute("data-cmt-react")?"reaction":"done";
+        var tid=ab.getAttribute("data-cmt-like")||ab.getAttribute("data-cmt-react")||ab.getAttribute("data-cmt-done");
+        notifCommentAction(act,tid,ab.getAttribute("data-cmt-code")||"",ab.getAttribute("data-cmt-value")||"",ab);
+        return;
+      }
       var t=ev.target&&ev.target.closest?ev.target.closest("[data-notif-reply],[data-notif-post]"):null;
       if(!t)return;
       var rc=t.getAttribute("data-notif-reply");
