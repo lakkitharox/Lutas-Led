@@ -9,6 +9,24 @@
    re-applied before first paint, so the editor opens in the chosen
    theme with no flash of another one. */
 try{var _th=localStorage.getItem("lutasLED.theme");if(_th==="gray"||_th==="light"||_th==="dark")document.documentElement.setAttribute("data-theme",_th)}catch(e){}</script>
+<script>/* Client-view early boot: a client link (?client=1&share=<code>, or
+   the long #s= fallback) is detected HERE, in the <head>, before the
+   body is parsed and before any editor, auth or top-bar code can run.
+   The client-boot class on <html> makes the stylesheet hide every
+   piece of editor chrome from the very first paint — a client link
+   never flashes the editing interface and never sees the sign-in
+   popup — and window.__LUTAS_CLIENT__ carries the detected code /
+   payload to the main script, which then runs ONLY the client boot
+   (renderer, camera, comments) and skips all editor initialisation.
+   Detection mirrors the main script's own rules exactly, so every
+   link already sent keeps working at the same URL. */
+window.__LUTAS_CLIENT__=null;
+try{
+  var _cq=new URLSearchParams(window.location.search||"");
+  var _csc=(_cq.get("share")||"").trim();
+  if(_csc&&/^[A-Za-z0-9]{6,16}$/.test(_csc)){window.__LUTAS_CLIENT__={code:_csc,payload:""};document.documentElement.classList.add("client-boot")}
+  else{var _cm=(window.location.hash||"").match(/#s=([A-Za-z0-9\-_]+)/); if(_cm){window.__LUTAS_CLIENT__={code:"",payload:_cm[1]};document.documentElement.classList.add("client-boot")}}
+}catch(e){}</script>
 <link rel="icon" type="image/png" href="data:image/png;base64,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"/>
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAARw0lEQVR4nGIYBYMIMDAwAAAAAP//GsWDCTAwMAAAAAD//xrFgwkwMDAAAAAA//9ipIJ7GJFoRiziwxn8R/IbiA3jI4sTDxgYGAAAAAD//yI30BjRMBMUMyLRIyVCQPgfEg1jI2PiAAMDAwAAAP//IjXQkCOCGQceKZGCHhl/cWDiI4aBgQEAAAD//yI2wNAjggWKWUFYUlJSi4ODw56ZmdmYiYlJkZGRUZKBgYGLgYGBnTI/D2rwk4GB4dv///+f//v37/7fv3/P/vjx4+Dz58+vMTAw/IbiP1BMXMQwMDAAAAAA//8iJkKQiyRYJLDx8vIKioqKxrGwsIQxMjKqDeOAJwn8////9p8/f1a+fv160efPn98zMDD8Qooc5CINEzAwMAAAAAD//yIUIbDIYIZGBDsrKyu3jIxMChsbWx4DA4PAIAmHwQg+/Pr1a9KTJ0/m/P79+ys0R4EiBpRbsEcKAwMDAAAA///CFyGMSLmCjYGBgUNMTEybn59/ChMTk/aICVYKwb9//65+/Pgx59WrV1cZGBh+QHMMLLegRgoDAwMAAAD//2LGYR8sMlih9QCXnJycLy8v72JGRkbpwRwAgw0wMjKKcXJyhnJzc9//+PHjfbxNYwYGBgAAAAD//8IWIcg5AxwZ8vLykZycnJOHeSVNS8DGysrqzcPD8+Ljx4830ZrGCMDAwAAAAAD//0KPEOQ6A5YzAjg5OSdBxUYB+YCJhYXFlZub++7Hjx/vIlXwCMDAwAAAAAD//0IPZFhkgOoMTjExMV1eXt75ozmDaoCRlZXVkZmZef/Xr1/fYnQkGRgYAAAAAP//YkKyCtbPABdVLCwsfPz8/KCcwT20w2DQAW5+fv6JoPCFJnRQeEPCnoGBAQAAAP//Qs4hyPUGp5ycXAYrK2vQSA89WgBGRkZRbm7ubx8+fDiL0gxmYPgPAAAA//+C5RCUJi43N7cwGxtb1vAKhsEF2NjYMkHhDK0eQOHOxMDAwAgAAAD//8IWIeygHjgjIyP/UPNkXV3dIHAFcQAUvqKiovFIxRYTAwMDIwAAAP//Qo4Q5N54yGD3EAw4OTkx3LhxA4yjoqLAdEZGxuBwHAHAysoaDI0QULgzMzAwMAIAAAD//0IeMORgYGDgERcXNxcQENgwqH3CwMBw5coVBhYWUMLCDa5evcoQHAzy8+AFHz58CHj58uVJBgaGLwwMDD8AAAAA//+C5RBYc5eFk5PTZrA6f+rUqfDcQCgyQEBbWxus9uRJkH8HJ4CGN8gzzAwMDEwAAAAA//9iQR9AZGZmNhhMTtfT02NYtWoVRWbw8/MzmJqaMpw+fZpq7qIWgIY3pMhiYGACAAAA//9iQZ9wYmJiUhhoRzIxMTFcuwaaVqAcJCUlMcyYMYNBXFx8YD2FA0DDGzLZx8DACAAAAP//guV72HwHM6iNPFCOmzVrFoOdnR3F5nz8+JHB3Nwczv/+/Tu4+NqyZQvFZlMbQMMbnDsYGBiYAAAAAP//YkGbDWRiZGTkoqeDFBQUGHbs2EE187q7uxnmzp2LIsbOPnhHfqDhDZnyZmBgBAAAAP//Qm72wjArPRwCq5ypGRkgUFpaCjZ38mTQ4DQE/Pnzh4Gbe9COAIHCGxL2DAyMAAAAAP//Qm6q0HxRQkNDA0NERAQtrYADV1dXcMS8evUKnEPU1dXpYi+ZABL2DAwMAAAAAP//Qm870iRCQAEzUEBMTAxss5aW1oC5gQgACXcGBgYAAAAA//9iosQUfOD48ePwYokScP78eQYNDQ2wCTCaHMDKykoV99AUMDAwAAAAAP//Ity7IhFQw8N///4Ft4qwAViknD17lux6AeZGSiKYJoCBgQEAAAD//6JqDlm5ciVF+uvr68GBhCsykIGxsTFYLaiJSy6A5ZhBU+EzMDAAAAAA//+iag759esXyXoePnzI4O7uTradsP7GunXryK4nQLkNBEDjXqDxrwEDDAwMAAAAAP//omoOefr0KdFqDQ0NwSmckshABkFBQWDzFi9eTLYZa9euBeeYlJQUqriJZMDAwAAAAAD//6JqhBAzPAEKNBAG9Z5pAVpbW8HmFxUVkW16SUkJOGI6Ojpo4kacgIGBAQAAAP//omqEPH/+nLquowBs27YNHDGg/gi5ICAggL6OZmBgAAAAAP//omqEvH79mprGUQU8fvwYHDGDvB8CAQwMDAAAAAD//6JqhDAyUr9fCSp6YM1UEO3h4UGWOf/+/YMXl4MWMDAwAAAAAP//omqEbN++nSrmgIY6YE3StLQ0sBgshU+YMAEsHhMTQ7b5pEQMyK6uri6y7SIJMDAwAAAAAP//ollPnRwwe/ZscABcvHgRrHv+/PnwwENP4TU1NWC1WVm0XRwDss/Pzw9s165du2hqFwMDAwMAAAD//6JqP+T/f7K31qH08AmlXpg8SE9eXh4YL1iwgGatIph9hw8fpm0vn4GBAQAAAP//GlQ5BAZAniamPoLlGFCHNCEhAaxv5syZNHOXra0t2L6lS5ei5GSqAQYGBgAAAAD//6JqhFCSQxigAZyeng5mX79+nehxMdC8O6xYs7e3B+vbvXs3RW7BBhwcHMBmR0dHg6VBdR1o4QXVAAMDAwAAAP//omqR9eXLF4rNOHjwIDhwdXV1GVavXk1SEQGr+C9fvswgKysL1vvu3TsGKysritx05swZBh4eHqxy5AwX4QQMDAwAAAAA//+iag75/Pkz1cwCBSooEkJCIGv2SBk6B0UmSO+bN28YhISEKBp2B+nDFRkgABqLoxpgYGAAAAAA//8aVEUWNgBaEAcKXF9fX7A0LHDZ2EBLYvEDGxsblBFhWsyHgHIg1QADAwMAAAD//xr0EQIDt2/fBgeul5cXWOjSpUtEBy5oRBik98WLF2A+SB+ojiJkl4EB4SVqVPUzAwMDAAAA//+i+gQVrcG9e/fAgSUqKorSDAXVE4RSK6hSBoGdO3cyyMvLY8hbW1szvH0L2kcDARwcoNW1dAQMDAwAAAAA//8adJU6sQA0bgaKGGZmZvAcxrFjx8BaQcP5+Mp1AQEBlMj49OkTg5mZGdnuAC2ioBpgYGAAAAAA//8alP0QUgBouhd5lhGU+kG5BtTKQgadnZ1g8RMnTqCI5+fn47SOmL7Q3bug7YJUAgwMDAAAAAD//xpyRRYuAIsY0CJsUEOAGv0QSUnQCSH4wbdv36jnCQYGBgAAAAD//xryOQQdgBbFUWtUF9TRJASoWqkzMDAAAAAA//8adhGCDG7dukWRfj4+0L5M/ODnT9CJGVQCDAwMAAAAAP//GlQRAlr1PpgAqFNJCFC1yGJgYAAAAAD//xqNkMEEGBgYAAAAAP//Gg0BCgGoMUE1wMDAAAAAAP//Go0QPEBZWZmgmt+/QScuUQkwMDAAAAAA//8ajRA8gO77ShgYGAAAAAD//xqNEDyA7kMnDAwMAAAAAP//GhQRIiwsDKZBU7H0BqB+Cy6gr69PX+cwMDAAAAAA//8a0AiBTYUePXoUzAetMAHxXVxc6OYG0NJTkJ3YWnj0HJsDAwYGBgAAAAD//xqQCAENbYACAbSCnQFpbhzWu54yZQpYXkpKiuZuaW9vB9OgXb8DvneEgYEBAAAA//+ie4TANv2DltRgG+JAFtu3bx/Ntwvs378fbJ+Pjw/cfbCIERQUpJm9WAEDAwMAAAD//xqQHAJa/k+ovkCOGJB6UCDRspK9c+cO2D7YURwg+wgtP6V2H4SBgYEBAAAA//8akAgBFVXoO2VxAVAggVaVgMCFCxdwlvfUAqC5FZCdxCzxIWbwkSTAwMAAAAAA//8a0EodtlOWUGsGtLIDFEiOjo5gPi3L+82bNxPlJhDA10IjCzAwMAAAAAD//6J6hJAzHA3aCgcKBEJbl0HbHUAREx8POmaKuosWYGapqqoSrYfaS4AYGBgYAAAAAP//onqEUJJqNm7cSFRdATrdB3kfIiWRAmpcDJqduQwMDAAAAAD//6J6hFCjooPVFdgA6FQfkBwxewFpvZkTtoqFaoCBgQEAAAD//6L6FC5o6Qw1ixEQABVT8+bNQ1mBqKmpCS4e8dn14cMHBmlp2h3ETfVlTwwMDAAAAAD//6LJnDooAEHDIbAeOKUAFuiglZGgHEIsAK0woSWg+pY3BgYGAAAAAP//olkrC7S+CRQx1NrsAjpPkZTIAAFaRci0adNosx2BgYEBAAAA//+iebMXVNTAlvBTAmi5KpJYADpwE+SXSZNA50vTADAwMAAAAAD//6JbP6S5uRnsmcG0U5dYABs1ePbsGW0tYmBgAAAAAP//ovu6LFjn7ty5cwxcXHQ9K40k8PLlS/BeE7oCBgYGAAAAAP//GrCeupGRETjVDYaiCBmANpWC3DUQkcHAwMAAAAAA//8a8JWLoOYrwwCfqQUCoDmYJ0+eDKgbGBgYGAAAAAD//xo0U7iEVhsiL0gD9eRhQx2gRgMIgNjkHCcLs3cwRAYDAwMDAAAA//8adGt7kXfYIgPQgoOcnBwwBgFQXQRrIMCa1rBIAh2elpiYiNMOSle80wwwMDAAAAAA//+C3RfCycDAwAuak1FXV78AFRtwAFrsDJpAwhZh+ACu4m/NmjXg/e2DDPy5efMmaGfQewYGhs8AAAAA//9CDvj/kOb+/++MjIy8g8HRsNFdXl5ekvYvIu8bAYHY2NhBeao1CPz//x+0FhVyww4DAwMAAAD//4JFyH+kCHk9WCIEBsjZTAoa5PT39wefwjBYIwMEQOEND38Ghv8AAAAA//9iQrsS9N+/f/+ou610AMHNmzfBBysPZvDv379H8Bt2GBj+AwAAAP//grWyYJdT/f39+/eV4RIhQwH8+fMHFN6Qa48YGP4BAAAA//9CziHg246/f/9+Yuh7c+iAb9++gcIbctM0A8N/AAAAAP//gkXIP6jA79evX1+FZqNRQGMACmdQeMPvyGVg+AcAAAD//0Iusv5C72j9+evXr8F3jcAwBNBwBvV4IVd8MzD8AwAAAP//Qi+yQDH16+XLlyv///9P/3WUIwiAwvfVq1egoQXY9d5/GRgY/gMAAAD//4LlEOQI+fnjx493P3/+pGwCYxTgBT9+/Fj0/ft30CkFiGu9GRj+AwAAAP//Qo6Qf7AiC3QHytOnTxf++/fv3miwUh+AwvXp06eLQOGMVGT9Y2Bg+A8AAAD//8J5WzR0Vd41bm5u78EylDJMwM+3b98Wff369QH0ZjZQpICKrb8MDAz/AQAAAP//whUh4Ej5/v37JzY2thfs7OyOtL5bZISAf58+fWp49erVYWhkgIZNYDnkPwMDAwMAAAD//8J2fTcyzfTly5fHHBwcoIixHI0UisC/r1+/9j579gx0RyRoLAgUIbD6A9JTZ2BgAAAAAP//wnVHOsqt+J8/f77Dxsb2DBQpjIyMo8UX6eDHp0+fmp89e7YeNPqPVlTBI4OBgYEBAAAA///Cd2k98hjX/y9fvjz89+/fSU5OTkNGRkbaLngaRuDfv38PXr9+XfT69WvQIjVYZPyA5g7km6IZGBgYGAAAAAD//yIUIQzIl7CDmsMfP37czsHB8YeFhUWDkZGR8LFuIxSAhtW/f/++4NGjR43fvn0DDdjCiimckcHAwMAAAAAA///CVyegXOkNvSuXC4q5OTk5xUVFRYPZ2dldmZiYZEZ6BMDAv3//nvz8+XP369ev137//v0lAwPDV2jlDcKgyIC1qMCtKhTNDAwMAAAAAP//IlRJI1/LyoYUMZxQDGJzCAsLa3NxcZmwsrJqMTMzyzAyMgoxMjJyD/NGAGju6Ov////f/f3798nv37+vffv27czbt29BY1OggAdhUD0BwrCIgEUGRs4AAwYGBgAAAAD//yImwBiRbgJlgd67xwa9dhqG2aDirMjXiNLjKr4BAsj1Kyy1g1pL4KEnaJEEw7ChEVjnD2dkMDAwMAAAAAD//yI2sJADlxkaMSxIkcCKdOMxM1IEDuscgjyPhDQ4C4sYWCTABg6RIxE7YGBgAAAAAP//IjXAGNFyDDMWzDTMcwcMoMy0IkUKMkbOEYRXBDIwMAAAAAD//wMAhSunF7zE8ysAAAAASUVORK5CYII="/>
 <title>LUTAS LED — Multi-Screen Layout, Signal Map & Actual-Size PNG Export</title>
@@ -48,6 +66,9 @@ button{cursor:pointer}
 /* APP FRAME — canvas first, pro-editor layout */
 .app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 .topbar{flex:none;display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--panel);border-bottom:1px solid var(--line);z-index:40;flex-wrap:wrap}
+.autosave-bar{flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:var(--panel2);border-bottom:1px solid var(--line);font-size:12.5px;color:var(--text);z-index:39}
+.autosave-bar[hidden]{display:none}
+.autosave-bar span{flex:1;min-width:200px}
 .mark{width:30px;height:30px;border-radius:8px;background:#111827;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:5px;flex:none}
 .mark i{display:block;background:#eef1f6;border-radius:2px}
 .mark i:nth-child(2),.mark i:nth-child(4),.mark i:nth-child(8){opacity:.4}
@@ -574,6 +595,31 @@ body.clientview .nav-panel,body.clientview .settings-panel{display:none}
 body.clientview .workspace{grid-template-columns:minmax(0,1fr)}
 body.clientview .cab-detail,body.clientview #stageChip,body.clientview #transformReadout,body.clientview #world,body.clientview #overlay{display:none!important}
 @media (max-width:820px){body.clientview .workspace{grid-template-rows:minmax(0,1fr)}}
+/* ── Client early boot — html.client-boot is set by the <head> script
+   BEFORE the body is parsed, so these rules hold from the very first
+   paint: for a client link the editor chrome (top bar, menus, tool
+   rail, settings / Layers panels, 2D canvas overlays, every editor
+   dialog including sign-in and Projects) is never displayed at all,
+   and the stage area is the dark cinematic frame the client renderer
+   fills. Only the client surface can appear: the 3D stage, the
+   client bar, the private-share gate, the notice page and the
+   comments drawer (none of those are .modal-bg). ── */
+html.client-boot,html.client-boot body{background:#05070b}
+html.client-boot .topbar,html.client-boot .autosave-bar,html.client-boot .nav-panel,html.client-boot .settings-panel,html.client-boot .cab-detail,html.client-boot .canvas-foot,html.client-boot #stageChip,html.client-boot #transformReadout,html.client-boot #world,html.client-boot #overlay,html.client-boot #tapePanel,html.client-boot #notifPanel,html.client-boot .modal-bg,html.client-boot .v3d-bar,html.client-boot .view-cube,html.client-boot .truss-bar,html.client-boot .rs-panel,html.client-boot .sim-panel,html.client-boot #fileLoad{display:none!important}
+html.client-boot .workspace{grid-template-columns:minmax(0,1fr)}
+html.client-boot .canvas-area{background:#05070b}
+@media (max-width:820px){html.client-boot .workspace{grid-template-rows:minmax(0,1fr)}}
+/* Lightweight client loading splash — the only thing painted while
+   the shared design is fetched; the client boot hides it the moment
+   the gate, the notice page or the stage itself takes over. It is
+   display:none in the editor, so it never affects a normal open. */
+#clientBootSplash{display:none}
+html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;background:#05070b;color:#cbd5e1;font-size:13px;font-family:Inter,system-ui,sans-serif}
+#clientBootSplash[hidden]{display:none!important}
+#clientBootSplash img{width:54px;height:54px;object-fit:contain}
+#clientBootSplash .cbs-ring{width:26px;height:26px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#f59e0b;animation:cbsSpin .8s linear infinite}
+@keyframes cbsSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){#clientBootSplash .cbs-ring{animation:none}}
 .client-bar{position:absolute;top:10px;left:10px;right:10px;z-index:7;display:none;flex-wrap:wrap;gap:8px;align-items:center;pointer-events:none}
 #view3d.client-on .client-bar{display:flex}
 #view3d.client-on .render-bar{display:none!important}
@@ -1172,6 +1218,8 @@ body:not(.learning-on) .learn{display:none}
 </style>
 </head>
 <body>
+<div id="clientBootSplash" role="status"><img src="data:image/png;base64,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" alt=""/><div class="cbs-ring" aria-hidden="true"></div><div>Loading preview…</div></div>
+<input id="fileLoad" type="file" accept=".ledx,.json,application/json" style="position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0" tabindex="-1" aria-hidden="true">
 <div class="app">
 
 <header class="topbar">
@@ -1182,7 +1230,7 @@ body:not(.learning-on) .learn{display:none}
       <div class="menu">
         <button id="mNew">▢ New layout</button>
         <button id="mSave">↓ Save layout (.ledx)</button>
-        <label class="mi">↑ Load layout (.ledx)<input id="fileLoad" type="file" accept=".ledx,.json,application/json" hidden></label>
+        <button id="mLoad" type="button">↑ Load layout (.ledx)</button>
         <button id="mProjects">Projects…</button>
         <div class="sep"></div>
         <button id="mExport"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export PNG — actual size</button>
@@ -1252,6 +1300,11 @@ body:not(.learning-on) .learn{display:none}
     <button class="notif-btn" type="button" id="notifBtn" aria-haspopup="dialog" aria-expanded="false" title="Notifications — new client comments and reviews on your shared links, with reply"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="notif-badge" id="notifBadge" hidden>0</span></button>
   </div>
 </header>
+<div class="autosave-bar" id="autosaveBar" hidden>
+  <span id="autosaveMsg"></span>
+  <button type="button" class="btn small primary" id="autosaveRestore">Restore unsaved work</button>
+  <button type="button" class="btn small" id="autosaveDiscard">Discard</button>
+</div>
 
 <!-- NOTIFICATIONS PANEL — designer / owner only (never client view:
      the top bar that carries its bell is hidden there, and
@@ -2461,7 +2514,6 @@ body:not(.learning-on) .learn{display:none}
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function(){
 "use strict";
@@ -4948,6 +5000,7 @@ function histEnd(){
   if(histBase!==null&&histSnapshot()!==histBase){
     if(histUndo[histUndo.length-1]!==histBase){histUndo.push(histBase); if(histUndo.length>HIST_MAX)histUndo.shift()}
     histRedo.length=0;
+    scheduleAutosave(); /* a real layout change just landed — keep the recovery draft current */
   }
   histBase=null;
   syncEditMenu();
@@ -4962,6 +5015,7 @@ function histPushNow(){
   if(histUndo[histUndo.length-1]!==s){histUndo.push(s); if(histUndo.length>HIST_MAX)histUndo.shift()}
   histRedo.length=0;
   syncEditMenu();
+  scheduleAutosave();
 }
 document.addEventListener("pointerdown",function(){histBegin()},true);
 document.addEventListener("pointerup",function(){histScheduleEnd(200)},true);
@@ -5000,6 +5054,7 @@ function doUndo(){
   histRedo.push(cur); if(histRedo.length>HIST_MAX)histRedo.shift();
   if(histRestore(prev))toast("Undo — "+histUndo.length+" undo step"+(histUndo.length===1?"":"s")+" left, "+histRedo.length+" redo available.");
   syncEditMenu();
+  scheduleAutosave();
 }
 function doRedo(){
   histEnd();
@@ -5009,6 +5064,7 @@ function doRedo(){
   histUndo.push(cur); if(histUndo.length>HIST_MAX)histUndo.shift();
   if(histRestore(nxt))toast("Redo — "+histRedo.length+" redo step"+(histRedo.length===1?"":"s")+" left.");
   syncEditMenu();
+  scheduleAutosave();
 }
 $("mUndo").addEventListener("click",function(){closeMenus(); doUndo()});
 $("mRedo").addEventListener("click",function(){closeMenus(); doRedo()});
@@ -7107,7 +7163,7 @@ function setGizmoMode(m){
      light can only move along the truss bar it rides, or rotate
      (pan / tilt). Truss, props and screens keep their Scale. */
   if(m==="scale"&&typeof lightEditTarget==="function"&&lightEditTarget()){
-    toast("Scale is not available in Light Edit — lights move along the truss bar and rotate (pan / tilt) only.");
+    toast("Scale is not available in Light Edit — truss lights move along the truss bar, battens / matrix panels move freely on any surface, and lights rotate (pan / tilt) only.");
     m="move";
   }
   state.gizmoMode=(m==="rotate"||m==="scale")?m:"move";
@@ -7138,7 +7194,7 @@ function syncGizmoControls(){
   document.querySelectorAll("[data-gmode=\"scale\"]").forEach(function(b){
     if(b.dataset.gtitle===undefined)b.dataset.gtitle=b.title||"";
     b.disabled=lGate;
-    b.title=lGate?"Scale — not available in Light Edit: lights move along the truss bar and rotate (pan / tilt) only":b.dataset.gtitle;
+    b.title=lGate?"Scale — not available in Light Edit: truss lights move along the truss bar, battens / matrix panels move freely, and lights rotate (pan / tilt) only":b.dataset.gtitle;
   });
   updateSnapUI();
 }
@@ -8382,8 +8438,8 @@ function attach3DPointer(el){
                 ?(segGrpNameP||"Truss group")+" — group gizmo "+miP.axis.toUpperCase()+" arrow: dragging moves all "+(segGrpIdxsP?segGrpIdxsP.length:0)+" trusses of the group together along the "+miP.axis.toUpperCase()+" axis only, keeping their formation. Trusses outside the group stay put."
                 :(segGrpNameP||"Truss group")+" — group gizmo centre ball: dragging moves all "+(segGrpIdxsP?segGrpIdxsP.length:0)+" trusses of the group together across the floor plane, keeping their formation. Trusses outside the group stay put.")
               :miP.kind==="fgizmo"?(miP.sub==="axis"
-                ?"Light "+(miP.idx+1)+" \u2014 light gizmo "+miP.axis.toUpperCase()+" arrow: dragging slides the light along the truss bar."
-                :"Light "+(miP.idx+1)+" \u2014 light gizmo centre ball: dragging slides the light along the truss bar it rides — it stays on the truss.")
+                ?"Light "+(miP.idx+1)+" \u2014 light gizmo "+miP.axis.toUpperCase()+" arrow: "+(isFreeFixture(mmP.params.fixtures[miP.idx])?"dragging moves it freely along that axis — it can sit on any surface.":"dragging slides the light along the truss bar.")
+                :"Light "+(miP.idx+1)+" \u2014 light gizmo centre ball: "+(isFreeFixture(mmP.params.fixtures[miP.idx])?"dragging moves it freely — it can sit on any surface: stage, truss, prop or screen.":"dragging slides the light along the truss bar it rides — it stays on the truss."))
               :miP.kind==="pgizmo"?(miP.sub==="rot"
                 ?"Prop — "+escapeHtml(mmP.params.items[miP.idx].name)+": gizmo "+miP.axis.toUpperCase()+" rotate ring: dragging turns the prop about the "+miP.axis.toUpperCase()+" axis around its own centre (magnet snaps "+rotStepDeg()+"°). The Position / Rotate / Scale gizmo buttons swap this prop's handles, exactly as for a screen."
                 :miP.sub==="scale"
@@ -8416,7 +8472,7 @@ function attach3DPointer(el){
                 :"Prop \u2014 "+escapeHtml(mmP.params.items[miP.idx].name)+": drag to move it across the stage. Switch the gizmo to Rotate to turn it, Scale to resize it.")
               :(state.gizmoMode==="rotate"?"Fixture "+(miP.idx+1)+" — drag to aim it: sideways = pan, up / down = tilt."
                 :state.gizmoMode==="scale"?"Fixture "+(miP.idx+1)+" — Scale does not work on lights in Light Edit: lights move along the truss bar and rotate (pan / tilt) only."
-                :"Fixture "+(miP.idx+1)+" — drag to slide it along the truss bar it rides — it stays on the truss and moves with it. Switch the gizmo to Rotate to aim it by dragging."));
+                :(isFreeFixture(mmP.params.fixtures[miP.idx])?"Fixture "+(miP.idx+1)+" — FREE placement: drag it anywhere, on any surface — stage, truss, prop or screen. Switch the gizmo to Rotate to tilt it by dragging.":"Fixture "+(miP.idx+1)+" — drag to slide it along the truss bar it rides — it stays on the truss and moves with it. Switch the gizmo to Rotate to aim it by dragging.")));
             return;
           }
         }
@@ -8897,8 +8953,19 @@ function attach3DPointer(el){
           var barsF=lightTrussBars(), oFx=+mm2.params.setX||0, oFy=+mm2.params.setY||0, oFz=+mm2.params.setZ||0;
           if(md.grpIdxs){
             md.grpMoved=true;
+            var anyFreeF=false;
             md.grpIdxs.forEach(function(gi){
               var fG=mm2.params.fixtures[gi], bG=md.grpStart[gi]; if(!fG||!bG)return;
+              if(isFreeFixture(fG)){
+                /* A batten / matrix panel in the group moves FREELY
+                   along the axis — it never lands on a bar mount;
+                   the surface snap only nudges it exactly onto a
+                   surface it passes. */
+                anyFreeF=true;
+                var snG=snapFreeFixturePoint({x:bG.x+oFx+axVF.x*tF, y:bG.y+oFy+axVF.y*tF, z:bG.z+oFz+axVF.z*tF});
+                writeFreeFixturePos(mm2,fG,snG.point);
+                return;
+              }
               var nbG=barsF.length?nearestBarPoint({x:bG.x+oFx+axVF.x*tF, y:bG.y+oFy+axVF.y*tF, z:bG.z+oFz+axVF.z*tF},barsF):null;
               if(nbG)writeFixtureBarMount(mm2,fG,nbG);
               else{fG.tm=null; fG.seg=null;
@@ -8907,13 +8974,27 @@ function attach3DPointer(el){
                 fG.z=Math.round(clamp(bG.z+axVF.z*tF,-60,60)*100)/100}
             });
             rebuildModGroup(mm2);
-            updateV3Readout((md.grpName||"Light group")+" — moving "+md.grpIdxs.length+" lights together along their truss bars ("+fmtMeasureSigned(tF)+" on the "+axF.toUpperCase()+" axis). Each light stays on a bar; lights outside the group stay put.");
+            updateV3Readout((md.grpName||"Light group")+" — moving "+md.grpIdxs.length+" lights together ("+fmtMeasureSigned(tF)+" on the "+axF.toUpperCase()+" axis). "+(anyFreeF?"Truss lights stay on their bars; battens / matrix panels in the group move freely, on any surface.":"Each light stays on a bar;")+" Lights outside the group stay put.");
           }else{
             var fA=mm2.params.fixtures[md.info.idx], stF=md.fixStart;
             var rpA=resolveFixturePos(stF);
             var baseF=(stF.tm&&stF.seg!==null&&stF.seg!==undefined)
               ?{x:rpA.x-(+mm2.params.setX||0),y:rpA.y-(+mm2.params.setY||0),z:rpA.z-(+mm2.params.setZ||0)}
               :{x:stF.x,y:stF.y,z:stF.z};
+            if(isFreeFixture(fA)){
+              /* FREE axis move — a batten / matrix panel travels
+                 along the arrow's axis in open space (the Y arrow
+                 raises / lowers it onto a higher / lower surface);
+                 the surface snap only takes it exactly onto a
+                 surface it passes close to. It never mounts a bar. */
+              var snA=snapFreeFixturePoint({x:baseF.x+oFx+axVF.x*tF, y:baseF.y+oFy+axVF.y*tF, z:baseF.z+oFz+axVF.z*tF});
+              writeFreeFixturePos(mm2,fA,snA.point);
+              rebuildModGroup(mm2);
+              var rpF=resolveFixturePos(fA);
+              updateV3Readout("Light "+(md.info.idx+1)+" \u2014 free placement, moving along the "+axF.toUpperCase()+" axis to ("+rpF.x.toFixed(1)+", "+rpF.y.toFixed(1)+", "+rpF.z.toFixed(1)+") m."+(snA.snapped?" Snapped onto "+snA.label+".":" It can sit on any surface — stage, truss, prop or screen."));
+              syncObjectPanel();
+              return;
+            }
             var nbA=barsF.length?nearestBarPoint({x:baseF.x+oFx+axVF.x*tF, y:baseF.y+oFy+axVF.y*tF, z:baseF.z+oFz+axVF.z*tF},barsF):null;
             if(nbA)writeFixtureBarMount(mm2,fA,nbA);
             else{fA.tm=null; fA.seg=null;
@@ -9124,8 +9205,18 @@ function attach3DPointer(el){
             if(snapM){var gmG=gridM(); ddxG=Math.round(ddxG/gmG)*gmG; ddzG=Math.round(ddzG/gmG)*gmG}
             md.grpMoved=true;
             var barsG=lightTrussBars(), oGx=+mm2.params.setX||0, oGy=+mm2.params.setY||0, oGz=+mm2.params.setZ||0;
+            var anyFreeG=false;
             md.grpIdxs.forEach(function(gi){
               var fG2=mm2.params.fixtures[gi], bG2=md.grpStart[gi]; if(!fG2||!bG2)return;
+              if(isFreeFixture(fG2)){
+                /* A batten / matrix panel in the group moves FREELY
+                   with the group across the floor plane, at its own
+                   height — never onto a bar mount. */
+                anyFreeG=true;
+                var snG2=snapFreeFixturePoint({x:bG2.x+oGx+ddxG, y:bG2.y+oGy, z:bG2.z+oGz+ddzG});
+                writeFreeFixturePos(mm2,fG2,snG2.point);
+                return;
+              }
               var nbG2=barsG.length?nearestBarPoint({x:bG2.x+oGx+ddxG, y:bG2.y+oGy, z:bG2.z+oGz+ddzG},barsG):null;
               if(nbG2)writeFixtureBarMount(mm2,fG2,nbG2);
               else{fG2.tm=null; fG2.seg=null;
@@ -9134,7 +9225,7 @@ function attach3DPointer(el){
                 fG2.y=bG2.y}
             });
             rebuildModGroup(mm2);
-            updateV3Readout((md.grpName||"Light group")+" — moving "+md.grpIdxs.length+" lights together along the truss bars ("+measureSignedNum(ddxG)+", "+measureSignedNum(ddzG)+") "+measureUnit()+". Each light stays on a bar; lights outside the group stay put.");
+            updateV3Readout((md.grpName||"Light group")+" — moving "+md.grpIdxs.length+" lights together ("+measureSignedNum(ddxG)+", "+measureSignedNum(ddzG)+") "+measureUnit()+". "+(anyFreeG?"Truss lights stay on their bars; battens / matrix panels in the group move freely, on any surface.":"Each light stays on a bar;")+" Lights outside the group stay put.");
           }else{
           var fM=mm2.params.fixtures[md.info.idx];
           /* Pointer points are world points; fixture positions are
@@ -9147,6 +9238,22 @@ function attach3DPointer(el){
              the layout has no truss at all does it move freely, at its
              drag-start height, as before. */
           var lOffX=+mm2.params.setX||0, lOffZ=+mm2.params.setZ||0;
+          if(isFreeFixture(fM)){
+            /* FREE MOVE — battens and matrix panels ONLY: the drag
+               is NOT constrained to a truss bar. The light follows
+               the pointer across the horizontal plane at its own
+               height (the gizmo's Y arrow changes its height, so
+               together they place it on ANY surface — stage deck,
+               truss, prop, screen wall); the surface snap takes it
+               exactly onto a surface it passes close to. Its stored
+               position is its own x / y / z — never a truss ride —
+               so it saves and loads exactly where it was dropped. */
+            var baseM=fixtureDragBase(mm2,md.fixStart);
+            var snM=snapFreeFixturePoint({x:ptM.x, y:baseM.y+(+mm2.params.setY||0), z:ptM.z});
+            writeFreeFixturePos(mm2,fM,snM.point);
+            rebuildModGroup(mm2);
+            updateV3Readout("Fixture "+(md.info.idx+1)+" — free placement: it can sit on any surface — stage, truss, prop or screen."+(snM.snapped?" Snapped onto "+snM.label+".":"")+" Drag the green Y arrow to raise / lower it onto another surface. Use the Rotate gizmo to tilt it (it tilts only — no pan).");
+          }else if(lightTrussBars().length){
           var barsM=lightTrussBars();
           var nbM=barsM.length?nearestBarPoint({x:ptM.x,y:ptM.y,z:ptM.z},barsM):null;
           if(nbM){
@@ -9158,6 +9265,7 @@ function attach3DPointer(el){
             updateV3Readout("Moving fixture "+(md.info.idx+1)+" — height stays "+fmtMeasure(+fM.y)+". This layout has no truss yet: add a truss and the light will ride its bar.");
           }
           rebuildModGroup(mm2);
+          }
           }
         }
       }
@@ -10807,7 +10915,7 @@ function objView(o){
     var tiltOnlyO=(fixtureModelOf(f)==="batten"||fixtureModelOf(f)==="matrix");
     return {badge:"Light", name:"Light "+(o.idx+1)+" — "+fixtureModelLabel(f),
       info:lightTypeLabel(ft)+" · "+(f.tm?"on truss bar "+((+f.seg||0)+1):"position "+measureNum(rp.x)+", "+measureNum(rp.y)+", "+measureNum(rp.z)+" "+measureUnit()),
-      note:""+measureUnit()+" — typing a new position puts it on the bar nearest that point, so a light stays on a bar. Rotation is in degrees: X is its tilt"+(tiltOnlyO?". Y (pan) is locked at 0° — a batten / matrix panel only tilts up and down, it never turns left or right.":", Y its pan.")+" Z is locked — lights aim with tilt"+(tiltOnlyO?" only.":" and pan only.")+" Scale is the fixture's size, the same on all three axes.",
+      note:""+measureUnit()+" — "+(tiltOnlyO?"typing a new position places it freely: battens and matrix panels can sit on any surface — the stage, a truss, a prop or a screen wall — and the position saves with the layout.":"typing a new position puts it on the bar nearest that point, so a light stays on a bar.")+" Rotation is in degrees: X is its tilt"+(tiltOnlyO?". Y (pan) is locked at 0° — a batten / matrix panel only tilts up and down, it never turns left or right.":", Y its pan.")+" Z is locked — lights aim with tilt"+(tiltOnlyO?" only.":" and pan only.")+" Scale is the fixture's size, the same on all three axes.",
       t:{px:r2(rp.x), py:r2(rp.y), pz:r2(rp.z), rx:Math.round(+f.tilt||0), ry:tiltOnlyO?0:Math.round(+f.pan||0), rz:0, sx:sz2, sy:sz2, sz:sz2},
       lock:tiltOnlyO?{rz:1,ry:1}:{rz:1}, slab:["Scale X · size ×","Scale Y · size ×","Scale Z · size ×"]};
   }
@@ -10887,7 +10995,8 @@ function applyObjField(o,key,v){
     if(key==="px"||key==="py"||key==="pz"){
       var rp=resolveFixturePos(f), P={x:rp.x, y:rp.y, z:rp.z};
       P[key==="px"?"x":key==="py"?"y":"z"]=v;
-      if(lightTrussBars().length)mountFixtureNearest(m,f,P);
+      if(isFreeFixture(f))writeFreeFixturePos(m,f,P); /* battens / matrix panels: the typed position is a free position, on any surface */
+      else if(lightTrussBars().length)mountFixtureNearest(m,f,P);
       else{f.tm=null; f.seg=null; f.x=r2(P.x); f.y=r2(P.y); f.z=r2(P.z)}
       return;
     }
@@ -11985,7 +12094,21 @@ function briefScreenMapCanvas(){
   return cv;
 }
 function downloadBriefPDF(){
-  if(!window.jspdf||!window.jspdf.jsPDF){toast("The PDF library didn't load — check your connection, then try the Technical Document again."); return}
+  if(!window.jspdf||!window.jspdf.jsPDF){
+    /* The PDF library is editor-only, so it is no longer loaded with
+       the page (client links never download it at all): fetch it on
+       first use, then run the export. A failed load keeps the old
+       message exactly. */
+    if(downloadBriefPDF._loading){toast("Loading the PDF library…"); return}
+    downloadBriefPDF._loading=true;
+    toast("Loading the PDF library…");
+    var pdfScript=document.createElement("script");
+    pdfScript.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+    pdfScript.onload=function(){downloadBriefPDF._loading=false; downloadBriefPDF()};
+    pdfScript.onerror=function(){downloadBriefPDF._loading=false; toast("The PDF library didn't load — check your connection, then try the Technical Document again.")};
+    document.head.appendChild(pdfScript);
+    return;
+  }
   computeAll();
   var bb=layoutBBox(), ext=briefExtents(), deck=briefDeckSpan();
   var totalCabs=0, totalPorts=0, totalPx=0, pMax=0, weight=0, totalArea=0;
@@ -13327,6 +13450,16 @@ $("mSave").addEventListener("click",function(){closeMenus(); if(typeof authUser!
    no drag editing, no save / load anywhere on screen. */
 var clientMode=false, clientPayload="", clientShareCode="", clientShareExpiresAt="", clientGateName="";
 (function(){
+  /* The <head> early boot has normally already detected the client
+     link (window.__LUTAS_CLIENT__) before the body was parsed, so
+     the editor chrome was never painted; adopt that result here.
+     The direct parse below stays as a fallback with identical rules,
+     so detection can never regress if the head script is blocked. */
+  var pre=window.__LUTAS_CLIENT__;
+  if(pre){
+    if(pre.code){clientMode=true; clientShareCode=pre.code; document.body.classList.add("clientview"); return}
+    if(pre.payload){clientMode=true; clientPayload=pre.payload; document.body.classList.add("clientview"); return}
+  }
   try{
     var q=new URLSearchParams(window.location.search||"");
     var sc=(q.get("share")||"").trim();
@@ -13419,6 +13552,21 @@ function fmtShareDate(iso){
   var d=new Date(iso);
   if(isNaN(d.getTime()))return "";
   try{return d.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})}catch(e){return d.toISOString().slice(0,10)}
+}
+/* The client bar's 30-day notice, shared by the client boot and the
+   comments-refresh path so both always agree: the rule, the expiry
+   date when known, and a days-left countdown from that date. */
+function shareExpiryText(){
+  var expTxt=fmtShareDate(clientShareExpiresAt), daysTxt="";
+  if(clientShareExpiresAt){
+    var ms=new Date(clientShareExpiresAt).getTime()-Date.now();
+    if(isFinite(ms)){
+      var d=Math.ceil(ms/86400000);
+      if(d>0)daysTxt=" · "+d+(d===1?" day":" days")+" left";
+      else if(d===0)daysTxt=" · Expires today";
+    }
+  }
+  return "This preview stays only 30 days"+(expTxt?" · Expires "+expTxt:"")+daysTxt;
 }
 /* Create a fresh short-share row. A mode / passkey change also
    creates a NEW row (a new code): anonymous rows cannot be updated
@@ -13945,7 +14093,38 @@ function initAuth(){
    unsaved changes — and only then. */
 var currentProjectId=null;
 var projSavedSnap=null;
-function projMarkSaved(){try{projSavedSnap=JSON.stringify(layoutDataObject())}catch(e){projSavedSnap=null}}
+function projMarkSaved(){try{projSavedSnap=JSON.stringify(layoutDataObject())}catch(e){projSavedSnap=null} if(autosaveArmed)autosaveClear()}
+/* ── AUTOSAVE — reload / crash recovery ──────────────────────────
+   The layout itself used to live only in memory (plus the 5-step
+   undo history): any reload, crash or accidental tab close lost
+   unsaved work with no way back. Now, whenever the layout differs
+   from the last saved / loaded / started state (projIsDirty), the
+   current layout is written — debounced — to the same device store
+   the theme and sign-in session already use, and on the next open
+   a recovery bar offers it back (see the boot check at the bottom
+   of this script). Saving (.ledx / account), loading a layout or
+   starting a new one marks the state saved (projMarkSaved above),
+   which clears the draft — so the bar only ever appears for work
+   that was genuinely never saved. Client view never autosaves:
+   it is a locked, camera-only look at someone else's design. */
+var AUTOSAVE_KEY="lutasLED.autosave.v1";
+var autosaveT=null;
+/* Armed only once the boot recovery check (bottom of this script)
+   has read any stored draft: the Projects wiring calls
+   projMarkSaved() once at load to set the saved baseline, and that
+   baseline call must not wipe a draft left by a previous session
+   before it has been offered back. */
+var autosaveArmed=false;
+function autosaveClear(){try{localStorage.removeItem(AUTOSAVE_KEY)}catch(e){}}
+function autosaveWrite(){
+  if(clientMode)return;
+  try{
+    if(!projIsDirty()){autosaveClear(); return}
+    localStorage.setItem(AUTOSAVE_KEY,JSON.stringify({savedAt:Date.now(),data:layoutDataObject()}));
+  }catch(e){/* store full / unavailable — recovery is best-effort, editing never blocks on it */}
+}
+function scheduleAutosave(){if(clientMode)return; clearTimeout(autosaveT); autosaveT=setTimeout(autosaveWrite,700)}
+window.addEventListener("beforeunload",function(){autosaveWrite()});
 function projIsDirty(){
   if(projSavedSnap===null){projMarkSaved(); return false}
   try{return JSON.stringify(layoutDataObject())!==projSavedSnap}catch(e){return false}
@@ -14266,7 +14445,7 @@ function projDeleteProject(r){
   var en=$("projEmptyNew"); if(en)en.addEventListener("click",projNewProject);
   $("projSearch").addEventListener("input",function(){renderProjectsGrid()});
   $("projSaveJson").addEventListener("click",function(){saveJson(); projMarkSaved()});
-  $("projLoadJson").addEventListener("click",function(){closeProjectsWindow(); $("fileLoad").click()});
+  $("projLoadJson").addEventListener("click",function(){closeProjectsWindow(); openLayoutPicker()});
   projMarkSaved();
 })();
 /* The shareable link shown in the dialog: this page's own address
@@ -14441,7 +14620,7 @@ function ccRefreshExpiry(){
     clientShareExpiresAt=new Date(Date.now()+30*86400000).toISOString();
   }).then(function(){
     var ce=$("clientExpiry");
-    if(ce){var expTxt=fmtShareDate(clientShareExpiresAt); ce.textContent="This preview stays only 30 days"+(expTxt?" · Expires "+expTxt:""); ce.hidden=false}
+    if(ce){ce.textContent=shareExpiryText(); ce.hidden=false}
     ccSyncExpiryLine();
   });
 }
@@ -15126,6 +15305,10 @@ function applySharedLayout(data){
   return true;
 }
 function bootClientView(){
+  /* The head-boot splash is the only thing painted so far; it is
+     dismissed as soon as the gate, the notice page or the loaded
+     design takes over the screen. */
+  function hideBootSplash(){var sp=document.getElementById("clientBootSplash"); if(sp)sp.hidden=true}
   /* No keyboard shortcuts in the client view — every app shortcut
      (save, undo, tools, views) is swallowed in the capture phase.
      Keys aimed at the client bar's own camera buttons still work,
@@ -15157,8 +15340,7 @@ function bootClientView(){
        client bar, with the expiry date when it is known. */
     var ce=$("clientExpiry");
     if(ce&&clientShareCode){
-      var expTxt=fmtShareDate(clientShareExpiresAt);
-      ce.textContent="This preview stays only 30 days"+(expTxt?" · Expires "+expTxt:"");
+      ce.textContent=shareExpiryText();
       ce.hidden=false;
     }
     /* Comments & reviews exist only for short shares (they key off
@@ -15175,6 +15357,7 @@ function bootClientView(){
      Shown instead of the design: the design is never applied or
      rendered behind it. */
   function showClientNotice(title,msg){
+    hideBootSplash();
     var n=$("clientNotice"); if(!n)return;
     var g=$("clientGate"); if(g)g.classList.remove("open");
     $("clientNoticeTitle").textContent=title;
@@ -15192,6 +15375,7 @@ function bootClientView(){
      set when the Supabase private gate has already checked the
      passkey server-side. */
   function loadClientData(data,opts){
+    hideBootSplash();
     opts=opts||{};
     /* New links wrap the layout with share info; links shared before
        Public / Private existed are the bare layout — Public, no gate. */
@@ -15315,6 +15499,7 @@ function bootClientView(){
     }).catch(function(){clientLinkError()});
   }
   function clientLinkError(){
+    hideBootSplash();
     toggle3D(true);
     var v3=$("view3d"); if(v3)v3.classList.add("client-on");
     var ct=$("clientTitle"); if(ct)ct.textContent="This client link could not be read";
@@ -15347,6 +15532,20 @@ function applyLoadedLayout(data){
       toast("Layout loaded: "+state.displays.length+" display(s).");
       return true;
 }
+/* Open the layout file picker. The input lives at body level and is
+   positioned off-screen — NOT inside the File menu and NOT
+   display:none / hidden: the old markup kept it inside a <label>
+   inside the menu, so the menu closing (and the `hidden` attribute)
+   left the input non-rendered at activation time, and strict
+   browsers then showed no picker at all. The picker is opened
+   synchronously inside the click gesture, before any menu closes. */
+function openLayoutPicker(){
+  var inp=$("fileLoad"); if(!inp)return;
+  inp.value="";
+  inp.click();
+  toast("Choose a .ledx layout file to load — or drop one anywhere on the window.");
+}
+var mLoadBtn=$("mLoad"); if(mLoadBtn)mLoadBtn.addEventListener("click",function(){openLayoutPicker(); closeMenus()});
 $("fileLoad").addEventListener("change",function(){
   var f=this.files[0]; if(!f)return;
   var rd=new FileReader();
@@ -15355,6 +15554,22 @@ $("fileLoad").addEventListener("change",function(){
     catch(e){toast("That file could not be read as a .ledx layout file.")}
   };
   rd.readAsText(f); this.value="";
+});
+/* Drag-and-drop loading — a second way in when a browser's picker
+   is unavailable: drop a .ledx / .json layout file anywhere on the
+   window and it loads exactly like File → Load layout. */
+window.addEventListener("dragover",function(ev){ev.preventDefault()});
+window.addEventListener("drop",function(ev){
+  ev.preventDefault();
+  if(clientMode)return;
+  var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];
+  if(!f||!/\.(ledx|json)$/i.test(f.name||""))return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    try{if(applyLoadedLayout(JSON.parse(rd.result))){currentProjectId=null; projMarkSaved()}}
+    catch(e){toast("That file could not be read as a .ledx layout file.")}
+  };
+  rd.readAsText(f);
 });
 var rzT; window.addEventListener("resize",function(){clearTimeout(rzT);rzT=setTimeout(function(){applyView();renderOverlay();refreshHumanRef2D();if(view3dOpen)size3D()},120)});
 /* ══════════ MODIFIER PANEL — 3ds Max style ══════════
@@ -15542,6 +15757,69 @@ function fixtureModelOf(f){
   return t==="wash"?"washhead":t==="spot"?"profile":"mover";
 }
 function fixtureModelLabel(f){return (FIXTURE_MODELS[fixtureModelOf(f)]||FIXTURE_MODELS.mover).label}
+/* ── FREE PLACEMENT — LED battens & matrix panels ONLY ─────────────
+   Battens and matrix panels are the ONE exception to the lights-ride-
+   the-truss rule: either can be placed ANYWHERE, on ANY surface —
+   the stage deck / floor, a truss bar, a prop, a screen wall, or any
+   other surface in the 3D stage. A free fixture NEVER rides a truss
+   segment (tm / seg stay null): its position is its own stored
+   x / y / z (set-relative, like every free fixture), so it saves and
+   loads with the layout exactly where it was left, and moving a
+   truss never drags it along. Every OTHER fixture family — beam,
+   spot, wash, BSW, moving head, wash head, PAR, profile, strobe /
+   blinder, beam fixture, gobo projector and laser — stays truss-bar-
+   only, exactly as before (see lightTrussBars / the drag handlers). */
+function isFreeFixture(f){var mdl=fixtureModelOf(f); return mdl==="batten"||mdl==="matrix"}
+/* Detach a fixture into free placement at exactly where it stands
+   now: a truss ride becomes its own stored position (the resolved
+   point, with the light-set offset taken back off — the same
+   convention writeFixtureBarMount uses when it stores a bar point),
+   so switching a light to / from a batten or matrix panel never
+   moves it on stage. */
+function detachFixtureToFree(m,f){
+  var rp=resolveFixturePos(f);
+  f.tm=null; f.seg=null; f.t=0; f.mount=null;
+  f.x=Math.round(clamp(rp.x-(+m.params.setX||0),-60,60)*100)/100;
+  f.y=Math.round(clamp(rp.y-(+m.params.setY||0),0,15)*100)/100;
+  f.z=Math.round(clamp(rp.z-(+m.params.setZ||0),-60,60)*100)/100;
+}
+/* Store a free fixture at a world point (the drag / Object-tab
+   frame: set-relative storage, the rendered group adds the set
+   offset back). It can never pick up a truss ride here. */
+function writeFreeFixturePos(m,f,wp){
+  f.tm=null; f.seg=null; f.t=0; f.mount=null;
+  f.x=Math.round(clamp(wp.x-(+m.params.setX||0),-60,60)*100)/100;
+  f.y=Math.round(clamp(wp.y-(+m.params.setY||0),0,15)*100)/100;
+  f.z=Math.round(clamp(wp.z-(+m.params.setZ||0),-60,60)*100)/100;
+}
+/* A NEW batten / matrix panel starts free: standing on the stage
+   deck at the front edge of the wall (on the floor when there is
+   no deck), spread along the front like successive additions of
+   any fixture — from there the user drags it onto any surface. */
+function placeFreeFixture(m,f){
+  var bb=sceneBBox3D(), wm=wallMetrics();
+  var cx=(bb.minX+bb.maxX)/2, n=(m.params.fixtures||[]).indexOf(f); if(n<0)n=0;
+  var wp={x:Math.round((cx+((n%5)-2)*0.9)*100)/100, y:Math.round(deckTopY()*100)/100, z:Math.round(((wm.frontZ!=null?wm.frontZ:bb.maxZ)-0.6)*100)/100};
+  writeFreeFixturePos(m,f,wp);
+  return wp;
+}
+/* Surface snap for a free drag, reusing the snapping the app
+   already has: the nearest truss bar point (within 0.6 m — the
+   batten lands exactly ON the bar, as a stored free position, not
+   a ride), the Tape Measure's 3D snap points (display corners /
+   cabinet grid, truss joints, prop tops and bases, stage piece
+   corners, object centres), and the stage deck / floor height.
+   Returns {point, snapped, label}. */
+function snapFreeFixturePoint(wp){
+  var bars=lightTrussBars();
+  var nb=bars.length?nearestBarPoint(wp,bars):null;
+  if(nb&&nb.dist<=0.6)return {point:nb.point,snapped:true,label:nb.bar.custom?("truss segment "+(nb.bar.idx+1)):"the truss bar"};
+  if(typeof T3!=="undefined"&&T3&&T3.scene){var sn=snapPoint3D(wp); if(sn&&sn.snapped)return {point:sn.p,snapped:true,label:sn.label}}
+  var dy=deckTopY();
+  if(dy>0.01&&Math.abs(wp.y-dy)<=0.35)return {point:{x:wp.x,y:dy,z:wp.z},snapped:true,label:"the stage deck"};
+  if(Math.abs(wp.y)<=0.35)return {point:{x:wp.x,y:0,z:wp.z},snapped:true,label:"the floor"};
+  return {point:wp,snapped:false,label:""};
+}
 /* Copy / paste clipboard for the custom builders — one slot, tagged
    by kind ("fixture" / "seg"), holding a deep clone of the copied
    item WITH its settings and effects (a light's type, fixture,
@@ -16436,7 +16714,7 @@ function sanitizeModifier(o){
   if(o.type==="light"){
     p.groups=Array.isArray(p.groups)?p.groups.filter(function(g){return g&&g.id}).map(function(g){return {id:String(g.id),name:(typeof g.name==="string"&&g.name)?g.name:"Group",on:g.on!==false,collapsed:g.collapsed===true}}):[];
     var gids={}; p.groups.forEach(function(g){gids[g.id]=1});
-    p.fixtures=Array.isArray(p.fixtures)?p.fixtures.filter(function(f){return f&&isFinite(f.x)&&isFinite(f.y)&&isFinite(f.z)}).map(function(f){var mdl=(f.model&&FIXTURE_MODELS[f.model])?f.model:null; return {x:+f.x,y:+f.y,z:+f.z,pan:(mdl==="batten"||mdl==="matrix")?0:(+f.pan||0),tilt:f.tilt===undefined?35:+f.tilt,size:isFinite(+f.size)?clamp(+f.size,0.4,2.5):1,bang:isFinite(+f.bang)?clamp(+f.bang,4,60):null,bstr:isFinite(+f.bstr)?clamp(+f.bstr,5,100):null,blen:(f.blen===null||f.blen===undefined||!isFinite(+f.blen))?null:clamp(+f.blen,1,60),seg:(f.seg===undefined?null:f.seg),tm:f.tm||null,t:+f.t||0,type:(f.type==="spot"||f.type==="wash"||f.type==="beam"||f.type==="bsw")?f.type:((p.ltype==="spot"||p.ltype==="wash"||p.ltype==="bsw")?p.ltype:"beam"),mount:(f.mount==="top"||f.mount==="stage"||f.mount==="screen")?f.mount:null,model:mdl,fx:mdl?sanitizeFx(mdl,f.fx):null,color:(typeof f.color==="string"&&/^#[0-9a-fA-F]{6}$/.test(f.color))?f.color:null,on:f.on!==false,group:(f.group&&gids[f.group])?f.group:null}}):[];
+    p.fixtures=Array.isArray(p.fixtures)?p.fixtures.filter(function(f){return f&&isFinite(f.x)&&isFinite(f.y)&&isFinite(f.z)}).map(function(f){var mdl=(f.model&&FIXTURE_MODELS[f.model])?f.model:null; return {x:+f.x,y:+f.y,z:+f.z,pan:(mdl==="batten"||mdl==="matrix")?0:(+f.pan||0),tilt:f.tilt===undefined?35:+f.tilt,size:isFinite(+f.size)?clamp(+f.size,0.4,2.5):1,bang:isFinite(+f.bang)?clamp(+f.bang,4,60):null,bstr:isFinite(+f.bstr)?clamp(+f.bstr,5,100):null,blen:(f.blen===null||f.blen===undefined||!isFinite(+f.blen))?null:clamp(+f.blen,1,60),seg:(mdl==="batten"||mdl==="matrix")?null:(f.seg===undefined?null:f.seg),tm:(mdl==="batten"||mdl==="matrix")?null:(f.tm||null),t:+f.t||0,type:(f.type==="spot"||f.type==="wash"||f.type==="beam"||f.type==="bsw")?f.type:((p.ltype==="spot"||p.ltype==="wash"||p.ltype==="bsw")?p.ltype:"beam"),mount:(mdl==="batten"||mdl==="matrix")?null:((f.mount==="top"||f.mount==="stage"||f.mount==="screen")?f.mount:null),model:mdl,fx:mdl?sanitizeFx(mdl,f.fx):null,color:(typeof f.color==="string"&&/^#[0-9a-fA-F]{6}$/.test(f.color))?f.color:null,on:f.on!==false,group:(f.group&&gids[f.group])?f.group:null}}):[];
   }
   /* Props: validate each imported model entry. The embedded model
      data is kept only as a plausible data URL within the embed
@@ -16743,6 +17021,10 @@ function resolveFixturePos(f){
    bar nearest the pointer, so it can travel from bar to bar through
    the truss system) and rotate (pan / tilt). It never floats free
    while a truss exists, and it has no scale in Light Edit.
+   THE ONE EXCEPTION: LED battens and matrix panels are FREE
+   placement (isFreeFixture) — they never ride a bar, are placed and
+   dragged anywhere on any surface, and the helpers below are never
+   applied to them; every caller checks isFreeFixture first.
    Rideable bars: every visible custom truss segment (the light stores
    tm / seg / t and follows the truss when the truss moves) plus the
    beams of preset (non-custom) truss systems (from trussBeamLines —
@@ -17670,7 +17952,7 @@ function syncCustomLists(m){
     if(syncCustomLists._lmid!==m.id){syncCustomLists._lmid=m.id; fixSelSet={}; fixSelAnchor=-1}
     Object.keys(fixSelSet).forEach(function(k){if(+k>=fixes.length||!fixSelSet[k])delete fixSelSet[k]});
     if(fixSelAnchor>=fixes.length)fixSelAnchor=-1;
-    var sig2=modSelFix+"|"+fixSelList().join(",")+":"+(lightToolArmed===m.id?"E":"-")+":"+(m.params.color||"")+":"+fixes.map(function(f){var rp=resolveFixturePos(f); return [Math.round(rp.x*100),Math.round(rp.y*100),Math.round(rp.z*100),Math.round(+f.pan||0),Math.round(+f.tilt||0),Math.round((+f.size||1)*100),f.bang==null?"":Math.round(+f.bang),f.bstr==null?"":Math.round(+f.bstr),f.tm||"",f.seg,f.type||"",f.model||"",f.color||"",f.on===false?0:1,f.group||"",f.fx?("FX"+[f.fx.len,f.fx.pixels,f.fx.cmode,f.fx.lens,f.fx.mode,f.fx.speed,f.fx.strobe,f.fx.lcolor,f.fx.power,f.fx.pattern,f.fx.scan,f.fx.kpps,f.fx.rows,f.fx.cols,f.fx.pitch,f.fx.cell,f.fx.rot,f.fx.spin,f.fx.spinSpeed,f.fx.focus,f.fx.zoom,f.fx.img?f.fx.img.length:0].join(";")):""].join(",")}).join("|")+":"+(m.params.groups||[]).map(function(g){return g.id+","+(g.on===false?0:1)+","+(g.collapsed===true?1:0)+","+g.name}).join("|")+":R"+(grpRename&&grpRename.kind==="light"?grpRename.gid:"");
+    var sig2=modSelFix+"|"+fixSelList().join(",")+":"+(lightToolArmed===m.id?"E":"-")+":"+(m.params.color||"")+":"+(m.params.custom?"C":"A")+":"+(+m.params.count||0)+":"+(m.params.ltype||"")+":"+fixes.map(function(f){var rp=resolveFixturePos(f); return [Math.round(rp.x*100),Math.round(rp.y*100),Math.round(rp.z*100),Math.round(+f.pan||0),Math.round(+f.tilt||0),Math.round((+f.size||1)*100),f.bang==null?"":Math.round(+f.bang),f.bstr==null?"":Math.round(+f.bstr),f.tm||"",f.seg,f.type||"",f.model||"",f.color||"",f.on===false?0:1,f.group||"",f.fx?("FX"+[f.fx.len,f.fx.pixels,f.fx.cmode,f.fx.lens,f.fx.mode,f.fx.speed,f.fx.strobe,f.fx.lcolor,f.fx.power,f.fx.pattern,f.fx.scan,f.fx.kpps,f.fx.rows,f.fx.cols,f.fx.pitch,f.fx.cell,f.fx.rot,f.fx.spin,f.fx.spinSpeed,f.fx.focus,f.fx.zoom,f.fx.img?f.fx.img.length:0].join(";")):""].join(",")}).join("|")+":"+(m.params.groups||[]).map(function(g){return g.id+","+(g.on===false?0:1)+","+(g.collapsed===true?1:0)+","+g.name}).join("|")+":R"+(grpRename&&grpRename.kind==="light"?grpRename.gid:"");
     sig2+=":U"+measureUnit();
     if(sig2!==syncCustomLists._fs){
       syncCustomLists._fs=sig2;
@@ -17718,7 +18000,15 @@ function syncCustomLists(m){
       ungrouped.forEach(function(i){lh+=lightRow(fixes[i],i,groups.length>0)});
       var selN=fixSelList().length;
       var grpBtn=(!lOff&&selN>=2)?'<div class="layer-tools"><button type="button" class="wide" data-makegroup="1" title="Make a new group from the selected lights">\uff0b Group '+selN+' selected lights</button></div>':"";
-      fixBox.innerHTML=fixes.length?(grpBtn+lh):'<p class="mod-note" style="margin:0">No lights yet.</p>';
+      /* One source of truth for the empty state: a NON-custom rig
+         is the automatic rig — `count` × type, the same lights the
+         stack row labels ("6 × Beam") and the 3D view builds — so
+         it must never read "No lights yet" here while another part
+         of the panel counts those lights. "No lights yet" is only
+         true of a custom rig with no fixtures placed. */
+      fixBox.innerHTML=fixes.length?(grpBtn+lh):(m.params.custom
+        ? '<p class="mod-note" style="margin:0">No lights yet.</p>'
+        : '<p class="mod-note" style="margin:0">'+Math.round(+m.params.count||0)+' × '+lightTypeLabel(m.params.ltype)+' — the automatic rig, lit on the 3D stage now. Press Edit and these become individual lights you can place yourself.</p>');
       var card=$("fixCard");
       if(card){
         var sf=(modSelFix>=0&&modSelFix<fixes.length)?fixes[modSelFix]:null;
@@ -17750,7 +18040,7 @@ function syncCustomLists(m){
                     var blenEff2=sf.blen!=null?Math.round(+sf.blen):(m.params.beamEndless===false?Math.round(+m.params.beamLen||12):12);
           if(beamFam2||mdl2==="gobo")beamCtl2+='<div class="zoomrow"><span style="font-size:11px;color:var(--muted);min-width:74px;flex:none">Beam length</span><input type="range" data-fparam="blen" data-fidx="'+i2+'" min="1" max="40" step="0.5" value="'+blenEff2+'"><output>'+blenEff2+' m</output></div>'
             +(sf.blen==null?'<p class="mod-note">Beam length follows the rig — '+(m.params.beamEndless===false?("fixed at "+Math.round(+m.params.beamLen||12)+" m"):"Endless: the cone runs until it hits the floor / deck")+'.</p>':'<p class="mod-note">This light has its own fixed beam length, overriding the rig setting.</p>');
-          card.innerHTML='<div class="cust-row sel" style="margin-top:8px"><div class="cr-head"><b>Light '+(i2+1)+' \u2014 '+fixtureModelLabel(sf)+'</b><span>@ ('+measureNum(rp2.x)+', '+measureNum(rp2.y)+', '+measureNum(rp2.z)+') '+measureUnit()+(onT2?" \u00b7 on truss "+((+sf.seg)+1):"")+'</span><span class="cr-acts">'
+          card.innerHTML='<div class="cust-row sel" style="margin-top:8px"><div class="cr-head"><b>Light '+(i2+1)+' \u2014 '+fixtureModelLabel(sf)+'</b><span>@ ('+measureNum(rp2.x)+', '+measureNum(rp2.y)+', '+measureNum(rp2.z)+') '+measureUnit()+((onT2&&!tiltOnly2)?" \u00b7 on truss "+((+sf.seg)+1):"")+'</span><span class="cr-acts">'
             +'<button type="button" data-fixcopy="'+i2+'">Copy</button><button type="button" data-fixpaste="1">Paste</button>'
             +'<button type="button" data-fixdel="'+i2+'">Remove</button></span></div>'
             +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">'
@@ -17759,9 +18049,10 @@ function syncCustomLists(m){
             +fixtureFxHtml(sf,i2)
             +beamCtl2
             +'<div class="field" style="margin-top:6px"><span>Group</span><select data-fgroup="'+i2+'"><option value=""'+(!sf.group?" selected":"")+'>Ungrouped</option>'+(m.params.groups||[]).map(function(g){return '<option value="'+g.id+'"'+(sf.group===g.id?" selected":"")+'>'+escapeHtml(g.name)+'</option>'}).join("")+'</select></div>'
-            +(onT2?'<p class="mod-note">On top of the truss — '+aimNote2+'.</p>'
+            +(tiltOnly2?'<p class="mod-note">Free placement — this '+(mdl2==="batten"?"LED batten":"matrix panel")+' can sit on ANY surface: the stage, a truss, a prop or a screen wall. Drag it freely in the 3D Edit view (the green Y arrow raises / lower it onto another surface) — '+aimNote2+'.</p>'
+              :(onT2?'<p class="mod-note">On top of the truss — '+aimNote2+'.</p>'
               :(sf.mount==="screen"?'<p class="mod-note">On top of the screen — '+aimNote2+'.</p>'
-              :(sf.mount==="stage"?'<p class="mod-note">On top of the stage — '+aimNote2+'.</p>':""))
+              :(sf.mount==="stage"?'<p class="mod-note">On top of the stage — '+aimNote2+'.</p>':"")))
               +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px">'
               +'<div class="field"><span>X \u00b7 '+measureUnit()+'</span><input type="number" step="'+measureStep(0.1)+'" data-fparam="x" data-fidx="'+i2+'" value="'+measureInputVal(rp2.x)+'"></div>'
               +'<div class="field"><span>Y \u00b7 '+measureUnit()+'</span><input type="number" step="'+measureStep(0.1)+'" data-fparam="y" data-fidx="'+i2+'" value="'+measureInputVal(rp2.y)+'"></div>'
@@ -18581,7 +18872,7 @@ function modBtnAction(m,act){
       if(!view3dOpen)toggle3D(true);
       setVMode("edit");
       render();
-      toast("Light editing ON — the SAME light setup you already see is now editable: nothing was moved, re-placed or re-aimed. Only the lights can be moved / edited in the 3D view; screens are locked. Drag a light to slide it along the truss bar (a light on top of the screen moves along the top of the wall), Rotate aims it (pan / tilt) — Scale does not work on lights. Add lights in the Lighting section and organise them — groups included — in Layers below it. Press Edit again to go back to editing screens.");
+      toast("Light editing ON — the SAME light setup you already see is now editable: nothing was moved, re-placed or re-aimed. Only the lights can be moved / edited in the 3D view; screens are locked. Drag a light to slide it along the truss bar (a light on top of the screen moves along the top of the wall) — except LED battens and matrix panels, which drag FREELY and can be placed on any surface (stage, truss, a prop, a screen). Rotate aims it (pan / tilt; battens / matrix panels tilt only) — Scale does not work on lights. Add lights in the Lighting section and organise them — groups included — in Layers below it. Press Edit again to go back to editing screens.");
       return;
     }
     if(act==="dupLight"){
@@ -18614,12 +18905,23 @@ function modBtnAction(m,act){
       selD.forEach(function(i){
         var cD=JSON.parse(JSON.stringify(fixesD[i]));
         if(newGidD)cD.group=newGidD;
-        if(cD.tm){
+        var freeD=isFreeFixture(cD);
+        if(freeD){
+          /* A batten / matrix copy keeps FREE placement: it lands
+             beside the original, at the same height, as its own
+             stored position — never mounted on a bar. */
+          var rpFD=resolveFixturePos(cD);
+          cD.tm=null; cD.seg=null; cD.t=0; cD.mount=null;
+          cD.x=Math.round(clamp(rpFD.x-(+m.params.setX||0)+0.8,-60,60)*100)/100;
+          cD.y=Math.round(clamp(rpFD.y-(+m.params.setY||0),0,15)*100)/100;
+          cD.z=Math.round(clamp(rpFD.z-(+m.params.setZ||0)+0.4,-60,60)*100)/100;
+        }
+        if(!freeD&&cD.tm){
           var tmD=modById(cD.tm);
           if(!tmD||!tmD.params.custom||!(tmD.params.segs||[])[cD.seg]){cD.tm=null; cD.seg=null}
           else cD.t=clamp((+cD.t||0)+0.08,0,1);
         }
-        if(!cD.tm){
+        if(!freeD&&!cD.tm){
           if(lightTrussBars().length){mountFixtureNearest(m,cD,{x:(+cD.x||0)+(+m.params.setX||0)+0.8, y:(+cD.y||0)+(+m.params.setY||0), z:(+cD.z||0)+(+m.params.setZ||0)+0.4})}
           else if(cD.mount==="screen"){cD.x=Math.round(clamp((+cD.x||0)+0.8,-40,40)*100)/100} /* a copy on top of the screen stays on top of the screen — a touch further along the wall top, same height and depth */
           else{cD.x=Math.round(clamp((+cD.x||0)+0.8,-40,40)*100)/100; cD.z=Math.round(clamp((+cD.z||0)+0.4,-40,40)*100)/100}
@@ -18630,8 +18932,8 @@ function modBtnAction(m,act){
       modSelFix=firstD; fixSelAnchor=firstD;
       render();
       toast(grpD
-        ?"Group duplicated — “"+grpD.name+" copy” holds "+selD.length+" copied lights on the truss bar, and is selected: click its group row in Layers to move the whole copy together along the bars."
-        :"Duplicated "+selD.length+" light"+(selD.length===1?"":"s")+" — the copies sit on the truss bar beside the originals and are selected. Slide them along the bar in the 3D view.");
+        ?"Group duplicated — “"+grpD.name+" copy” holds "+selD.length+" copied lights, and is selected: click its group row in Layers to move the whole copy together."
+        :"Duplicated "+selD.length+" light"+(selD.length===1?"":"s")+" — the copies sit beside the originals and are selected. Truss lights stay on the bar; battens / matrix panels keep their free placement.");
       return;
     }
     /* addGroup — gated on light editing, like every light action.
@@ -18739,11 +19041,18 @@ function addFixturePreset(m,key){
   ensureCustomFixtures(m);
   var nfF={x:0,y:0,z:0,pan:0,tilt:35,seg:null,tm:null,t:0,type:pr.type,model:key,fx:FIXTURE_FX[key]?sanitizeFx(key,null):null,color:null,on:true,group:null};
   p.fixtures.push(nfF);
+  /* Battens and matrix panels are FREE placement: a new one stands
+     on the stage deck, and from there it can be dragged onto ANY
+     surface. Every other preset follows the truss rule below. */
+  var freeF=isFreeFixture(nfF);
   var onTrussF=!!lightTrussBars().length;
-  if(onTrussF)mountNewFixture(m,nfF); else placeFixtureOnScreenTop(m,nfF,((p.fixtures.length-1)%5)/4);
+  if(freeF)placeFreeFixture(m,nfF);
+  else if(onTrussF)mountNewFixture(m,nfF); else placeFixtureOnScreenTop(m,nfF,((p.fixtures.length-1)%5)/4);
   modSelFix=p.fixtures.length-1; fixSelOnly(modSelFix); fixSelAnchor=modSelFix;
   render();
-  toast(pr.label+" placed as Light "+p.fixtures.length+" ("+lightTypeLabel(pr.type)+" beam) \u2014 "+(onTrussF?"ON the top truss":"ON TOP of the screen (no truss system in this layout)")+", and selected: drag its gizmo in the 3D Edit view"+(onTrussF?" to slide it along the bar":" along the top of the wall")+", Rotate aims it. Lights have no scale. Colour and aim are in its card under Layers.");
+  toast(freeF
+    ?pr.label+" placed as Light "+p.fixtures.length+" \u2014 FREE placement: it stands on the stage, and you can drag it anywhere, on any surface (stage, truss, a prop, a screen wall), in the 3D Edit view. It tilts only \u2014 it never pans \u2014 and it gives light by glowing, pixel by pixel. Lights have no scale. Its settings are in its card under Layers."
+    :pr.label+" placed as Light "+p.fixtures.length+" ("+lightTypeLabel(pr.type)+" beam) \u2014 "+(onTrussF?"ON the top truss":"ON TOP of the screen (no truss system in this layout)")+", and selected: drag its gizmo in the 3D Edit view"+(onTrussF?" to slide it along the bar":" along the top of the wall")+", Rotate aims it. Lights have no scale. Colour and aim are in its card under Layers.");
 }
 function modParamEvent(ev){
   var head=ev.target.closest?ev.target.closest(".rollout-head"):null;
@@ -18997,7 +19306,7 @@ function modParamEvent(ev){
     var fcp=ev.target.closest?ev.target.closest("[data-fixcopy]"):null;
     if(fcp){var mfcp=modById(selModId); if(mfcp&&mfcp.type==="light"){if(lightToolArmed!==mfcp.id){toast("Light editing is OFF — press the Edit button in the Lighting section to edit the lights."); return} var fxCp=mfcp.params.fixtures[+fcp.getAttribute("data-fixcopy")]; if(fxCp){modClip={kind:"fixture",data:JSON.parse(JSON.stringify(fxCp))}; render(); toast("Light "+(+fcp.getAttribute("data-fixcopy")+1)+" copied — its type, fixture, colour and aim (its effects and settings) come with Paste.")}} return}
     var fpt=ev.target.closest?ev.target.closest("[data-fixpaste]"):null;
-    if(fpt){var mfpt=modById(selModId); if(mfpt&&mfpt.type==="light"){if(lightToolArmed!==mfpt.id){toast("Light editing is OFF — press the Edit button in the Lighting section to edit the lights."); return} if(!modClip||modClip.kind!=="fixture"){toast("Nothing to paste — Copy a light in its card under Layers first."); return} var fxP=JSON.parse(JSON.stringify(modClip.data)); /* a copy riding a truss stays on that truss (a touch further along it); any other copy is mounted on the nearest truss bar when the layout has a truss — lights live on the bar — and only lands beside the original when there is no truss at all */ if(fxP.tm){var tmP=modById(fxP.tm); if(!tmP||!tmP.params.custom||!(tmP.params.segs||[])[fxP.seg]){fxP.tm=null; fxP.seg=null} else fxP.t=clamp((+fxP.t||0)+0.08,0,1)} if(!fxP.tm){if(lightTrussBars().length){mountFixtureNearest(mfpt,fxP,{x:fxP.x+(+mfpt.params.setX||0)+0.8, y:fxP.y+(+mfpt.params.setY||0), z:fxP.z+(+mfpt.params.setZ||0)+0.4})}else if(fxP.mount==="screen"){fxP.x=Math.round(clamp((+fxP.x||0)+0.8,-40,40)*100)/100} /* a pasted copy on top of the screen stays on top of the screen */ else{fxP.x=Math.round(clamp((+fxP.x||0)+0.8,-40,40)*100)/100; fxP.z=Math.round(clamp((+fxP.z||0)+0.4,-40,40)*100)/100}} if(fxP.group&&!(mfpt.params.groups||[]).some(function(g){return g.id===fxP.group}))fxP.group=null; mfpt.params.fixtures.push(fxP); modSelFix=mfpt.params.fixtures.length-1; fixSelOnly(modSelFix); fixSelAnchor=modSelFix; render(); toast("Light pasted as Light "+mfpt.params.fixtures.length+" — same "+fixtureModelLabel(fxP)+", "+lightTypeLabel(fxP.type)+" type, colour and aim, on the truss bar. Slide it along the bar in the 3D Edit view, or change anything in its card.")} return}
+    if(fpt){var mfpt=modById(selModId); if(mfpt&&mfpt.type==="light"){if(lightToolArmed!==mfpt.id){toast("Light editing is OFF — press the Edit button in the Lighting section to edit the lights."); return} if(!modClip||modClip.kind!=="fixture"){toast("Nothing to paste — Copy a light in its card under Layers first."); return} var fxP=JSON.parse(JSON.stringify(modClip.data)); /* a batten / matrix copy keeps FREE placement beside the original — never a bar mount; a copy riding a truss stays on that truss (a touch further along it); any other copy is mounted on the nearest truss bar when the layout has a truss — lights live on the bar — and only lands beside the original when there is no truss at all */ var freeP=isFreeFixture(fxP); if(freeP){var rpFP=resolveFixturePos(fxP); fxP.tm=null; fxP.seg=null; fxP.t=0; fxP.mount=null; fxP.x=Math.round(clamp(rpFP.x-(+mfpt.params.setX||0)+0.8,-60,60)*100)/100; fxP.y=Math.round(clamp(rpFP.y-(+mfpt.params.setY||0),0,15)*100)/100; fxP.z=Math.round(clamp(rpFP.z-(+mfpt.params.setZ||0)+0.4,-60,60)*100)/100} if(!freeP&&fxP.tm){var tmP=modById(fxP.tm); if(!tmP||!tmP.params.custom||!(tmP.params.segs||[])[fxP.seg]){fxP.tm=null; fxP.seg=null} else fxP.t=clamp((+fxP.t||0)+0.08,0,1)} if(!freeP&&!fxP.tm){if(lightTrussBars().length){mountFixtureNearest(mfpt,fxP,{x:fxP.x+(+mfpt.params.setX||0)+0.8, y:fxP.y+(+mfpt.params.setY||0), z:fxP.z+(+mfpt.params.setZ||0)+0.4})}else if(fxP.mount==="screen"){fxP.x=Math.round(clamp((+fxP.x||0)+0.8,-40,40)*100)/100} /* a pasted copy on top of the screen stays on top of the screen */ else{fxP.x=Math.round(clamp((+fxP.x||0)+0.8,-40,40)*100)/100; fxP.z=Math.round(clamp((+fxP.z||0)+0.4,-40,40)*100)/100}} if(fxP.group&&!(mfpt.params.groups||[]).some(function(g){return g.id===fxP.group}))fxP.group=null; mfpt.params.fixtures.push(fxP); modSelFix=mfpt.params.fixtures.length-1; fixSelOnly(modSelFix); fixSelAnchor=modSelFix; render(); toast("Light pasted as Light "+mfpt.params.fixtures.length+" — same "+fixtureModelLabel(fxP)+", "+lightTypeLabel(fxP.type)+" type, colour and aim"+(freeP?", free placement — drag it anywhere, on any surface, in the 3D Edit view":", on the truss bar. Slide it along the bar in the 3D Edit view")+", or change anything in its card.")} return}
     var fd=ev.target.closest?ev.target.closest("[data-fixdel]"):null;
     if(fd){var mf=modById(selModId); if(mf&&mf.type==="light"){if(lightToolArmed!==mf.id){toast("Light editing is OFF — press the Edit button in the Lighting section to edit the lights."); return} var delI=+fd.getAttribute("data-fixdel"); mf.params.fixtures.splice(delI,1); var nset={}; Object.keys(fixSelSet).forEach(function(k){var ki=+k; if(ki<delI)nset[ki]=true; else if(ki>delI)nset[ki-1]=true}); fixSelSet=nset; if(fixSelAnchor===delI)fixSelAnchor=-1; else if(fixSelAnchor>delI)fixSelAnchor--; if(modSelFix>=mf.params.fixtures.length)modSelFix=-1; render(); toast("Fixture removed.")} return}
     var dsl=ev.target.closest?ev.target.closest("[data-delsellight]"):null;
@@ -19017,7 +19326,7 @@ function modParamEvent(ev){
     var fgEl=ev.target.closest?ev.target.closest("[data-fgroup]"):null;
     if(fgEl){var mfg=modById(selModId); if(mfg&&mfg.type==="light"){var fxG=mfg.params.fixtures[+fgEl.getAttribute("data-fgroup")]; if(fxG){fxG.group=fgEl.value||null; render(); toast("Light "+(+fgEl.getAttribute("data-fgroup")+1)+(fxG.group?" moved into the group.":" moved to Ungrouped."))}} return}
     var fmEl=ev.target.closest?ev.target.closest("[data-fmodel]"):null;
-    if(fmEl){var mfm=modById(selModId); if(mfm&&mfm.type==="light"){var fxM=mfm.params.fixtures[+fmEl.getAttribute("data-fmodel")]; if(fxM){fxM.model=fmEl.value||null; var effM=fixtureModelOf(fxM); if(FIXTURE_MODELS[effM])fxM.type=FIXTURE_MODELS[effM].type; if(effM==="batten"||effM==="matrix")fxM.pan=0; if(fxM.model&&FIXTURE_FX[fxM.model])fxM.fx=sanitizeFx(fxM.model,fxM.fx); render(); toast("Light "+(+fmEl.getAttribute("data-fmodel")+1)+" — fixture: "+fixtureModelLabel(fxM)+". Its card now shows only that fixture\u2019s own settings.")}} return}
+    if(fmEl){var mfm=modById(selModId); if(mfm&&mfm.type==="light"){var fxM=mfm.params.fixtures[+fmEl.getAttribute("data-fmodel")]; if(fxM){var wasFreeM=isFreeFixture(fxM), rpWasM=resolveFixturePos(fxM); fxM.model=fmEl.value||null; var effM=fixtureModelOf(fxM); if(FIXTURE_MODELS[effM])fxM.type=FIXTURE_MODELS[effM].type; if(effM==="batten"||effM==="matrix")fxM.pan=0; if(fxM.model&&FIXTURE_FX[fxM.model])fxM.fx=sanitizeFx(fxM.model,fxM.fx); /* Placement follows the fixture family: becoming a batten / matrix panel DETACHES it into free placement exactly where it stands (it can now go on any surface); becoming any other fixture puts it back under the truss rule — mounted on the nearest bar when the layout has a truss. */ if(isFreeFixture(fxM))detachFixtureToFree(mfm,fxM); else if(wasFreeM&&lightTrussBars().length)mountFixtureNearest(mfm,fxM,{x:rpWasM.x+(+mfm.params.setX||0), y:rpWasM.y+(+mfm.params.setY||0), z:rpWasM.z+(+mfm.params.setZ||0)}); render(); toast("Light "+(+fmEl.getAttribute("data-fmodel")+1)+" — fixture: "+fixtureModelLabel(fxM)+". Its card now shows only that fixture\u2019s own settings."+(isFreeFixture(fxM)?" It is now FREE placement — drag it anywhere, on any surface, in the 3D Edit view.":wasFreeM?" It is back on the truss rule — it rides the truss bar.":""))}} return}
     var fxEl=ev.target.closest?ev.target.closest("[data-fxsel]"):null;
     if(fxEl){var mfxs=modById(selModId); if(mfxs&&mfxs.type==="light"){var tFx=mfxs.params.fixtures[+fxEl.getAttribute("data-fxidx")]; var fxS=fixtureFx(tFx); if(fxS){var kv=fxEl.value, kn=parseFloat(kv); fxS[fxEl.getAttribute("data-fxsel")]=(kv!==""&&String(kn)===kv)?kn:kv; var fxSan=sanitizeFx(fixtureModelOf(tFx),fxS); if(fxSan)tFx.fx=fxSan; render()}} return}
     var ptfEl=ev.target.closest?ev.target.closest("[data-ptexfile]"):null;
@@ -19071,8 +19380,14 @@ function modParamEvent(ev){
     var ck=cpEl.getAttribute("data-cparam");
     if(cpEl.tagName==="BUTTON"){
       if(ev.type!=="click")return;
-      if(cpEl.hasAttribute("data-cval")){pkC.type=cpEl.getAttribute("data-cval"); render(); toast(pkC.name+" — now "+crowdTypeLabel(crowdTypeOf(pkC)).toLowerCase()+".")}
-      else if(cpEl.classList.contains("tgl")){pkC.animate=pkC.animate===false?true:false; render()}
+      /* Type / Animate change ONLY the crowd: refresh the panel and
+         rebuild this modifier's 3D group — never a full render(),
+         whose whole-scene rebuild (every screen, truss, light and
+         crowd pack) is what made switching a 240-person pack to
+         Pavilion stall the page. Mirrors the slider path below,
+         which already rebuilds only the crowd group on input. */
+      if(cpEl.hasAttribute("data-cval")){pkC.type=cpEl.getAttribute("data-cval"); syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mcp); toast(pkC.name+" — now "+crowdTypeLabel(crowdTypeOf(pkC)).toLowerCase()+".")}
+      else if(cpEl.classList.contains("tgl")){pkC.animate=pkC.animate===false?true:false; syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mcp)}
       return;
     }
     if(ev.type!=="input"&&ev.type!=="change")return;
@@ -19774,20 +20089,33 @@ function buildCrowdGroup(m,bb){
   });
   return g;
 }
+/* Segment geometries are IDENTICAL for every figure of every pack
+   (proper radius + length per segment: torso r.155 × .42, upper arm
+   r.050 × .26, forearm r.042 × .24, thigh r.075 × .40, shin
+   r.055 × .40, head a sphere r.11) — so they are built ONCE and
+   shared by every pack and every rebuild, instead of re-lathing
+   seven geometries per pack on every render. (disposeModGroup may
+   release a shared geometry's GPU buffers on teardown; three.js
+   re-uploads the same geometry object on its next use, so sharing
+   is safe.) */
+var crowdGeoCache=null;
+function crowdGeos(){
+  if(crowdGeoCache)return crowdGeoCache;
+  var seatGeo=new THREE.BoxGeometry(0.46,0.07,0.44); seatGeo.translate(0,0.46,0);
+  var backGeo=new THREE.BoxGeometry(0.46,0.55,0.07); backGeo.translate(0,0.78,0.22);
+  var stepGeo=new THREE.BoxGeometry(1,1,1); stepGeo.translate(0,0.5,0);
+  crowdGeoCache={torso:crowdTorsoGeo(0.155,0.42),head:new THREE.SphereGeometry(0.11,14,12),
+    uarm:crowdCapsuleGeo(0.05,0.26),farm:crowdCapsuleGeo(0.042,0.24),hand:new THREE.SphereGeometry(0.045,8,6),
+    thigh:crowdCapsuleGeo(0.075,0.40),shin:crowdCapsuleGeo(0.055,0.40),
+    seat:seatGeo,back:backGeo,step:stepGeo};
+  return crowdGeoCache;
+}
 function buildCrowdPackGroup(m,pk,bb,g,pkIdx){
   var built=crowdPackItems(m,pk,bb), items=built.items, seated=built.seated, fr=built.frame;
   if(!items.length)return;
   var mv=clamp(+pk.movement||0,0,100)/100;
-  /* Segment geometries — proper radius + length per segment:
-     torso r.155 × .42, upper arm r.050 × .26, forearm r.042 × .24,
-     thigh r.075 × .40, shin r.055 × .40, head a sphere r.11. */
-  var torsoGeo=crowdTorsoGeo(0.155,0.42);
-  var headGeo=new THREE.SphereGeometry(0.11,14,12);
-  var uArmGeo=crowdCapsuleGeo(0.05,0.26);
-  var fArmGeo=crowdCapsuleGeo(0.042,0.24);
-  var handGeo=new THREE.SphereGeometry(0.045,8,6);
-  var thighGeo=crowdCapsuleGeo(0.075,0.40);
-  var shinGeo=crowdCapsuleGeo(0.055,0.40);
+  var CG=crowdGeos();
+  var torsoGeo=CG.torso, headGeo=CG.head, uArmGeo=CG.uarm, fArmGeo=CG.farm, handGeo=CG.hand, thighGeo=CG.thigh, shinGeo=CG.shin;
   var n=items.length;
   function im(geo,mat,cnt){var q=new THREE.InstancedMesh(geo,mat,cnt); q.userData.ownGeo=true; q.frustumCulled=false; g.add(q); return q}
   var torso=im(torsoGeo,crowdBodyMat,n), head=im(headGeo,crowdHeadMat,n);
@@ -19805,10 +20133,8 @@ function buildCrowdPackGroup(m,pk,bb,g,pkIdx){
   });
   [torso,head,uarm,farm,hand,thigh,shin].forEach(function(q){if(q.instanceColor)q.instanceColor.needsUpdate=true});
   if(seated&&built.type!=="pavilion"){
-    var seatGeo=new THREE.BoxGeometry(0.46,0.07,0.44); seatGeo.translate(0,0.46,0);
-    var backGeo=new THREE.BoxGeometry(0.46,0.55,0.07); backGeo.translate(0,0.78,0.22);
-    var seats=new THREE.InstancedMesh(seatGeo,chairMat,n);
-    var backs=new THREE.InstancedMesh(backGeo,chairMat,n);
+    var seats=new THREE.InstancedMesh(CG.seat,chairMat,n);
+    var backs=new THREE.InstancedMesh(CG.back,chairMat,n);
     seats.userData.ownGeo=true; backs.userData.ownGeo=true;
     seats.frustumCulled=false; backs.frustumCulled=false;
     var dm0=new THREE.Object3D();
@@ -19823,8 +20149,7 @@ function buildCrowdPackGroup(m,pk,bb,g,pkIdx){
        figures of each row sit on their tier (item y = tier top),
        feet resting on the step below. No roof, no posts. */
     var rowsS=Math.max(1,Math.floor(fr.D/1.05));
-    var stepGeo=new THREE.BoxGeometry(1,1,1); stepGeo.translate(0,0.5,0);
-    var steps=new THREE.InstancedMesh(stepGeo,pavStepMat,rowsS);
+    var steps=new THREE.InstancedMesh(CG.step,pavStepMat,rowsS);
     steps.userData.ownGeo=true; steps.frustumCulled=false;
     var dm1=new THREE.Object3D();
     var stepRot=(+pk.rot||0)*Math.PI/180, stepZc=fr.z0+fr.D/2, stepCs=Math.cos(stepRot), stepSn=Math.sin(stepRot);
@@ -21416,7 +21741,17 @@ function rebuildAttachedLights(trussMid){
 var _animQ=null;
 function animateModifiers3D(t){
   if(!T3)return;
-  (T3.crowds||[]).forEach(function(c){if(c.animate)updateCrowdInstances(c,t)});
+  /* Crowd posing is the heaviest per-frame work in the app — twelve
+     instanced segment matrices per person, every frame (2,880
+     matrix compositions + GPU uploads per frame for one 240-person
+     pack), which on slower / software-rendered machines saturated
+     the main thread until the page read as busy / unresponsive.
+     Poses now update at ~30 Hz — a swaying crowd reads identically,
+     at half the cost — and never while the page is hidden. */
+  if(!document.hidden&&(!T3._crowdT||(t-T3._crowdT)>=0.033)){
+    T3._crowdT=t;
+    (T3.crowds||[]).forEach(function(c){if(c.animate)updateCrowdInstances(c,t)});
+  }
   /* L.pivot is the fixture's HEAD group — the sweep turns the head
      alone; the clamp, base and yoke under it stay fixed to the
      truss (or standing on the stage), like the real fixture. */
@@ -21469,12 +21804,57 @@ function animateModifiers3D(t){
   });
 }
 
-applyPrefs();
-render();
-initAuth();
-initNotifications();
-if(clientMode)bootClientView();
-requestAnimationFrame(function(){fitView()});
+/* ── Boot — editor vs client ─────────────────────────────────────
+   A normal open runs the editor initialisation below. A client link
+   (detected in the <head>, before first paint) runs NONE of it: no
+   editor prefs / 2D render, no autosave, no auth, no notifications,
+   no Projects — only bootClientView() at the end, which drives the
+   client renderer, camera and comments. The client's design is
+   applied by that boot itself (applySharedLayout applies the saved
+   prefs it carries), so nothing editor-side is missed. */
+if(!clientMode){
+  applyPrefs();
+  render();
+}
+/* ── Autosave recovery — offer back any draft a previous session
+   left unsaved (see AUTOSAVE above). The draft is read BEFORE
+   autosaveArmed is set, because arming is what lets a later
+   projMarkSaved() clear it. Restoring applies the draft exactly
+   like loading a .ledx (one undoable step) and keeps it dirty —
+   it is still unsaved work until the user saves it — while
+   Discard clears the draft and marks the fresh layout the saved
+   baseline. Nothing is applied silently. */
+(function(){
+  if(clientMode)return; /* never armed in client view — a shared link must not clear the designer's own draft in this browser */
+  var entry=null;
+  try{var raw=localStorage.getItem(AUTOSAVE_KEY); if(raw)entry=JSON.parse(raw)}catch(e){}
+  autosaveArmed=true;
+  if(!entry||!entry.data||!Array.isArray(entry.data.displays)||!entry.data.displays.length){autosaveClear(); return}
+  var bar=$("autosaveBar"); if(!bar)return;
+  var when=entry.savedAt?new Date(entry.savedAt):null;
+  $("autosaveMsg").textContent="Unsaved work from "+(when?when.toLocaleString():"a previous session")+" was found — it was never saved to a file or your account. Restore it, or discard it and keep the fresh layout.";
+  bar.hidden=false;
+  $("autosaveRestore").addEventListener("click",function(){
+    bar.hidden=true;
+    if(applyLoadedLayout(entry.data))toast("Recovered your unsaved work — save it with File → Save layout (.ledx) to keep it for good.");
+  });
+  $("autosaveDiscard").addEventListener("click",function(){
+    bar.hidden=true;
+    autosaveClear(); projMarkSaved();
+    toast("Recovered draft discarded — this fresh layout is the saved state now.");
+  });
+})();
+if(clientMode){
+  /* Client-only boot: auth, the sign-in popup, the account button,
+     Projects and notifications are never initialised for a client
+     link — the client renderer, camera and comments are all that
+     run (see bootClientView). */
+  bootClientView();
+}else{
+  initAuth();
+  initNotifications();
+  requestAnimationFrame(function(){fitView()});
+}
 })();
 </script>
 </body>
