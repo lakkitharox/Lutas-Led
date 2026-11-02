@@ -458,6 +458,15 @@ select option,select optgroup{color:#11151c;background-color:#fff}
 .about-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:22px;color:#75879a;font-size:10px}
 .about-close-btn{padding:9px 20px;border:1px solid #2a5268;border-radius:6px;background:#123244;color:#8ceaff;cursor:pointer;font:inherit;font-size:12px}
 .about-close-btn:hover{background:#19465b}
+.about-donate{margin-top:22px;padding:22px 18px 20px;border:1px solid #253140;border-radius:12px;background:rgba(255,255,255,.02);text-align:center}
+.about-donate-logo{display:block;margin:0 auto 14px;width:min(168px,62%);height:auto}
+.about-donate-title{margin:0;font-family:Archivo,sans-serif;font-size:15px;font-weight:700;letter-spacing:.01em;color:#edf7ff}
+.about-note-title{margin:14px 0 0;font-size:13px;font-weight:700;color:#74dfff}
+.about-donate-text{color:#b8c7d7;font-size:13px;line-height:1.8;margin:10px 0 0;text-align:center}
+.about-donate-sign{color:#edf7ff;font-size:13px;line-height:1.8;margin:10px 0 0;text-align:center}
+.about-coffee-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:0;padding:11px 22px;border-radius:999px;background:#ffdd00;color:#11151c;font-weight:800;font-size:13px;text-decoration:none;border:1px solid #ffdd00;box-shadow:0 6px 18px rgba(255,221,0,.18)}
+.about-coffee-btn:hover{background:#ffe84d;border-color:#ffe84d}
+.about-coffee-btn:focus-visible{outline:2px solid #74dfff;outline-offset:3px}
 .modal.add-modal{width:min(620px,100%)}
 /* Preferences window — Photoshop-style: a category list down the
    LEFT (General, Learning, Keyboard shortcuts, Activation) and the
@@ -2305,6 +2314,9 @@ body:not(.learning-on) .learn{display:none}
       <div class="about-info"><span>Version</span><strong>V1.0.0.0.1</strong></div>
       <div class="about-info"><span>Developed by</span><strong>Team LUTAS</strong></div>
       <div class="about-info"><span>Created on</span><strong>October 22, 2026</strong></div>
+      <section class="about-donate" aria-label="Support the developers">
+        <a class="about-coffee-btn" href="https://buymeacoffee.com/lutasled" target="_blank" rel="noopener">Buy Me a Coffee — Donate</a>
+      </section>
       <div class="about-footer">
         <span>© 2026 LUTAS LED | Developed by Team LUTAS</span>
         <button class="about-close-btn" id="aboutClose" type="button">Close</button>
