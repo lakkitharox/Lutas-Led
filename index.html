@@ -1470,7 +1470,7 @@ body:not(.learning-on) .learn{display:none}
         </div>
         <div class="render-bar">
           <div class="v3d-group"><span class="cap">Camera</span><button data-cam="front" class="iconly" title="Front — orthographic elevation, no perspective" aria-label="Front camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="4,8.5 16,8.5 16,20.5 4,20.5" fill="currentColor" stroke="none"/><path d="M4 8.5 7 4h12v12l-3 4.5H4Z"/><path d="M4 8.5h12M16 8.5 19 4M16 8.5v12"/></svg></button><button data-cam="top" class="iconly" title="Top — orthographic plan view" aria-label="Top camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,2.8 20.5,7.4 12,12 3.5,7.4" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="left" class="iconly" title="Left — orthographic, from stage left" aria-label="Left camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3.5,7.4 12,12 12,21.2 3.5,16.6" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="right" class="iconly" title="Right — orthographic, from stage right" aria-label="Right camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,12 20.5,7.4 20.5,16.6 12,21.2" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="iso" class="iconly" title="Isometric — perspective three-quarter view" aria-label="Isometric camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="free" class="iconly" title="Free camera — full Blender-style control: orbit, tilt all the way over, pan in the screen plane, dolly" aria-label="Free camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6.5" width="13" height="11" rx="2"/><path d="m15.5 10.8 6-3.3v9l-6-3.3"/></svg></button></div>
-          <div class="v3d-group"><span class="cap">Graphics</span><select class="render-q" id="renderQuality" aria-label="Render graphics — Low, Medium, High or Ultra; Auto steps down by itself if the frame rate drops"><option value="auto" selected>Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="ultra">Ultra</option></select></div>
+          <div class="v3d-group"><span class="cap">Graphics</span><select class="render-q" id="renderQuality" aria-label="Render graphics — Low, Medium, High, Ultra or Cinematic; Auto steps down by itself if the frame rate drops"><option value="auto" selected>Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="ultra">Ultra</option><option value="cinematic">Cinematic</option></select></div>
           <div class="v3d-group"><button id="btnRenderSettings" aria-pressed="true" title="Show or hide the Render settings panel — Graphics, Lights, HDRI environment and Colours for this Render view">Render settings</button></div>
           <div class="v3d-group"><button id="btnRenderSim" class="on" aria-pressed="true" title="Show or hide the LED Simulator panel in this Render view — play VJ visuals, a shared Resolume window or uploaded media across the virtual wall">LED Simulator</button></div>
           <div class="v3d-group" style="margin-left:auto"><button id="btnRenderSaveSettings" title="Save settings — freeze the current Render settings (environment / HDRI, colours and the light rig, glow included) as the saved look. Share / Client view links carry this saved look, so the client sees exactly the visuals and light settings you saved"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save settings</button><button id="btnRenderSave" title="Capture — save a PNG of this cinematic frame at twice the canvas size, from exactly this camera">Capture</button><button id="btnShareClient" class="share-btn" title="Share / Client view — opens the share dialog: copy a link carrying this exact stage design, Public (opens straight away) or Private (the client enters their name + your passkey first). The client sees only the 3D render and can move the camera — no panels, no tools, no editing, no save / load"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Share / Client view</button></div>
@@ -1485,12 +1485,13 @@ body:not(.learning-on) .learn{display:none}
             <button type="button" class="rs-sec-head" aria-expanded="true">Graphics <span class="rs-chev">▾</span></button>
             <div class="rs-sec-body">
               <div class="field"><span>Tier — for your PC</span>
-                <select id="rsGraphics" aria-label="Graphics tier — Low for weaker PCs, Ultra for the full cinematic PBR look">
+                <select id="rsGraphics" aria-label="Graphics tier — Low for weaker PCs, Cinematic for the full realistic PBR look">
                   <option value="auto" selected>Auto — adapts to the frame rate</option>
                   <option value="low">Low — weakest PCs, fastest</option>
                   <option value="medium">Medium — balanced</option>
                   <option value="high">High — full PBR look</option>
                   <option value="ultra">Ultra — maximum cinematic</option>
+                  <option value="cinematic">Cinematic — strongest bloom / flare</option>
                 </select>
               </div>
               
@@ -1510,6 +1511,17 @@ body:not(.learning-on) .learn{display:none}
               <div class="rs-col"><span class="rs-lab">Fill colour</span><input type="color" id="rsFillCol" value="#88aaff" aria-label="Fill light colour"></div>
               <button type="button" class="btn small block" id="rsLightsReset">Reset lights</button>
               
+            </div>
+          </div>
+          <div class="rs-sec open" data-rssec>
+            <button type="button" class="rs-sec-head" aria-expanded="true">Stage lights <span class="rs-chev">▾</span></button>
+            <div class="rs-sec-body">
+              <div class="rs-row"><span class="rs-lab">Realistic beams</span><span class="rs-fx"><button type="button" id="rsBeamFxBtn" class="on">On</button></span></div>
+              <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Beam impact — pool on stage</span><output id="rsImpactOut">100%</output></div><input type="range" id="rsImpact" min="0" max="200" step="5" value="100" aria-label="Beam impact — brightness of the light pool and the real spotlight where each beam lands"></div>
+              <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Lens flare</span><output id="rsFlareOut">100%</output></div><input type="range" id="rsFlare" min="0" max="200" step="5" value="100" aria-label="Lens flare — glow at each fixture lens"></div>
+              <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Beam shaft in clear air</span><output id="rsClearBeamOut">12%</output></div><input type="range" id="rsClearBeam" min="0" max="60" step="2" value="12" aria-label="Beam shaft in clear air — how much of the beam shaft stays visible when there is no haze"></div>
+              <p class="hint">Beams need haze to read in the air: with no Haze modifier the shafts fade, and only the bright pool where each beam lands and the flare at the lens stay — like a real clear room. Beam spots are capped for performance and cast no shadow; the key light does.</p>
+              <button type="button" class="btn small block" id="rsBeamReset">Reset stage lights</button>
             </div>
           </div>
           <div class="rs-sec open" data-rssec>
@@ -6659,6 +6671,7 @@ var renderMats=[], renderPostState=null, fxFps={n:0,t:0};
    snapshot, so a client view opens with exactly the saved look. */
 function defaultRenderSettings(){
   return {keyI:0.45,fillI:0.25,ambI:0.5,keyCol:"#ffffff",fillCol:"#88aaff",glow:1.0,
+    beamFx:true,beamImpact:1.0,flare:1.0,clearBeam:0.12,
     hdri:"studio",hdriI:1.0,
     exposure:1.12,temp:0,sat:1.0,contrast:1.0,vig:0.34,backdrop:"#05070a"};
 }
@@ -6697,7 +6710,8 @@ var RENDER_TIER_NOTES={
   low:"Low — render scale 0.8×, shadows off, no bloom. For integrated graphics and older laptops.",
   medium:"Medium — render scale up to 1.25×, 2048px shadows, bloom on.",
   high:"High — render scale up to 1.5×, 4096px soft shadows, bloom on.",
-  ultra:"Ultra — render scale up to 2×, 4096px soft shadows and stronger bloom. The full cinematic PBR look."};
+  ultra:"Ultra — render scale up to 2×, 4096px soft shadows and stronger bloom. The full cinematic PBR look.",
+  cinematic:"Cinematic — render scale up to 2×, 4096px soft shadows and the strongest bloom / flare. The realistic stage-light look."};
 var CineGradeShader={
   uniforms:{tDiffuse:{value:null},uVig:{value:0.34},uTemp:{value:0},uSat:{value:1},uCon:{value:1}},
   vertexShader:"varying vec2 vUv;\nvoid main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
@@ -6813,6 +6827,7 @@ function applyRenderSettings(){
   else{var rt=getEnvRT(rs.hdri); if(rt)T3.scene.environment=rt.texture}
   renderMats.forEach(function(rec){rec.m.envMapIntensity=rec.re*rs.hdriI});
   applyRenderGlow();
+  applyRenderBeamFx();
   T3.renderer.toneMappingExposure=rs.exposure;
   try{var bg=new THREE.Color(rs.backdrop); if(T3.scene.background&&T3.scene.background.setHex)T3.scene.background.setHex(bg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(bg.getHex())}catch(e){}
 }
@@ -6854,7 +6869,7 @@ function setSunShadow(size){
    the Lights section's Glow level (renderSettings.glow, 100% = the
    tier's own strength). setRenderTier sets the base; applyRenderGlow
    re-applies the product whenever either side changes. */
-function bloomTierStrength(){return renderTier==="ultra"?0.65:renderTier==="high"?0.5:0.38}
+function bloomTierStrength(){return renderTier==="cinematic"?0.85:renderTier==="ultra"?0.65:renderTier==="high"?0.5:0.38}
 function applyRenderGlow(){
   if(T3&&T3.fxBloom)T3.fxBloom.strength=bloomTierStrength()*(renderSettings?renderSettings.glow:1);
 }
@@ -6875,7 +6890,7 @@ function buildRenderComposer(){
   }catch(e){T3.fx=null; T3.fxRender=null; T3.fxBloom=null; T3.fxCine=null; return false}
 }
 function resolveRenderTier(){
-  if(renderQualityMode==="low"||renderQualityMode==="medium"||renderQualityMode==="high"||renderQualityMode==="ultra")return renderQualityMode;
+  if(renderQualityMode==="low"||renderQualityMode==="medium"||renderQualityMode==="high"||renderQualityMode==="ultra"||renderQualityMode==="cinematic")return renderQualityMode;
   var coarse=false;
   try{coarse=!!(window.matchMedia&&window.matchMedia("(pointer:coarse)").matches)}catch(e){}
   return (!coarse&&window.innerWidth>=1024)?"high":"medium";
@@ -6894,12 +6909,12 @@ function setRenderTier(t){
   syncRenderFxUI();
   if(!T3)return;
   var dpr=window.devicePixelRatio||1;
-  var pr=t==="ultra"?Math.min(dpr,2):t==="high"?Math.min(dpr,1.5):t==="medium"?Math.min(dpr,1.25):0.8;
+  var pr=(t==="ultra"||t==="cinematic")?Math.min(dpr,2):t==="high"?Math.min(dpr,1.5):t==="medium"?Math.min(dpr,1.25):0.8;
   T3.renderer.setPixelRatio(pr);
   if(T3.fx)T3.fx.setPixelRatio(pr);
-  setSunShadow(t==="high"||t==="ultra"?4096:2048);
+  setSunShadow(t==="high"||t==="ultra"||t==="cinematic"?4096:2048);
   if(T3.fxBloom){
-    T3.fxBloom.radius=t==="ultra"?0.65:t==="high"?0.55:0.4;
+    T3.fxBloom.radius=t==="cinematic"?0.7:t==="ultra"?0.65:t==="high"?0.55:0.4;
     T3.fxBloom.threshold=0.78;
     applyRenderGlow(); /* strength = this tier's base × the Glow level */
   }
@@ -6934,7 +6949,8 @@ function tickRenderFps(now){
   var fps=fxFps.n/(dt/1000);
   fxFps.t=now; fxFps.n=0;
   if(fps>=24)return;
-  if(renderTier==="ultra"||renderTier==="high"){setRenderTier("medium"); toast("Render graphics stepped down to Medium to keep the frame smooth — pin a tier in the Render settings if you prefer.")}
+  if(renderTier==="cinematic"){setRenderTier("high"); toast("Render graphics stepped down to High to keep the frame smooth — pin Cinematic in the Render settings if you prefer.")}
+  else if(renderTier==="ultra"||renderTier==="high"){setRenderTier("medium"); toast("Render graphics stepped down to Medium to keep the frame smooth — pin a tier in the Render settings if you prefer.")}
   else if(renderTier==="medium"){setRenderTier("low"); toast("Render graphics stepped down to Low to keep the frame smooth — pin a tier in the Render settings if you prefer.")}
 }
 /* ── Render mode — a look-only cinematic view of the 3D stage ────────
@@ -6966,6 +6982,14 @@ function enterRender(){
     grid:T3.grid?T3.grid.visible:true};
   if(state.vmode!=="view")setVMode("view");
   renderMode=true;
+  /* Realistic stage-light build — Render only: the scene is rebuilt
+     once with Render live, so every beam fixture gains its Render
+     light (gradient shaft, lens flare, the bright pool where the
+     beam lands and a real spotlight — see addBeamImpactRender);
+     exitRender rebuilds again without them, so the editing views
+     keep their fast, plain look. No dust / particle system is built
+     in either view. */
+  if(T3)build3DScene();
   /* The simulator engine lives in Render only: a loaded source starts
      playing on the walls as Render opens (its panel sits on the right
      of the frame), and exitRender switches it off again. */
@@ -7016,6 +7040,9 @@ function exitRender(){
     restoreRenderLook();
     r.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   }
+  /* Rebuild without the Render-only beam light (see enterRender):
+     the editing scene returns exactly as it was. */
+  if(T3&&view3dOpen)build3DScene();
   if(view3dOpen)size3D();
   if(renderPrev&&renderPrev.vmode&&renderPrev.vmode!==state.vmode&&view3dOpen)setVMode(renderPrev.vmode);
   /* The name tags come back with the editing look — Render hid them
@@ -7195,7 +7222,7 @@ function setVMode(m){
    • Global — the world axes (X across, Y up, Z depth), as always.
    • Local — the selected object's OWN axes: a screen's gizmo turns
      with the wall's facing and tilts, a prop's with the prop's
-     rotation, a light's with its pan / tilt, and a truss bar's move
+     rotation, a light's with its Y rotation, and a truss bar's move
      arrows align to the bar itself (X along the bar).
    • Parent — the axes of the object's parent: screens, props,
      lights and truss bars all hang from unrotated stage groups, so
@@ -7252,8 +7279,12 @@ function fixtureOrientQuat(m,idx){
   if(transformOrientation()!=="local")return new THREE.Quaternion();
   var f=m&&m.params&&m.params.fixtures?m.params.fixtures[idx]:null;
   if(!f)return new THREE.Quaternion();
-  var mdlQ=fixtureModelOf(f), panQ=(mdlQ==="batten"||mdlQ==="matrix")?0:clamp(+f.pan||0,-180,180);
-  return new THREE.Quaternion().setFromEuler(new THREE.Euler(clamp(+f.tilt||0,0,90)*Math.PI/180,panQ*Math.PI/180,0,"YXZ"));
+  /* ALL lights rotate ONLY around the Y axis — a turn about the
+     vertical axis through the fixture's base, no X tilt, no Z roll,
+     for every fixture family (battens and matrix panels included) —
+     so a Local gizmo aligns to the fixture's Y rotation exactly as
+     placed. */
+  return new THREE.Quaternion().setFromEuler(new THREE.Euler(0,fixtureRotY(f)*Math.PI/180,0,"YXZ"));
 }
 function syncOrientUI(){
   var s=$("v3Orient");
@@ -7271,9 +7302,9 @@ function setGizmoMode(m){
   /* Light Edit: NO Scale for lights. While light editing is armed, the
      Scale gizmo mode is refused and the mode falls back to Move — a
      light can only move along the truss bar it rides, or rotate
-     (pan / tilt). Truss, props and screens keep their Scale. */
+     (Y-axis rotation only). Truss, props and screens keep their Scale. */
   if(m==="scale"&&typeof lightEditTarget==="function"&&lightEditTarget()){
-    toast("Scale is not available in Light Edit — truss lights move along the truss bar, battens / matrix panels move freely on any surface, and lights rotate (pan / tilt) only.");
+    toast("Scale is not available in Light Edit — truss lights move along the truss bar, battens / matrix panels move freely on any surface, and every light rotates ONLY around the Y axis — turning about its base, no X tilt, no roll.");
     m="move";
   }
   state.gizmoMode=(m==="rotate"||m==="scale")?m:"move";
@@ -7304,7 +7335,7 @@ function syncGizmoControls(){
   document.querySelectorAll("[data-gmode=\"scale\"]").forEach(function(b){
     if(b.dataset.gtitle===undefined)b.dataset.gtitle=b.title||"";
     b.disabled=lGate;
-    b.title=lGate?"Scale — not available in Light Edit: truss lights move along the truss bar, battens / matrix panels move freely, and lights rotate (pan / tilt) only":b.dataset.gtitle;
+    b.title=lGate?"Scale — not available in Light Edit: truss lights move along the truss bar, battens / matrix panels move freely, and every light rotates ONLY around the Y axis (turning about its base)":b.dataset.gtitle;
   });
   updateSnapUI();
 }
@@ -7844,6 +7875,10 @@ function loop3D(){
   if(T3.suggestPreview)T3.suggestPreview.visible=!renderMode; /* the Suggest truss ghost is an editing-view preview — never in the Render view */
   if(T3.lightPreview)T3.lightPreview.visible=!renderMode; /* the Suggest lights ghost, same rule */
   if(renderMode){if(T3.selBox)T3.selBox.visible=false; if(T3.measure)T3.measure.visible=false; if(T3.gizmo)T3.gizmo.visible=false; (T3.nameTags||[]).forEach(function(s){s.visible=false})}
+  /* The selected light's yellow selection box is an EDITOR aid:
+     hidden in Render mode (and never built in client view), visible
+     again the moment the editor comes back. */
+  if(T3.lightSelBoxes)T3.lightSelBoxes.forEach(function(b){b.visible=!renderMode});
   applyCam3D();
   updateViewCube(false);
   if(pv.on&&pvIsLive())refreshPvSlices3D();
@@ -8328,7 +8363,13 @@ function attach3DPointer(el){
             var fgP=resolveFixturePos(mmP.params.fixtures[miP.idx]);
             if(mmP.type==="light")fgP={x:fgP.x+(+mmP.params.setX||0),y:fgP.y+(+mmP.params.setY||0),z:fgP.z+(+mmP.params.setZ||0)};
             var cenF=new THREE.Vector3(fgP.x,fgP.y,fgP.z);
-            if(miP.sub==="axis"){
+            if(miP.sub==="rot"){
+              /* Rotate ring: the drag plane IS the ring's own plane —
+                 through the fixture, normal along the ring's ORIENTED
+                 axis — so the pointer's angle on it is the turn. */
+              var AgFR=AX3[miP.axis].clone().applyQuaternion(fixtureOrientQuat(mmP,miP.idx));
+              planeP=new THREE.Plane().setFromNormalAndCoplanarPoint(AgFR,cenF);
+            }else if(miP.sub==="axis"){
               var AgF=AX3[miP.axis].clone().applyQuaternion(fixtureOrientQuat(mmP,miP.idx)), cdF2=new THREE.Vector3(); T3.camera.getWorldDirection(cdF2); /* the drag plane contains the ORIENTED axis (Transform Orientation) */
               var nFG=new THREE.Vector3().crossVectors(AgF,new THREE.Vector3().crossVectors(cdF2,AgF));
               if(nFG.lengthSq()<1e-6)nFG=cdF2.clone(); else nFG.normalize();
@@ -8502,6 +8543,24 @@ function attach3DPointer(el){
                 prAng0=Math.atan2(relC3.dot(bvC3),relC3.dot(buC3));
               }
             }
+            /* Light gizmo Rotate rings pivot on the fixture itself,
+               on the prop construction — the same drag-state fields
+               carry them (the move branches are kind-gated). The
+               ring's basis spans the ring's own plane on the
+               fixture's ORIENTED axis (Transform Orientation), so
+               the measured angle is the turn about that axis —
+               lights have ONE ring only: the green Y rotation ring. */
+            if(miP.kind==="fgizmo"&&miP.sub==="rot"&&typeof cenF!=="undefined"&&cenF){
+              prCen={x:cenF.x,y:cenF.y,z:cenF.z};
+              if(p0P){
+                var ArF3=AX3[miP.axis].clone().applyQuaternion(fixtureOrientQuat(mmP,miP.idx));
+                var buF3=(Math.abs(ArF3.y)<0.9?new THREE.Vector3().crossVectors(ArF3,new THREE.Vector3(0,1,0)):new THREE.Vector3().crossVectors(ArF3,new THREE.Vector3(1,0,0))).normalize();
+                var bvF3=new THREE.Vector3().crossVectors(ArF3,buF3).normalize();
+                prBU={x:buF3.x,y:buF3.y,z:buF3.z}; prBV={x:bvF3.x,y:bvF3.y,z:bvF3.z};
+                var relF3=p0P.clone().sub(cenF);
+                prAng0=Math.atan2(relF3.dot(bvF3),relF3.dot(buF3));
+              }
+            }
             /* Transform Orientation: the ORIENTED axis vector for
                this drag (axis arrows of the truss / light / prop
                gizmos, and the prop's rotate rings) — the move
@@ -8547,7 +8606,9 @@ function attach3DPointer(el){
                 :miP.sub==="axis"
                 ?(segGrpNameP||"Truss group")+" — group gizmo "+miP.axis.toUpperCase()+" arrow: dragging moves all "+(segGrpIdxsP?segGrpIdxsP.length:0)+" trusses of the group together along the "+miP.axis.toUpperCase()+" axis only, keeping their formation. Trusses outside the group stay put."
                 :(segGrpNameP||"Truss group")+" — group gizmo centre ball: dragging moves all "+(segGrpIdxsP?segGrpIdxsP.length:0)+" trusses of the group together across the floor plane, keeping their formation. Trusses outside the group stay put.")
-              :miP.kind==="fgizmo"?(miP.sub==="axis"
+              :miP.kind==="fgizmo"?(miP.sub==="rot"
+                ?"Light "+(miP.idx+1)+" \u2014 light gizmo X rotate ring (red — the ONLY ring a light has): dragging tilts the light around the X axis from its base, which stays on its mounting surface (magnet snaps "+rotStepDeg()+"°). Its position never changes in Rotate mode."
+                :miP.sub==="axis"
                 ?"Light "+(miP.idx+1)+" \u2014 light gizmo "+miP.axis.toUpperCase()+" arrow: "+(isFreeFixture(mmP.params.fixtures[miP.idx])?"dragging moves it freely along that axis — it can sit on any surface.":"dragging slides the light along the truss bar.")
                 :"Light "+(miP.idx+1)+" \u2014 light gizmo centre ball: "+(isFreeFixture(mmP.params.fixtures[miP.idx])?"dragging moves it freely — it can sit on any surface: stage, truss, prop or screen.":"dragging slides the light along the truss bar it rides — it stays on the truss."))
               :miP.kind==="pgizmo"?(miP.sub==="rot"
@@ -8580,9 +8641,9 @@ function attach3DPointer(el){
               :miP.kind==="prop"?(state.gizmoMode==="rotate"?"Prop \u2014 "+escapeHtml(mmP.params.items[miP.idx].name)+": drag to turn it — sideways = yaw, up / down = tilt."
                 :state.gizmoMode==="scale"?"Prop \u2014 "+escapeHtml(mmP.params.items[miP.idx].name)+": Scale gizmo — drag to resize the prop uniformly."
                 :"Prop \u2014 "+escapeHtml(mmP.params.items[miP.idx].name)+": drag to move it across the stage. Switch the gizmo to Rotate to turn it, Scale to resize it.")
-              :(state.gizmoMode==="rotate"?"Fixture "+(miP.idx+1)+" — drag to aim it: sideways = pan, up / down = tilt."
-                :state.gizmoMode==="scale"?"Fixture "+(miP.idx+1)+" — Scale does not work on lights in Light Edit: lights move along the truss bar and rotate (pan / tilt) only."
-                :(isFreeFixture(mmP.params.fixtures[miP.idx])?"Fixture "+(miP.idx+1)+" — FREE placement: drag it anywhere, on any surface — stage, truss, prop or screen. Switch the gizmo to Rotate to tilt it by dragging.":"Fixture "+(miP.idx+1)+" — drag to slide it along the truss bar it rides — it stays on the truss and moves with it. Switch the gizmo to Rotate to aim it by dragging.")));
+              :(state.gizmoMode==="rotate"?"Fixture "+(miP.idx+1)+" — drag sideways to turn it: every light rotates ONLY around the Y axis, about its base on its mounting surface — no X tilt, no roll."
+                :state.gizmoMode==="scale"?"Fixture "+(miP.idx+1)+" — Scale does not work on lights in Light Edit: lights move along the truss bar and rotate (Y axis) only."
+                :(isFreeFixture(mmP.params.fixtures[miP.idx])?"Fixture "+(miP.idx+1)+" — FREE placement: drag it anywhere, on any surface — stage, truss, prop or screen. Switch the gizmo to Rotate to turn it by dragging.":"Fixture "+(miP.idx+1)+" — drag to slide it along the truss bar it rides — it stays on the truss and moves with it. Switch the gizmo to Rotate to turn it by dragging.")));
             return;
           }
         }
@@ -8749,12 +8810,21 @@ function attach3DPointer(el){
       var md=modDrag, mm2=md.m, snapM=state.gizmoSnap;
       if(md.info.kind==="fix"&&state.gizmoMode==="rotate"){
         var fR=mm2.params.fixtures[md.info.idx];
-        var mdlR=fixtureModelOf(fR), tiltOnlyR=(mdlR==="batten"||mdlR==="matrix");
-        if(!tiltOnlyR)fR.pan=Math.round(clamp(md.fixStart.pan+(ev.clientX-md.sx)*0.4,-180,180)); else fR.pan=0; /* battens / matrix panels tilt only — no pan, ever */
-        fR.tilt=Math.round(clamp(md.fixStart.tilt+(ev.clientY-md.sy)*0.3,0,90));
-        if(state.gizmoSnap){var rsF=rotStepDeg(); fR.pan=Math.round(fR.pan/rsF)*rsF; fR.tilt=clamp(Math.round(fR.tilt/rsF)*rsF,0,90)}
+        /* ALL lights rotate ONLY around the Y axis: a sideways
+           drag turns the fixture about the vertical axis through
+           its BASE, through the full −180°…180°, for every fixture
+           family — battens and matrix panels included. There is NO
+           X-axis tilt and NO Z-axis roll for any light: tilt / roll
+           are forced to 0 here, up / down drag does nothing, and
+           the fixture's base position never moves — it stays on
+           its mounting surface. The drag starts from the fixture's
+           current Y rotation (a legacy X tilt reads as that Y
+           rotation via fixtureRotY). */
+        var startRotR=fixtureRotY(md.fixStart);
+        setFixtureRotY(fR,(startRotR+(ev.clientX-md.sx)*0.3));
+        if(state.gizmoSnap){var rsFR=rotStepDeg(); setFixtureRotY(fR,Math.round(fixtureRotY(fR)/rsFR)*rsFR)}
         rebuildModGroup(mm2);
-        updateV3Readout("Fixture "+(md.info.idx+1)+" — "+(tiltOnlyR?"tilt "+fR.tilt+"° (this light tilts only — it has no pan)":"pan "+fR.pan+"° · tilt "+fR.tilt+"°")+". Release to apply. (Move gizmo mode drags the fixture itself.)"+(state.gizmoSnap?" Magnet on — aiming snaps to "+rotStepDeg()+"° steps.":""));
+        updateV3Readout("Fixture "+(md.info.idx+1)+" — Y rotation "+Math.round(fixtureRotY(fR))+"° — Y axis only, about its base on its mounting surface (no X tilt, no roll). Release to apply. (Move gizmo mode drags the fixture itself.)"+(state.gizmoSnap?" Magnet on — rotation snaps to "+rotStepDeg()+"° steps.":""));
         syncObjectPanel(); /* Object tab fields track the aim live; locked axes are held */
         return;
       }
@@ -9226,6 +9296,26 @@ function attach3DPointer(el){
           pkQ6.z=Math.round(clamp((+stCQ6.z||0)+ddzCQ,-30,60)*100)/100;
           rebuildModGroup(mm2);
           updateV3Readout("Crowd pack — "+escapeHtml(pkQ6.name)+": Position X "+measureNum(pkQ6.x)+" · Z "+measureNum(pkQ6.z)+" "+measureUnit()+" — head count "+Math.round(+pkQ6.count||0)+" people.");
+        }else if(md.info.kind==="fgizmo"&&md.info.sub==="rot"&&md.propCen&&md.propBU&&md.propBV){
+          /* Light gizmo rotate ring: a light has ONE ring only —
+             the green Y rotation ring. The pointer's angle in the
+             ring's own plane, measured on the drag-start basis, is
+             the Y-axis rotation written from the drag-start
+             snapshot, through the full −180°…180° for every light —
+             battens and matrix panels included. There are NO X / Z
+             rings and no tilt / roll writes for any light — tilt /
+             roll are forced to 0. Only the rotation is written: in
+             Rotate mode the light's base position never changes, so
+             its base stays on its surface.
+             Magnet snaps the turn to the strength's angle step. */
+          var fQ3=mm2.params.fixtures[md.info.idx], stFQ3=md.fixStart, axFQ3=md.info.axis;
+          var relFQ={x:ptM.x-md.propCen.x,y:ptM.y-md.propCen.y,z:ptM.z-md.propCen.z};
+          var angFQ=Math.atan2(relFQ.x*md.propBV.x+relFQ.y*md.propBV.y+relFQ.z*md.propBV.z,relFQ.x*md.propBU.x+relFQ.y*md.propBU.y+relFQ.z*md.propBU.z);
+          var dDegFQ=(angFQ-md.propAng0)*180/Math.PI;
+          if(snapM){var rsFQ=rotStepDeg(); dDegFQ=Math.round(dDegFQ/rsFQ)*rsFQ}
+          if(axFQ3==="y")setFixtureRotY(fQ3,fixtureRotY(stFQ3)+dDegFQ);
+          rebuildModGroup(mm2);
+          updateV3Readout("Fixture "+(md.info.idx+1)+" — turning about the Y axis "+(dDegFQ>=0?"+":"")+Math.round(dDegFQ)+"° — Y rotation "+Math.round(fixtureRotY(fQ3))+"° (Y axis only, about its base). Release to keep it.");
         }else if(md.info.kind==="pgizmo"&&md.info.sub==="rot"&&md.propCen&&md.propBU&&md.propBV){
           /* Prop gizmo rotate ring: the pointer's angle in the ring's
              own plane, measured on the drag-start basis, is the turn —
@@ -9297,11 +9387,11 @@ function attach3DPointer(el){
         }else if(md.info.kind==="fix"&&state.gizmoMode==="scale"){
           /* NO Scale for lights in Light Edit: the drag changes
              nothing — a light only moves along the truss bar it rides
-             and rotates (pan / tilt). The Scale gizmo button itself is
+             and rotates (X-axis tilt). The Scale gizmo button itself is
              disabled while light editing is armed (see setGizmoMode /
              syncGizmoControls); this branch is the last line of defence
              if a scale drag ever reaches a fixture anyway. */
-          updateV3Readout("Fixture "+(md.info.idx+1)+" — Scale does not work on lights in Light Edit: drag it along the truss bar to move it, or use the Rotate gizmo to aim it (pan / tilt).");
+          updateV3Readout("Fixture "+(md.info.idx+1)+" — Scale does not work on lights in Light Edit: drag it along the truss bar to move it, or use the Rotate gizmo to turn it (Y axis only).");
         }else if(md.info.kind==="fix"||md.info.kind==="fgizmo"||md.info.kind==="ggizmo"){
           if(md.grpIdxs){
             /* Group move: the pointer's floor-plane travel since the
@@ -9362,13 +9452,13 @@ function attach3DPointer(el){
             var snM=snapFreeFixturePoint({x:ptM.x, y:baseM.y+(+mm2.params.setY||0), z:ptM.z});
             writeFreeFixturePos(mm2,fM,snM.point);
             rebuildModGroup(mm2);
-            updateV3Readout("Fixture "+(md.info.idx+1)+" — free placement: it can sit on any surface — stage, truss, prop or screen."+(snM.snapped?" Snapped onto "+snM.label+".":"")+" Drag the green Y arrow to raise / lower it onto another surface. Use the Rotate gizmo to tilt it (it tilts only — no pan).");
+            updateV3Readout("Fixture "+(md.info.idx+1)+" — free placement: it can sit on any surface — stage, truss, prop or screen."+(snM.snapped?" Snapped onto "+snM.label+".":"")+" Drag the green Y arrow to raise / lower it onto another surface. Use the Rotate gizmo to turn it around the Y axis only, about its base.");
           }else if(lightTrussBars().length){
           var barsM=lightTrussBars();
           var nbM=barsM.length?nearestBarPoint({x:ptM.x,y:ptM.y,z:ptM.z},barsM):null;
           if(nbM){
             writeFixtureBarMount(mm2,fM,nbM);
-            updateV3Readout("Fixture "+(md.info.idx+1)+(nbM.bar.custom?" on truss segment "+(nbM.bar.idx+1):" on the truss bar")+" — sliding along the bar; it moves with the truss. Use the Rotate gizmo to aim it (pan / tilt).");
+            updateV3Readout("Fixture "+(md.info.idx+1)+(nbM.bar.custom?" on truss segment "+(nbM.bar.idx+1):" on the truss bar")+" — sliding along the bar; it moves with the truss. Use the Rotate gizmo to turn it (Y axis only, about its base).");
           }else{
             if(fM.tm){fM.tm=null; fM.seg=null}
             fM.x=Math.round(clamp(ptM.x-lOffX,-60,60)*100)/100; fM.z=Math.round(clamp(ptM.z-lOffZ,-60,60)*100)/100; fM.y=md.fixStart.y;
@@ -9605,7 +9695,7 @@ function attach3DPointer(el){
         toast("Truss segment "+(mdF.info.idx+1)+" rotated about the "+mdF.rotAxis.toUpperCase()+" axis "+((mdF.rotDeg||0)>=0?"+":"")+(mdF.rotDeg||0)+"°"+(sgRT&&sgRT.ring&&mdF.rotAxis!=="y"?" — ring tilt "+mdF.rotAxis.toUpperCase()+" "+Math.round(mdF.rotAxis==="x"?(+sgRT.tiltX||0):(+sgRT.tiltZ||0))+"°":"")+(sgRT?" — length "+fmtMeasure(segLen(sgRT))+" kept":"")+". Saved with the layout; Undo steps it back.");
       }else if(mdF.info.kind==="fix"||mdF.info.kind==="fgizmo"||mdF.info.kind==="ggizmo"){
         var fT=mmF.params.fixtures[mdF.info.idx], rpT=resolveFixturePos(fT);
-        toast("Fixture "+(mdF.info.idx+1)+" — at ("+rpT.x.toFixed(1)+", "+rpT.y.toFixed(1)+", "+rpT.z.toFixed(1)+") m · pan "+Math.round(+fT.pan||0)+"° · tilt "+Math.round(+fT.tilt||0)+"°"+(fT.size&&Math.abs(fT.size-1)>0.001?" · size ×"+(+fT.size).toFixed(2):"")+(fT.tm?" · riding truss segment "+((+fT.seg)+1):"")+".");
+        toast("Fixture "+(mdF.info.idx+1)+" — at ("+rpT.x.toFixed(1)+", "+rpT.y.toFixed(1)+", "+rpT.z.toFixed(1)+") m · Y rotation "+Math.round(fixtureRotY(fT))+"°"+(fT.size&&Math.abs(fT.size-1)>0.001?" · size ×"+(+fT.size).toFixed(2):"")+(fT.tm?" · riding truss segment "+((+fT.seg)+1):"")+".");
       }else if(mdF.info.kind==="prop"||mdF.info.kind==="pgizmo"){
         var itT=mmF.params.items[mdF.info.idx];
         if(itT)toast("Prop — "+itT.name+": at ("+(+itT.x||0).toFixed(1)+", "+(+itT.y||0).toFixed(1)+", "+(+itT.z||0).toFixed(1)+") m · rot Y "+Math.round(+itT.ry||0)+"° · scale ×"+(+itT.s||1).toFixed(2)+". Saved with the layout; Undo steps it back.");
@@ -9841,6 +9931,10 @@ function syncRenderSettingsUI(){
   set("rsFill",Math.round(rs.fillI*100)); out("rsFillOut",Math.round(rs.fillI*100)+"%");
   set("rsAmb",Math.round(rs.ambI*100)); out("rsAmbOut",Math.round(rs.ambI*100)+"%");
   set("rsGlow",Math.round(rs.glow*100)); out("rsGlowOut",Math.round(rs.glow*100)+"%");
+  set("rsImpact",Math.round((rs.beamImpact==null?1:rs.beamImpact)*100)); out("rsImpactOut",Math.round((rs.beamImpact==null?1:rs.beamImpact)*100)+"%");
+  set("rsFlare",Math.round((rs.flare==null?1:rs.flare)*100)); out("rsFlareOut",Math.round((rs.flare==null?1:rs.flare)*100)+"%");
+  set("rsClearBeam",Math.round((rs.clearBeam==null?0.12:rs.clearBeam)*100)); out("rsClearBeamOut",Math.round((rs.clearBeam==null?0.12:rs.clearBeam)*100)+"%");
+  syncBeamFxBtn();
   set("rsKeyCol",rs.keyCol); set("rsFillCol",rs.fillCol);
   set("rsHdri",rs.hdri); set("rsHdriI",Math.round(rs.hdriI*100)); out("rsHdriOut",Math.round(rs.hdriI*100)+"%");
   set("rsExp",Math.round(rs.exposure*100)); out("rsExpOut",Math.round(rs.exposure*100)+"%");
@@ -9900,6 +9994,12 @@ rsBind("rsSat",function(v){renderSettings.sat=v/100; $("rsSatOut").textContent=v
 rsBind("rsCon",function(v){renderSettings.contrast=v/100; $("rsConOut").textContent=v+"%"});
 rsBind("rsVig",function(v){renderSettings.vig=v/100; $("rsVigOut").textContent=v+"%"});
 rsBind("rsGlow",function(v){renderSettings.glow=v/100; $("rsGlowOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
+function syncBeamFxBtn(){var b=$("rsBeamFxBtn"); if(!b)return; var on=renderSettings.beamFx!==false; b.classList.toggle("on",on); b.textContent=on?"On":"Off"}
+rsBind("rsImpact",function(v){renderSettings.beamImpact=v/100; $("rsImpactOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
+rsBind("rsFlare",function(v){renderSettings.flare=v/100; $("rsFlareOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
+rsBind("rsClearBeam",function(v){renderSettings.clearBeam=v/100; $("rsClearBeamOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
+(function(){var b=$("rsBeamFxBtn"); if(b)b.addEventListener("click",function(){renderSettings.beamFx=renderSettings.beamFx===false?true:false; syncBeamFxBtn(); if(renderMode)applyRenderBeamFx()})})();
+(function(){var b=$("rsBeamReset"); if(b)b.addEventListener("click",function(){renderSettings.beamFx=true; renderSettings.beamImpact=1.0; renderSettings.flare=1.0; renderSettings.clearBeam=0.12; syncRenderSettingsUI(); if(renderMode)applyRenderBeamFx(); toast("Stage lights reset — realistic beams on, beam impact 100%, lens flare 100%, clear-air shaft 12%.")})})();
 $("rsKeyCol").addEventListener("input",function(){renderSettings.keyCol=this.value; if(renderMode)applyRenderSettings()});
 $("rsFillCol").addEventListener("input",function(){renderSettings.fillCol=this.value; if(renderMode)applyRenderSettings()});
 $("rsBackdrop").addEventListener("input",function(){renderSettings.backdrop=this.value; if(renderMode)applyRenderSettings()});
@@ -10965,9 +11065,11 @@ function sync3DPanel(d){
      its diameter).
    • Light — Position = its point on the truss bar (resolveFixturePos);
      typing a position re-mounts it on the bar nearest that point, so
-     a light stays on a bar. Rotation X = tilt, Y = pan; Z is locked
-     (lights aim with pan / tilt only). Scale = the fixture size,
-     uniform on all three axes.
+     a light stays on a bar. Rotation Y — the ONLY rotation a light
+     has: every light turns around the Y axis about its base, which
+     stays on its mounting surface; X and Z are locked at 0° (no X
+     tilt, no roll, for any light — battens and matrix panels
+     included). Scale = the fixture size, uniform on all three axes.
    • Prop — Position / Rotation / uniform Scale are the prop item's
      own x y z · rx ry rz · s, with the same clamps its card uses. */
 var objFocusKind="screen", objPrevSig=null;
@@ -11022,12 +11124,12 @@ function objView(o){
   if(o.kind==="light"){
     var f=o.fix, rp=resolveFixturePos(f), ft=(f.type==="spot"||f.type==="wash"||f.type==="bsw"||f.type==="beam")?f.type:(o.mod.params.ltype||"beam");
     var sz2=(+f.size||1);
-    var tiltOnlyO=(fixtureModelOf(f)==="batten"||fixtureModelOf(f)==="matrix");
+    var fullRotO=(fixtureModelOf(f)==="batten"||fixtureModelOf(f)==="matrix");
     return {badge:"Light", name:"Light "+(o.idx+1)+" — "+fixtureModelLabel(f),
       info:lightTypeLabel(ft)+" · "+(f.tm?"on truss bar "+((+f.seg||0)+1):"position "+measureNum(rp.x)+", "+measureNum(rp.y)+", "+measureNum(rp.z)+" "+measureUnit()),
-      note:""+measureUnit()+" — "+(tiltOnlyO?"typing a new position places it freely: battens and matrix panels can sit on any surface — the stage, a truss, a prop or a screen wall — and the position saves with the layout.":"typing a new position puts it on the bar nearest that point, so a light stays on a bar.")+" Rotation is in degrees: X is its tilt"+(tiltOnlyO?". Y (pan) is locked at 0° — a batten / matrix panel only tilts up and down, it never turns left or right.":", Y its pan.")+" Z is locked — lights aim with tilt"+(tiltOnlyO?" only.":" and pan only.")+" Scale is the fixture's size, the same on all three axes.",
-      t:{px:r2(rp.x), py:r2(rp.y), pz:r2(rp.z), rx:Math.round(+f.tilt||0), ry:tiltOnlyO?0:Math.round(+f.pan||0), rz:0, sx:sz2, sy:sz2, sz:sz2},
-      lock:tiltOnlyO?{rz:1,ry:1}:{rz:1}, slab:["Scale X · size ×","Scale Y · size ×","Scale Z · size ×"]};
+      note:""+measureUnit()+" — "+(fullRotO?"typing a new position places it freely: battens and matrix panels can sit on any surface — the stage, a truss, a prop or a screen wall — and the position saves with the layout.":"typing a new position puts it on the bar nearest that point, so a light stays on a bar.")+" Rotation is in degrees: Y ONLY — every light turns around the Y axis about its base, which stays on its mounting surface; X and Z are locked at 0° — no X tilt, no roll, for any light. The Y rotation saves with the layout and shows in the 3D view, Render and client view."+" Scale is the fixture's size, the same on all three axes.",
+      t:{px:r2(rp.x), py:r2(rp.y), pz:r2(rp.z), rx:0, ry:Math.round(fixtureRotY(f)), rz:0, sx:sz2, sy:sz2, sz:sz2},
+      lock:{rx:1,rz:1}, slab:["Scale X · size ×","Scale Y · size ×","Scale Z · size ×"]};
   }
   var it=o.item, sc=clamp(+it.s||1,0.02,50);
   return {badge:"Prop", name:it.name,
@@ -11110,8 +11212,9 @@ function applyObjField(o,key,v){
       else{f.tm=null; f.seg=null; f.x=r2(P.x); f.y=r2(P.y); f.z=r2(P.z)}
       return;
     }
-    if(key==="rx"){f.tilt=Math.round(normDeg180(v)); return}
-    if(key==="ry"){if(fixtureModelOf(f)==="batten"||fixtureModelOf(f)==="matrix"){f.pan=0; return} f.pan=Math.round(normDeg180(v)); return}
+    if(key==="ry"){setFixtureRotY(f,v); return} /* the ONLY editable rotation for a light: Y, about its base */
+    if(key==="rx"){f.tilt=0; return} /* locked — lights have no X tilt: Y-axis rotation only */
+    if(key==="rz"){f.roll=0; return} /* locked — lights have no roll: Y-axis rotation only */
     if(key==="sx"||key==="sy"||key==="sz"){f.size=clamp(r2(v),0.4,2.5); return}
     return;
   }
@@ -11145,7 +11248,7 @@ function applyObjField(o,key,v){
    shows THOSE values live; a locked key still displays (and, on
    release, keeps) its held value. (There is no rotation Mode /
    Euler-order row: rotations here are separate X / Y / Z degrees
-   per object — facing / tilts, pan / tilt — so an order dropdown
+   per object — facing / tilts, a light's Y rotation — so an order dropdown
    would change nothing, and the Transform section does not carry
    one.) */
 var objUserLocks={};
@@ -12827,13 +12930,16 @@ function modelTruss(groups,m){
   if(arr.pos.length)groups.push(arr);
 }
 /* One fixture as the 3D view builds it — not a box: a clamp and base
-   fixed at the mount point, yoke arms that never aim, and a HEAD in
-   the shape of its fixture family (moving head, wash head, PAR can,
-   profile spot, strobe panel, beam fixture, LED batten, matrix panel,
-   laser, gobo projector) with its lens in the light's colour. c is
-   the mount point, M the head's aim frame (+Z = where it points),
-   My the yaw-only frame the mount and yoke stand in. Beam cones are
-   light, not hardware, so they are not part of the model. */
+   at the mount point, yoke arms, and a HEAD in the shape of its
+   fixture family (moving head, wash head, PAR can, profile spot,
+   strobe panel, beam fixture, LED batten, matrix panel, laser, gobo
+   projector) with its lens in the light's colour. c is the mount
+   point — the fixture's BASE — and the whole fixture turns about
+   it: M is the aim frame (+Z = where it points) and My the frame
+   the mount and yoke stand in, which callers pass as the same M,
+   so mount, yoke and head all swing about the base together,
+   exactly as in the 3D view. Beam cones are light, not hardware,
+   so they are not part of the model. */
 function modelFixture(arr,c,M,My,model,fCol,sz,fx){
   var dark=[0.07,0.08,0.10], darker=[0.035,0.04,0.05];
   var lens=hexRgbF(fCol||"#ffb45e"), s=clamp(+sz||1,0.4,2.5);
@@ -12890,9 +12996,9 @@ function modelFixture(arr,c,M,My,model,fCol,sz,fx){
   }
 }
 /* The lights of one modifier, as export geometry: every fixture a
-   realistic model (modelFixture) at its real place, aimed by its
-   pan / tilt (custom rigs), or the auto rig's fixtures at the same
-   mounts buildLightsGroup uses (preset rigs). */
+   realistic model (modelFixture) at its real place, turned by its
+   Y-axis rotation about its base (custom rigs), or the auto rig's
+   fixtures at the same mounts buildLightsGroup uses (preset rigs). */
 function modelLights(groups,m){
   var p=m.params;
   var arr={name:"Lights — "+m.name,pos:[],nor:[],col:[],uv:[]};
@@ -12903,9 +13009,13 @@ function modelLights(groups,m){
       var pos=resolveFixturePos(f);
       var riding=f.tm&&f.seg!==null&&f.seg!==undefined;
       var c=[pos.x+(riding?0:ox), pos.y+(riding?0:oy), pos.z+(riding?0:oz)];
-      var panR=clamp(+f.pan||0,-180,180)*Math.PI/180;
-      var M=rotMat3(clamp(+f.tilt||0,0,90)*Math.PI/180,panR,0);
-      modelFixture(arr,c,M,rotMat3(0,panR,0),fixtureModelOf(f),f.color||p.color||"#ffb45e",clamp(+f.size||1,0.4,2.5),fixtureFx(f));
+      var M=rotMat3(0,fixtureRotY(f)*Math.PI/180,0); /* Y-axis rotation ONLY — no X tilt, no roll, in exports too */
+      /* Base pivot in the export too: the mount / yoke frame (My)
+         is the SAME full aim frame as the head's (M), so the whole
+         fixture — mount, yoke and head — turns about the mount
+         point c, exactly as the 3D view swings it about its base.
+         c itself (the base position) never moves. */
+      modelFixture(arr,c,M,M,mdlML,f.color||p.color||"#ffb45e",clamp(+f.size||1,0.4,2.5),fixtureFx(f));
     });
   }else{
     var bb=sceneBBox3D(), cx=(bb.minX+bb.maxX)/2, czC=(bb.minZ+bb.maxZ)/2;
@@ -12927,7 +13037,7 @@ function modelLights(groups,m){
       var xA=cross3([0,1,0],zA); xA=(Math.hypot(xA[0],xA[1],xA[2])>1e-6)?norm3(xA):[1,0,0];
       var yA=cross3(zA,xA);
       var MB=[[xA[0],yA[0],zA[0]],[xA[1],yA[1],zA[1]],[xA[2],yA[2],zA[2]]];
-      modelFixture(arr,pos,MB,rotMat3(0,Math.atan2(zA[0],zA[2]),0),modelA,p.color||"#ffb45e",1,null);
+      modelFixture(arr,pos,MB,MB,modelA,p.color||"#ffb45e",1,null); /* base pivot, as in the 3D view: mount and head turn together about the mount point */
     }
   }
   if(arr.pos.length)groups.push(arr);
@@ -16269,6 +16379,31 @@ function fixtureModelOf(f){
   return t==="wash"?"washhead":t==="spot"?"profile":"mover";
 }
 function fixtureModelLabel(f){return (FIXTURE_MODELS[fixtureModelOf(f)]||FIXTURE_MODELS.mover).label}
+/* ── LIGHT ROTATION — Y AXIS ONLY, FROM THE BASE ──────────────────
+   EVERY light — beam, spot, wash, BSW, moving / wash heads, PAR,
+   profile, strobe, beam fixture, gobo, laser, AND LED battens and
+   matrix panels — rotates ONLY around the Y axis: it turns about
+   the vertical axis through its BASE, and its base stays ON its
+   mounting surface (truss bar, stage deck / floor, prop or screen
+   wall). There is NO X-axis tilt and NO Z-axis roll for any light.
+   The stored Y rotation lives in the fixture's `pan` field (its yaw
+   about Y, degrees, −180…180); `tilt` and `roll` are always 0.
+   MIGRATION: a layout saved by the earlier X-tilt build carries its
+   angle in `tilt` — that angle is KEPT, as the fixture's Y rotation
+   (a non-zero tilt wins over pan), and X / Z are forced to 0. Every
+   reader goes through fixtureRotY and every writer through
+   setFixtureRotY, so the gizmo, the fixture card, the Object panel,
+   the 3D / Render / client views and the model exports all agree. */
+function fixtureRotY(f){
+  if(!f)return 0;
+  var t=+f.tilt||0;
+  if(t!==0)return normDeg180(t); /* a previous X tilt value becomes the Y rotation — never lost */
+  return normDeg180(+f.pan||0);
+}
+function setFixtureRotY(f,v){
+  if(!f)return;
+  f.pan=Math.round(normDeg180(v)); f.tilt=0; f.roll=0;
+}
 /* ── FREE PLACEMENT — LED battens & matrix panels ONLY ─────────────
    Battens and matrix panels are the ONE exception to the lights-ride-
    the-truss rule: either can be placed ANYWHERE, on ANY surface —
@@ -17226,7 +17361,11 @@ function sanitizeModifier(o){
   if(o.type==="light"){
     p.groups=Array.isArray(p.groups)?p.groups.filter(function(g){return g&&g.id}).map(function(g){return {id:String(g.id),name:(typeof g.name==="string"&&g.name)?g.name:"Group",on:g.on!==false,collapsed:g.collapsed===true}}):[];
     var gids={}; p.groups.forEach(function(g){gids[g.id]=1});
-    p.fixtures=Array.isArray(p.fixtures)?p.fixtures.filter(function(f){return f&&isFinite(f.x)&&isFinite(f.y)&&isFinite(f.z)}).map(function(f){var mdl=(f.model&&FIXTURE_MODELS[f.model])?f.model:null; return {x:+f.x,y:+f.y,z:+f.z,pan:(mdl==="batten"||mdl==="matrix")?0:(+f.pan||0),tilt:f.tilt===undefined?35:+f.tilt,size:isFinite(+f.size)?clamp(+f.size,0.4,2.5):1,bang:isFinite(+f.bang)?clamp(+f.bang,4,60):null,bstr:isFinite(+f.bstr)?clamp(+f.bstr,5,100):null,blen:(f.blen===null||f.blen===undefined||!isFinite(+f.blen))?null:clamp(+f.blen,1,60),seg:(mdl==="batten"||mdl==="matrix")?null:(f.seg===undefined?null:f.seg),tm:(mdl==="batten"||mdl==="matrix")?null:(f.tm||null),t:+f.t||0,type:(f.type==="spot"||f.type==="wash"||f.type==="beam"||f.type==="bsw")?f.type:((p.ltype==="spot"||p.ltype==="wash"||p.ltype==="bsw")?p.ltype:"beam"),mount:(mdl==="batten"||mdl==="matrix")?null:((f.mount==="top"||f.mount==="stage"||f.mount==="screen")?f.mount:null),model:mdl,fx:mdl?sanitizeFx(mdl,f.fx):null,color:(typeof f.color==="string"&&/^#[0-9a-fA-F]{6}$/.test(f.color))?f.color:null,on:f.on!==false,group:(f.group&&gids[f.group])?f.group:null}}):[];
+    /* Y-AXIS ROTATION MIGRATION: every fixture loads with Y rotation
+       ONLY — a previous build's X tilt value (f.tilt) is kept as the
+       Y rotation (stored in pan), and tilt (X) / roll (Z) are forced
+       to 0, so no fixture keeps a tilted or rolled orientation. */
+    p.fixtures=Array.isArray(p.fixtures)?p.fixtures.filter(function(f){return f&&isFinite(f.x)&&isFinite(f.y)&&isFinite(f.z)}).map(function(f){var mdl=(f.model&&FIXTURE_MODELS[f.model])?f.model:null; var rotY=normDeg180(f.tilt===undefined?35:((+f.tilt||0)!==0?+f.tilt:(+f.pan||0))); return {x:+f.x,y:+f.y,z:+f.z,pan:Math.round(rotY),tilt:0,roll:0,size:isFinite(+f.size)?clamp(+f.size,0.4,2.5):1,bang:isFinite(+f.bang)?clamp(+f.bang,4,60):null,bstr:isFinite(+f.bstr)?clamp(+f.bstr,5,100):null,blen:(f.blen===null||f.blen===undefined||!isFinite(+f.blen))?null:clamp(+f.blen,1,60),seg:(mdl==="batten"||mdl==="matrix")?null:(f.seg===undefined?null:f.seg),tm:(mdl==="batten"||mdl==="matrix")?null:(f.tm||null),t:+f.t||0,type:(f.type==="spot"||f.type==="wash"||f.type==="beam"||f.type==="bsw")?f.type:((p.ltype==="spot"||p.ltype==="wash"||p.ltype==="bsw")?p.ltype:"beam"),mount:(mdl==="batten"||mdl==="matrix")?null:((f.mount==="top"||f.mount==="stage"||f.mount==="screen")?f.mount:null),model:mdl,fx:mdl?sanitizeFx(mdl,f.fx):null,color:(typeof f.color==="string"&&/^#[0-9a-fA-F]{6}$/.test(f.color))?f.color:null,on:f.on!==false,group:(f.group&&gids[f.group])?f.group:null}}):[];
   }
   /* Props: validate each imported model entry. The embedded model
      data is kept only as a plausible data URL within the embed
@@ -17674,10 +17813,11 @@ function placeSampleFixture(m,f,frac){
    must NOT move or re-aim a single light: the fixtures it creates
    are an EXACT snapshot of the rig buildLightsGroup is already
    drawing — same mount points (top truss, or top of the screen
-   when there is no truss), same spread, and the same pan / tilt
-   the auto rig's heads are aimed with (aimed at the same target,
-   from the same head height). Edit only arms editing of that
-   exact setup; it never re-seeds, re-places or re-aims lights.
+   when there is no truss), same spread, and the same aim angle
+   the auto rig's heads are aimed with, kept as each fixture's
+   Y rotation (lights rotate around Y only). Edit only arms
+   editing of that exact setup; it never re-seeds or re-places
+   lights.
    Positions are stored in the same group-local frame the auto rig
    draws them in, so the rendered world position is unchanged. */
 function fixtureHeadOffY(model,kind,sec){
@@ -17708,9 +17848,8 @@ function snapshotAutoRigFixtures(m){
     fx=Math.round(fx*100)/100;
     var dx=(cx+(fx-cx)*0.55)-fx, dy=(deckTop+1.1)-headY, dz=czC-mountZ;
     var dist=Math.max(0.5,Math.hypot(dx,dy,dz));
-    var pan=Math.round(clamp(Math.atan2(dx,dz)*180/Math.PI,-180,180)*100)/100;
     var tilt=Math.round(clamp(Math.asin(clamp(-dy/dist,-1,1)),-1.1,1.5)*180/Math.PI*100)/100;
-    out.push({x:fx,y:mountY,z:mountZ,pan:pan,tilt:clamp(tilt,0,90),seg:null,tm:null,t:0,type:(p.ltype||"beam"),model:null,color:null,on:true,group:null,mount:kind});
+    out.push({x:fx,y:mountY,z:mountZ,pan:Math.round(clamp(tilt,0,90)),tilt:0,roll:0,seg:null,tm:null,t:0,type:(p.ltype||"beam"),model:null,color:null,on:true,group:null,mount:kind}); /* the aim angle is kept as the fixture's Y rotation — lights rotate around Y only */
   }
   return out;
 }
@@ -17955,15 +18094,15 @@ function suggestLightsSystem(m){
       if(typeT==="wash")nWashT++; else nBeamT++;
       var dzT=Math.max(1,(wm.frontZ+1.2)-pzT);
       var tiltT=clamp(Math.round(Math.atan2(Math.max(0.5,pyT-0.6),dzT)*180/Math.PI),20,70);
-      fixturesT.push({x:Math.round(pxT*100)/100,y:Math.round(pyT*100)/100,z:Math.round(pzT*100)/100,pan:0,tilt:tiltT,seg:bmT.custom?bmT.seg:null,tm:bmT.custom?bmT.mid:null,t:Math.round(tT*100)/100,type:typeT,model:typeT==="wash"?"washhead":"mover",color:null,on:true,group:null,mount:"top"});
+      fixturesT.push({x:Math.round(pxT*100)/100,y:Math.round(pyT*100)/100,z:Math.round(pzT*100)/100,pan:tiltT,tilt:0,seg:bmT.custom?bmT.seg:null,tm:bmT.custom?bmT.mid:null,t:Math.round(tT*100)/100,type:typeT,model:typeT==="wash"?"washhead":"mover",color:null,on:true,group:null,mount:"top"});
     }
     var yAvgT=0, zAvgT=0, tiltAvgT=0;
-    fixturesT.forEach(function(f){yAvgT+=f.y; zAvgT+=f.z; tiltAvgT+=f.tilt});
+    fixturesT.forEach(function(f){yAvgT+=f.y; zAvgT+=f.z; tiltAvgT+=fixtureRotY(f)});
     yAvgT/=fixturesT.length; zAvgT/=fixturesT.length; tiltAvgT=Math.round(tiltAvgT/fixturesT.length);
     var tName=(modById(tops[0].mid)||{}).name||"the truss";
     var reasonsT=[
       "A truss system already exists ("+tName+"), so the suggested lights sit ON TOP of it: "+nT+" fixtures spread along its top beam — "+fmtMeasure(totLen)+" of beam, one fixture per ~"+fmtMeasure(1.6)+" — clamped on the truss instead of floating in a row in front of the screens.",
-      "The beam runs "+fmtMeasure(yAvgT)+" up; every fixture tilts down about "+tiltAvgT+"° towards the stage front, washing the wall face and the deck in front of it."+(anyCustomT?" Fixtures on a custom truss are attached to it — move the truss and they ride along.":""),
+      "The beam runs "+fmtMeasure(yAvgT)+" up; every fixture is turned about "+tiltAvgT+"° around the Y axis at its base, facing the stage front."+(anyCustomT?" Fixtures on a custom truss are attached to it — move the truss and they ride along.":""),
       (nWashT?nWashT+" wash head"+(nWashT===1?"":"s")+" at the ends for even coverage, ":"")+nBeamT+" beam"+(nBeamT===1?"":"s")+" in the centre for punch — every fixture's own colour stays the set colour until you give it one in Layers."
     ];
     return {mid:m.id,sig:trussLayoutSig(),screens:state.displays.length,width:wm.width,top:wm.top,count:nT,spread:Math.round(totLen*100)/100,height:Math.round(yAvgT*100)/100,throwD:Math.round(Math.max(0,(wm.frontZ+1.2)-zAvgT)*100)/100,z:Math.round(zAvgT*100)/100,tilt:tiltAvgT,nBeam:nBeamT,nWash:nWashT,fixtures:fixturesT,reasons:reasonsT,onTruss:true,trussName:tName};
@@ -17982,12 +18121,12 @@ function suggestLightsSystem(m){
     var type=(fr<0.25||fr>0.75)?"wash":"beam";
     if(type==="wash")nWash++; else nBeam++;
     var spt=screenTopPoint(fr);
-    fixtures.push({x:spt.x,y:spt.y,z:spt.z,pan:0,tilt:tilt,seg:null,tm:null,t:0,type:type,model:type==="wash"?"washhead":"mover",color:null,on:true,group:null,mount:"screen"});
+    fixtures.push({x:spt.x,y:spt.y,z:spt.z,pan:tilt,tilt:0,seg:null,tm:null,t:0,type:type,model:type==="wash"?"washhead":"mover",color:null,on:true,group:null,mount:"screen"});
   }
   var zSt=fixtures.length?fixtures[0].z:0;
   var reasons=[
     "There is no truss system in this layout, so the sample lights sit ON TOP OF THE SCREEN instead: "+n+" fixtures in a row along the top edge of the LED wall, standing on the wall's top, one per ~"+fmtMeasure(1.6)+" of the "+fmtMeasure(wm.width)+" wall.",
-    "Each one stands on its own base on top of the screen — base and yoke fixed, only the head moving — tilted "+tilt+"° down in front of the wall. Add a Truss (Modifier List → Truss) and suggest again, and the sample lights go up onto the TOP TRUSS instead.",
+    "Each one stands on its own base on top of the screen — turned "+tilt+"° around the Y axis at its base, facing the audience in front of the wall. Add a Truss (Modifier List → Truss) and suggest again, and the sample lights go up onto the TOP TRUSS instead.",
     (nWash?nWash+" wash head"+(nWash===1?"":"s")+" at the ends for even coverage, ":"")+nBeam+" beam"+(nBeam===1?"":"s")+" in the centre for punch — every fixture's own colour stays the set colour until you give it one in Layers."
   ];
   return {mid:m.id,sig:trussLayoutSig(),screens:state.displays.length,width:wm.width,top:wm.top,count:n,spread:spread,height:height,throwD:0,z:zSt,tilt:tilt,nBeam:nBeam,nWash:nWash,fixtures:fixtures,reasons:reasons,onScreen:true};
@@ -18464,7 +18603,7 @@ function syncCustomLists(m){
     if(syncCustomLists._lmid!==m.id){syncCustomLists._lmid=m.id; fixSelSet={}; fixSelAnchor=-1}
     Object.keys(fixSelSet).forEach(function(k){if(+k>=fixes.length||!fixSelSet[k])delete fixSelSet[k]});
     if(fixSelAnchor>=fixes.length)fixSelAnchor=-1;
-    var sig2=modSelFix+"|"+fixSelList().join(",")+":"+(lightToolArmed===m.id?"E":"-")+":"+(m.params.color||"")+":"+(m.params.custom?"C":"A")+":"+(+m.params.count||0)+":"+(m.params.ltype||"")+":"+fixes.map(function(f){var rp=resolveFixturePos(f); return [Math.round(rp.x*100),Math.round(rp.y*100),Math.round(rp.z*100),Math.round(+f.pan||0),Math.round(+f.tilt||0),Math.round((+f.size||1)*100),f.bang==null?"":Math.round(+f.bang),f.bstr==null?"":Math.round(+f.bstr),f.tm||"",f.seg,f.type||"",f.model||"",f.color||"",f.on===false?0:1,f.group||"",f.fx?("FX"+[f.fx.len,f.fx.pixels,f.fx.cmode,f.fx.lens,f.fx.mode,f.fx.speed,f.fx.strobe,f.fx.lcolor,f.fx.power,f.fx.pattern,f.fx.scan,f.fx.kpps,f.fx.rows,f.fx.cols,f.fx.pitch,f.fx.cell,f.fx.rot,f.fx.spin,f.fx.spinSpeed,f.fx.focus,f.fx.zoom,f.fx.img?f.fx.img.length:0].join(";")):""].join(",")}).join("|")+":"+(m.params.groups||[]).map(function(g){return g.id+","+(g.on===false?0:1)+","+(g.collapsed===true?1:0)+","+g.name}).join("|")+":R"+(grpRename&&grpRename.kind==="light"?grpRename.gid:"");
+    var sig2=modSelFix+"|"+fixSelList().join(",")+":"+(lightToolArmed===m.id?"E":"-")+":"+(m.params.color||"")+":"+(m.params.custom?"C":"A")+":"+(+m.params.count||0)+":"+(m.params.ltype||"")+":"+fixes.map(function(f){var rp=resolveFixturePos(f); return [Math.round(rp.x*100),Math.round(rp.y*100),Math.round(rp.z*100),Math.round(+f.pan||0),Math.round(+f.tilt||0),Math.round(+f.roll||0),Math.round((+f.size||1)*100),f.bang==null?"":Math.round(+f.bang),f.bstr==null?"":Math.round(+f.bstr),f.tm||"",f.seg,f.type||"",f.model||"",f.color||"",f.on===false?0:1,f.group||"",f.fx?("FX"+[f.fx.len,f.fx.pixels,f.fx.cmode,f.fx.lens,f.fx.mode,f.fx.speed,f.fx.strobe,f.fx.lcolor,f.fx.power,f.fx.pattern,f.fx.scan,f.fx.kpps,f.fx.rows,f.fx.cols,f.fx.pitch,f.fx.cell,f.fx.rot,f.fx.spin,f.fx.spinSpeed,f.fx.focus,f.fx.zoom,f.fx.img?f.fx.img.length:0].join(";")):""].join(",")}).join("|")+":"+(m.params.groups||[]).map(function(g){return g.id+","+(g.on===false?0:1)+","+(g.collapsed===true?1:0)+","+g.name}).join("|")+":R"+(grpRename&&grpRename.kind==="light"?grpRename.gid:"");
     sig2+=":U"+measureUnit();
     if(sig2!==syncCustomLists._fs){
       syncCustomLists._fs=sig2;
@@ -18531,17 +18670,20 @@ function syncCustomLists(m){
           var ft2=(sf.type==="spot"||sf.type==="wash"||sf.type==="bsw"||sf.type==="beam")?sf.type:(m.params.ltype||"beam");
           var eff2=sf.color||m.params.color||"#ffb45e";
           var mdl2=fixtureModelOf(sf);
-          var tiltOnly2=(mdl2==="batten"||mdl2==="matrix");
-          var aimNote2=tiltOnly2?("only the "+(mdl2==="batten"?"bar":"panel")+" tilts up / down \u2014 it has no pan, like the real unit"):"only the head turns (pan / tilt)";
+          var fullRot2=(mdl2==="batten"||mdl2==="matrix");
+          var aimNote2="it rotates around the Y axis ONLY, about its base, which stays on its mounting surface — no X tilt, no roll: drag it in Rotate mode, turn the green Y rotation ring, or set Rotation Y below (the Object tab's Rotation Y sets the same angle; X / Z are locked)";
           /* NO generic Type / Mode field any more: the card shows
              ONLY this light's own related settings. Beam angle and
              beam strength belong to the lights that actually throw
              a beam (moving head, wash head, PAR, profile, strobe,
              beam fixture — and beam strength on the gobo projector,
              whose angle is its zoom). Battens, matrix panels and
-             lasers never see them: they glow / scan instead. Pan
-             shows only where the real fixture pans — a batten bar
-             and a matrix panel TILT only. */
+             lasers never see them: they glow / scan instead. Rotation
+             Y is the ONLY rotation slider, for every fixture — all
+             lights rotate around the Y axis only, about the base,
+             through the full −180°…180° (battens / matrix panels
+             included), and there is NO Tilt / X slider and NO Roll
+             slider for any light. */
           var beamFam2=(mdl2==="mover"||mdl2==="washhead"||mdl2==="par"||mdl2==="profile"||mdl2==="strobe"||mdl2==="beamfx");
           var bangEff2=sf.bang!=null?Math.round(+sf.bang):Math.round(clamp((+m.params.angle||16)*lightTypeMul(ft2),4,60));
           var bstrEff2=sf.bstr!=null?Math.round(+sf.bstr):Math.round(clamp(+m.params.opacity||30,4,85));
@@ -18552,7 +18694,7 @@ function syncCustomLists(m){
                     var blenEff2=sf.blen!=null?Math.round(+sf.blen):(m.params.beamEndless===false?Math.round(+m.params.beamLen||12):12);
           if(beamFam2||mdl2==="gobo")beamCtl2+='<div class="zoomrow"><span style="font-size:11px;color:var(--muted);min-width:74px;flex:none">Beam length</span><input type="range" data-fparam="blen" data-fidx="'+i2+'" min="1" max="40" step="0.5" value="'+blenEff2+'"><output>'+blenEff2+' m</output></div>'
             +(sf.blen==null?'<p class="mod-note">Beam length follows the rig — '+(m.params.beamEndless===false?("fixed at "+Math.round(+m.params.beamLen||12)+" m"):"Endless: the cone runs until it hits the floor / deck")+'.</p>':'<p class="mod-note">This light has its own fixed beam length, overriding the rig setting.</p>');
-          card.innerHTML='<div class="cust-row sel" style="margin-top:8px"><div class="cr-head"><b>Light '+(i2+1)+' \u2014 '+fixtureModelLabel(sf)+'</b><span>@ ('+measureNum(rp2.x)+', '+measureNum(rp2.y)+', '+measureNum(rp2.z)+') '+measureUnit()+((onT2&&!tiltOnly2)?" \u00b7 on truss "+((+sf.seg)+1):"")+'</span><span class="cr-acts">'
+          card.innerHTML='<div class="cust-row sel" style="margin-top:8px"><div class="cr-head"><b>Light '+(i2+1)+' \u2014 '+fixtureModelLabel(sf)+'</b><span>@ ('+measureNum(rp2.x)+', '+measureNum(rp2.y)+', '+measureNum(rp2.z)+') '+measureUnit()+((onT2&&!fullRot2)?" \u00b7 on truss "+((+sf.seg)+1):"")+'</span><span class="cr-acts">'
             +'<button type="button" data-fixcopy="'+i2+'">Copy</button><button type="button" data-fixpaste="1">Paste</button>'
             +'<button type="button" data-fixdel="'+i2+'">Remove</button></span></div>'
             +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">'
@@ -18561,7 +18703,7 @@ function syncCustomLists(m){
             +fixtureFxHtml(sf,i2)
             +beamCtl2
             +'<div class="field" style="margin-top:6px"><span>Group</span><select data-fgroup="'+i2+'"><option value=""'+(!sf.group?" selected":"")+'>Ungrouped</option>'+(m.params.groups||[]).map(function(g){return '<option value="'+g.id+'"'+(sf.group===g.id?" selected":"")+'>'+escapeHtml(g.name)+'</option>'}).join("")+'</select></div>'
-            +(tiltOnly2?'<p class="mod-note">Free placement — this '+(mdl2==="batten"?"LED batten":"matrix panel")+' can sit on ANY surface: the stage, a truss, a prop or a screen wall. Drag it freely in the 3D Edit view (the green Y arrow raises / lower it onto another surface) — '+aimNote2+'.</p>'
+            +(fullRot2?'<p class="mod-note">Free placement — this '+(mdl2==="batten"?"LED batten":"matrix panel")+' can sit on ANY surface: the stage, a truss, a prop or a screen wall. Drag it freely in the 3D Edit view (the green Y arrow raises / lower it onto another surface) — '+aimNote2+'.</p>'
               :(onT2?'<p class="mod-note">On top of the truss — '+aimNote2+'.</p>'
               :(sf.mount==="screen"?'<p class="mod-note">On top of the screen — '+aimNote2+'.</p>'
               :(sf.mount==="stage"?'<p class="mod-note">On top of the stage — '+aimNote2+'.</p>':"")))
@@ -18569,8 +18711,7 @@ function syncCustomLists(m){
               +'<div class="field"><span>X \u00b7 '+measureUnit()+'</span><input type="number" step="'+measureStep(0.1)+'" data-fparam="x" data-fidx="'+i2+'" value="'+measureInputVal(rp2.x)+'"></div>'
               +'<div class="field"><span>Y \u00b7 '+measureUnit()+'</span><input type="number" step="'+measureStep(0.1)+'" data-fparam="y" data-fidx="'+i2+'" value="'+measureInputVal(rp2.y)+'"></div>'
               +'<div class="field"><span>Z \u00b7 '+measureUnit()+'</span><input type="number" step="'+measureStep(0.1)+'" data-fparam="z" data-fidx="'+i2+'" value="'+measureInputVal(rp2.z)+'"></div></div>')
-            +(tiltOnly2?"":'<div class="zoomrow"><span style="font-size:11px;color:var(--muted);min-width:32px;flex:none">Pan</span><input type="range" data-fparam="pan" data-fidx="'+i2+'" min="-180" max="180" step="1" value="'+Math.round(+sf.pan||0)+'"><output>'+Math.round(+sf.pan||0)+'\u00b0</output></div>')
-            +'<div class="zoomrow"><span style="font-size:11px;color:var(--muted);min-width:32px;flex:none">Tilt</span><input type="range" data-fparam="tilt" data-fidx="'+i2+'" min="0" max="90" step="1" value="'+Math.round(+sf.tilt||0)+'"><output>'+Math.round(+sf.tilt||0)+'\u00b0</output></div>'
+            +'<div class="zoomrow"><span style="font-size:11px;color:var(--muted);min-width:74px;flex:none">Rotation Y</span><input type="range" data-fparam="pan" data-fidx="'+i2+'" min="-180" max="180" step="1" value="'+Math.round(fixtureRotY(sf))+'"><output>'+Math.round(fixtureRotY(sf))+'\u00b0</output></div>'
             '</div>';
         }
       }
@@ -18835,8 +18976,8 @@ function syncLightPanel(m){
     +rigRow("Suggested rig",sgL.count+" fixtures · "+fmtMeasure(sgL.spread)+" spread")
     +rigRow("Fixtures",(sgL.nWash?sgL.nWash+" Wash head"+(sgL.nWash===1?"":"s")+" at the ends · ":"")+sgL.nBeam+" Beam"+(sgL.nBeam===1?"":"s")+" in the centre")
     +(sgL.onTruss
-      ? rigRow("Position","On top of the truss — "+escapeHtml(sgL.trussName||"")+" · beam "+fmtMeasure(sgL.height)+" up · tilt "+sgL.tilt+"°")
-      : rigRow("Position","On top of the screen — top edge of the LED wall · tilt "+sgL.tilt+"°"))
+      ? rigRow("Position","On top of the truss — "+escapeHtml(sgL.trussName||"")+" · beam "+fmtMeasure(sgL.height)+" up · Y rotation "+sgL.tilt+"°")
+      : rigRow("Position","On top of the screen — top edge of the LED wall · Y rotation "+sgL.tilt+"°"))
     +'</div>';
   sgL.reasons.forEach(function(r){sh+='<p class="mod-note" style="margin:6px 0 0">'+escapeHtml(r)+'</p>'});
   if(sgL.sig!==trussLayoutSig())sh+='<p class="rig-flag warn">The layout has changed since this suggestion — press Suggest lights again for a fresh read.</p>';
@@ -19366,9 +19507,9 @@ function modBtnAction(m,act){
          it must not re-seed, re-place or re-aim any light. If the
          rig is still the auto / sample rig, it becomes "my own
          lights" in this same press by SNAPSHOTTING that rig exactly
-         (snapshotAutoRigFixtures — same positions, same pan / tilt
-         the heads are already aimed with), so the lights stay
-         exactly where they are, pointing exactly where they point.
+         (snapshotAutoRigFixtures — same positions, same aim angle
+         the heads already carry, kept as their Y rotation), so the
+         lights stay exactly where they are.
          A rig that is already custom is not touched at all. */
       if(!m.params.custom){
         m.params.custom=true;
@@ -19384,7 +19525,7 @@ function modBtnAction(m,act){
       if(!view3dOpen)toggle3D(true);
       setVMode("edit");
       render();
-      toast("Light editing ON — the SAME light setup you already see is now editable: nothing was moved, re-placed or re-aimed. Only the lights can be moved / edited in the 3D view; screens are locked. Drag a light to slide it along the truss bar (a light on top of the screen moves along the top of the wall) — except LED battens and matrix panels, which drag FREELY and can be placed on any surface (stage, truss, a prop, a screen). Rotate aims it (pan / tilt; battens / matrix panels tilt only) — Scale does not work on lights. Add lights in the Lighting section and organise them — groups included — in Layers below it. Press Edit again to go back to editing screens.");
+      toast("Light editing ON — the SAME light setup you already see is now editable: nothing was moved, re-placed or re-aimed. Only the lights can be moved / edited in the 3D view; screens are locked. Drag a light to slide it along the truss bar (a light on top of the screen moves along the top of the wall) — except LED battens and matrix panels, which drag FREELY and can be placed on any surface (stage, truss, a prop, a screen). Rotate tilts it — every light rotates ONLY around the X axis, from its base — Scale does not work on lights. Add lights in the Lighting section and organise them — groups included — in Layers below it. Press Edit again to go back to editing screens.");
       return;
     }
     if(act==="dupLight"){
@@ -19459,7 +19600,7 @@ function modBtnAction(m,act){
   }else if(m.type==="light"&&act==="addFix"){
     /* Added lights go ON the TOP TRUSS — and when the layout has no
        truss system, they stand ON TOP OF THE SCREEN instead. */
-    var nfA={x:0,y:0,z:0,pan:0,tilt:35,seg:null,tm:null,t:0,type:(m.params.ltype||"beam"),model:null,color:null,on:true,group:null};
+    var nfA={x:0,y:0,z:0,pan:35,tilt:0,roll:0,seg:null,tm:null,t:0,type:(m.params.ltype||"beam"),model:null,color:null,on:true,group:null};
     m.params.fixtures.push(nfA);
     var onTrussA=!!lightTrussBars().length;
     if(onTrussA)mountNewFixture(m,nfA); else placeFixtureOnScreenTop(m,nfA,((m.params.fixtures.length-1)%5)/4);
@@ -19522,9 +19663,9 @@ function ensureCustomFixtures(m){
     /* The rig becomes the user's own lights by SNAPSHOTTING the auto
        rig exactly as it is already drawn (snapshotAutoRigFixtures):
        same positions — top truss, or top of the screen when there
-       is no truss — and the same pan / tilt aim. The lights already
-       on stage stay put and keep pointing where they point; only
-       the newly added light gets a fresh placement. */
+       is no truss — and the same aim angle, kept as each fixture's
+       Y rotation. The lights already on stage stay put; only the
+       newly added light gets a fresh placement. */
     p.fixtures=snapshotAutoRigFixtures(m);
   }
 }
@@ -19533,13 +19674,13 @@ function addLightOfType(m,type){
   ensureCustomFixtures(m);
   /* Lights go ON the TOP TRUSS — whatever the type. With no truss
      system in the layout, the light stands ON TOP OF THE SCREEN. */
-  var nfB={x:0,y:0,z:0,pan:0,tilt:35,seg:null,tm:null,t:0,type:type,model:null,color:null,on:true,group:null};
+  var nfB={x:0,y:0,z:0,pan:35,tilt:0,roll:0,seg:null,tm:null,t:0,type:type,model:null,color:null,on:true,group:null};
   p.fixtures.push(nfB);
   var onTrussB=!!lightTrussBars().length;
   if(onTrussB)mountNewFixture(m,nfB); else placeFixtureOnScreenTop(m,nfB,((p.fixtures.length-1)%5)/4);
   modSelFix=p.fixtures.length-1; fixSelOnly(modSelFix); fixSelAnchor=modSelFix;
   render();
-  toast(lightTypeLabel(type)+" light added as Light "+p.fixtures.length+" \u2014 placed "+(onTrussB?"ON the top truss: drag it in the 3D Edit view to slide it along the bar":"ON TOP of the screen (no truss system in this layout): drag it in the 3D Edit view to move it along the top of the wall")+", and Rotate aims it (pan / tilt). Lights have no scale. Type, fixture and colour are in its card under Layers.");
+  toast(lightTypeLabel(type)+" light added as Light "+p.fixtures.length+" \u2014 placed "+(onTrussB?"ON the top truss: drag it in the 3D Edit view to slide it along the bar":"ON TOP of the screen (no truss system in this layout): drag it in the 3D Edit view to move it along the top of the wall")+", and Rotate tilts it (X axis only, from its base). Lights have no scale. Type, fixture and colour are in its card under Layers.");
 }
 /* Fixture presets — place an ACTUAL stage light: the preset's real
    fixture (moving head, wash head, PAR can, profile spot, strobe
@@ -19551,7 +19692,7 @@ function addFixturePreset(m,key){
   var pr=FIXTURE_MODELS[key]; if(!pr)return;
   var p=m.params;
   ensureCustomFixtures(m);
-  var nfF={x:0,y:0,z:0,pan:0,tilt:35,seg:null,tm:null,t:0,type:pr.type,model:key,fx:FIXTURE_FX[key]?sanitizeFx(key,null):null,color:null,on:true,group:null};
+  var nfF={x:0,y:0,z:0,pan:35,tilt:0,roll:0,seg:null,tm:null,t:0,type:pr.type,model:key,fx:FIXTURE_FX[key]?sanitizeFx(key,null):null,color:null,on:true,group:null};
   p.fixtures.push(nfF);
   /* Battens and matrix panels are FREE placement: a new one stands
      on the stage deck, and from there it can be dragged onto ANY
@@ -19563,7 +19704,7 @@ function addFixturePreset(m,key){
   modSelFix=p.fixtures.length-1; fixSelOnly(modSelFix); fixSelAnchor=modSelFix;
   render();
   toast(freeF
-    ?pr.label+" placed as Light "+p.fixtures.length+" \u2014 FREE placement: it stands on the stage, and you can drag it anywhere, on any surface (stage, truss, a prop, a screen wall), in the 3D Edit view. It tilts only \u2014 it never pans \u2014 and it gives light by glowing, pixel by pixel. Lights have no scale. Its settings are in its card under Layers."
+    ?pr.label+" placed as Light "+p.fixtures.length+" \u2014 FREE placement: it stands on the stage, and you can drag it anywhere, on any surface (stage, truss, a prop, a screen wall), in the 3D Edit view. It rotates around the Y axis only, about its base \u2014 no X tilt, no roll \u2014 and it gives light by glowing, pixel by pixel. Lights have no scale. Its settings are in its card under Layers."
     :pr.label+" placed as Light "+p.fixtures.length+" ("+lightTypeLabel(pr.type)+" beam) \u2014 "+(onTrussF?"ON the top truss":"ON TOP of the screen (no truss system in this layout)")+", and selected: drag its gizmo in the 3D Edit view"+(onTrussF?" to slide it along the bar":" along the top of the wall")+", Rotate aims it. Lights have no scale. Colour and aim are in its card under Layers.");
 }
 function modParamEvent(ev){
@@ -19838,7 +19979,7 @@ function modParamEvent(ev){
     var fgEl=ev.target.closest?ev.target.closest("[data-fgroup]"):null;
     if(fgEl){var mfg=modById(selModId); if(mfg&&mfg.type==="light"){var fxG=mfg.params.fixtures[+fgEl.getAttribute("data-fgroup")]; if(fxG){fxG.group=fgEl.value||null; render(); toast("Light "+(+fgEl.getAttribute("data-fgroup")+1)+(fxG.group?" moved into the group.":" moved to Ungrouped."))}} return}
     var fmEl=ev.target.closest?ev.target.closest("[data-fmodel]"):null;
-    if(fmEl){var mfm=modById(selModId); if(mfm&&mfm.type==="light"){var fxM=mfm.params.fixtures[+fmEl.getAttribute("data-fmodel")]; if(fxM){var wasFreeM=isFreeFixture(fxM), rpWasM=resolveFixturePos(fxM); fxM.model=fmEl.value||null; var effM=fixtureModelOf(fxM); if(FIXTURE_MODELS[effM])fxM.type=FIXTURE_MODELS[effM].type; if(effM==="batten"||effM==="matrix")fxM.pan=0; if(fxM.model&&FIXTURE_FX[fxM.model])fxM.fx=sanitizeFx(fxM.model,fxM.fx); /* Placement follows the fixture family: becoming a batten / matrix panel DETACHES it into free placement exactly where it stands (it can now go on any surface); becoming any other fixture puts it back under the truss rule — mounted on the nearest bar when the layout has a truss. */ if(isFreeFixture(fxM))detachFixtureToFree(mfm,fxM); else if(wasFreeM&&lightTrussBars().length)mountFixtureNearest(mfm,fxM,{x:rpWasM.x+(+mfm.params.setX||0), y:rpWasM.y+(+mfm.params.setY||0), z:rpWasM.z+(+mfm.params.setZ||0)}); render(); toast("Light "+(+fmEl.getAttribute("data-fmodel")+1)+" — fixture: "+fixtureModelLabel(fxM)+". Its card now shows only that fixture\u2019s own settings."+(isFreeFixture(fxM)?" It is now FREE placement — drag it anywhere, on any surface, in the 3D Edit view.":wasFreeM?" It is back on the truss rule — it rides the truss bar.":""))}} return}
+    if(fmEl){var mfm=modById(selModId); if(mfm&&mfm.type==="light"){var fxM=mfm.params.fixtures[+fmEl.getAttribute("data-fmodel")]; if(fxM){var wasFreeM=isFreeFixture(fxM), rpWasM=resolveFixturePos(fxM); fxM.model=fmEl.value||null; var effM=fixtureModelOf(fxM); if(FIXTURE_MODELS[effM])fxM.type=FIXTURE_MODELS[effM].type; setFixtureRotY(fxM,fixtureRotY(fxM)); /* every light: Y-axis rotation only — the turn is kept, X / Z forced to 0, whatever family it becomes */ if(fxM.model&&FIXTURE_FX[fxM.model])fxM.fx=sanitizeFx(fxM.model,fxM.fx); /* Placement follows the fixture family: becoming a batten / matrix panel DETACHES it into free placement exactly where it stands (it can now go on any surface); becoming any other fixture puts it back under the truss rule — mounted on the nearest bar when the layout has a truss. */ if(isFreeFixture(fxM))detachFixtureToFree(mfm,fxM); else if(wasFreeM&&lightTrussBars().length)mountFixtureNearest(mfm,fxM,{x:rpWasM.x+(+mfm.params.setX||0), y:rpWasM.y+(+mfm.params.setY||0), z:rpWasM.z+(+mfm.params.setZ||0)}); render(); toast("Light "+(+fmEl.getAttribute("data-fmodel")+1)+" — fixture: "+fixtureModelLabel(fxM)+". Its card now shows only that fixture\u2019s own settings."+(isFreeFixture(fxM)?" It is now FREE placement — drag it anywhere, on any surface, in the 3D Edit view.":wasFreeM?" It is back on the truss rule — it rides the truss bar.":""))}} return}
     var fxEl=ev.target.closest?ev.target.closest("[data-fxsel]"):null;
     if(fxEl){var mfxs=modById(selModId); if(mfxs&&mfxs.type==="light"){var tFx=mfxs.params.fixtures[+fxEl.getAttribute("data-fxidx")]; var fxS=fixtureFx(tFx); if(fxS){var kv=fxEl.value, kn=parseFloat(kv); fxS[fxEl.getAttribute("data-fxsel")]=(kv!==""&&String(kn)===kv)?kn:kv; var fxSan=sanitizeFx(fixtureModelOf(tFx),fxS); if(fxSan)tFx.fx=fxSan; render()}} return}
     var ptfEl=ev.target.closest?ev.target.closest("[data-ptexfile]"):null;
@@ -20018,8 +20159,10 @@ function modParamEvent(ev){
     var fk=fp.getAttribute("data-fparam"), fv=parseFloat(fp.value); if(isNaN(fv))return;
     if(fk==="x"||fk==="y"||fk==="z")fv=fromMeasureVal(fv);
     if(fk==="bang")fv=clamp(fv,4,60); if(fk==="bstr")fv=clamp(fv,5,100); if(fk==="blen")fv=clamp(fv,1,60);
-    if(fk==="pan"&&(fixtureModelOf(fix)==="batten"||fixtureModelOf(fix)==="matrix"))fv=0; /* battens / matrix panels never pan */
-    fix[fk]=(fk==="pan"||fk==="tilt"||fk==="bang"||fk==="bstr")?Math.round(fv):Math.round(fv*100)/100;
+    if(fk==="tilt"||fk==="roll")fv=0; /* lights have NO X tilt and NO roll — Y-axis rotation only, for every fixture */
+    if(fk==="pan")fv=normDeg180(fv); /* the Rotation Y slider: a full −180°…180° turn about the fixture's base */
+    fix[fk]=(fk==="pan"||fk==="tilt"||fk==="roll"||fk==="bang"||fk==="bstr")?Math.round(fv):Math.round(fv*100)/100;
+    if(fk==="pan"){fix.tilt=0; fix.roll=0} /* writing the Y rotation canonicalizes the fixture — X / Z stay 0 */
     if(fp.type==="range"){var out=fp.parentElement?fp.parentElement.querySelector("output"):null; if(out)out.textContent=fix[fk]+(fk==="bstr"?"%":"°")}
     if(T3&&view3dOpen)rebuildModGroup(mf3);
     return;
@@ -20144,7 +20287,7 @@ function modParamEvent(ev){
     if(m.type==="truss"&&!(m.params.segs&&m.params.segs.length))m.params.segs=seedCustomSegs(m);
     if(m.type==="light"&&!(m.params.fixtures&&m.params.fixtures.length)){
       var wmS=wallMetrics(), bbS=sceneBBox3D();
-      m.params.fixtures=[{x:Math.round(((bbS.minX+bbS.maxX)/2)*100)/100,y:Math.round(deckTopY()*100)/100,z:Math.round(((bbS.minZ+bbS.maxZ)/2)*100)/100,pan:0,tilt:35,seg:null,tm:null,t:0,type:(m.params.ltype||"beam"),model:null,color:null,on:true,group:null}];
+      m.params.fixtures=[{x:Math.round(((bbS.minX+bbS.maxX)/2)*100)/100,y:Math.round(deckTopY()*100)/100,z:Math.round(((bbS.minZ+bbS.maxZ)/2)*100)/100,pan:35,tilt:0,roll:0,seg:null,tm:null,t:0,type:(m.params.ltype||"beam"),model:null,color:null,on:true,group:null}];
       /* The starter fixture follows the sample rule too: ON the TOP
          TRUSS when a truss system exists, ON TOP OF THE SCREEN when
          there is none. */
@@ -20517,6 +20660,132 @@ function getLensMat(hex){
   if(!lensMatCache[hex])lensMatCache[hex]=new THREE.MeshBasicMaterial({color:new THREE.Color(hex),fog:false});
   return lensMatCache[hex];
 }
+/* ── Realistic beam light — RENDER VIEW ONLY ───────────────────────
+   The look ported from the lights-only Ultra Realistic Lights demo,
+   adapted to this scene. In Render, every beam fixture gets three
+   things the editing view never builds:
+   • a GRADIENT shaft — the cone's alpha fades along its length
+     (bright at the lens, dissolving at the far end) instead of the
+     editing view's flat translucent cone, and its strength is
+     driven by HAZE: with no Haze modifier the shaft falls to the
+     Render settings' clear-air level (12% by default), so in a
+     clear room you barely see the beam in mid-air — like real life;
+   • a real SPOTLIGHT from the head along the beam (capped at 8,
+     no shadows — the key light keeps those), so the beam genuinely
+     lights the deck, the floor, truss and crowd it crosses; and
+   • the POOL where the beam lands — a soft radial disc laid flat
+     on the deck / floor at the beam's hit point, stretched along
+     the throw — plus a two-layer FLARE glow sprite at the lens.
+     Pools and flare do NOT depend on haze: they stay bright in
+     clear air, which is exactly the no-haze look.
+   There is deliberately NO dust / particle system: nothing drifts
+   in the air in either view. Everything here registers on
+   T3.beamMatsR / beamPools / beamSpots / beamFlares during the
+   Render build and is levelled live by applyRenderBeamFx from the
+   Render settings (Stage lights section); leaving Render rebuilds
+   the scene without any of it. */
+var beamGradTexCache=null, poolTexCache=null;
+function beamGradientTexture(){
+  if(beamGradTexCache)return beamGradTexCache;
+  var cv=document.createElement("canvas"); cv.width=4; cv.height=256;
+  var c=cv.getContext("2d");
+  var gr=c.createLinearGradient(0,0,0,256);
+  gr.addColorStop(0,"#ffffff"); gr.addColorStop(0.35,"#b4b4b4"); gr.addColorStop(0.75,"#4d4d4d"); gr.addColorStop(1,"#141414");
+  c.fillStyle=gr; c.fillRect(0,0,4,256);
+  beamGradTexCache=new THREE.CanvasTexture(cv);
+  return beamGradTexCache;
+}
+function poolTexture(){
+  if(poolTexCache)return poolTexCache;
+  var cv=document.createElement("canvas"); cv.width=cv.height=128;
+  var c=cv.getContext("2d");
+  var gr=c.createRadialGradient(64,64,2,64,64,64);
+  gr.addColorStop(0,"rgba(255,255,255,1)"); gr.addColorStop(0.4,"rgba(255,255,255,0.55)"); gr.addColorStop(0.75,"rgba(255,255,255,0.16)"); gr.addColorStop(1,"rgba(255,255,255,0)");
+  c.fillStyle=gr; c.fillRect(0,0,128,128);
+  poolTexCache=new THREE.CanvasTexture(cv);
+  return poolTexCache;
+}
+var beamMatCacheR={};
+function getBeamMatRender(hex,baseOp){
+  var k=hex+"|"+Math.round(baseOp*100);
+  if(!beamMatCacheR[k]){
+    var mt=new THREE.MeshBasicMaterial({color:new THREE.Color(hex),transparent:true,opacity:baseOp,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false,alphaMap:beamGradientTexture()});
+    mt.userData.baseOp=baseOp;
+    beamMatCacheR[k]=mt;
+  }
+  if(T3&&!T3._ghostBuild){T3.beamMatsR=T3.beamMatsR||[]; if(T3.beamMatsR.indexOf(beamMatCacheR[k])<0)T3.beamMatsR.push(beamMatCacheR[k])}
+  return beamMatCacheR[k];
+}
+/* How strongly a beam shaft reads at the scene's current haze:
+   clear air keeps only the clearBeam fraction; full haze slightly
+   over-reads, like a real hazed room. */
+function renderBeamHazeFactor(){
+  var hz=clamp((T3&&T3.haze)||0,0,1);
+  var cb=(renderSettings&&renderSettings.clearBeam!=null)?clamp(+renderSettings.clearBeam,0,0.6):0.12;
+  return cb+(1.25-cb)*Math.pow(hz,0.8);
+}
+function applyRenderBeamFx(){
+  if(!T3||!renderMode)return;
+  var rs=renderSettings||{};
+  var on=rs.beamFx!==false;
+  var hf=renderBeamHazeFactor();
+  (T3.beamMatsR||[]).forEach(function(mt){mt.opacity=on?clamp((mt.userData.baseOp||0.3)*hf,0,1):0});
+  var imp=(rs.beamImpact==null)?1:clamp(+rs.beamImpact,0,2);
+  var fl=(rs.flare==null)?1:clamp(+rs.flare,0,2);
+  (T3.beamPools||[]).forEach(function(p){p.mesh.visible=on&&imp>0.01; p.mesh.material.opacity=p.base*imp});
+  (T3.beamSpots||[]).forEach(function(s){s.light.visible=on&&imp>0.01; s.light.intensity=s.base*imp});
+  (T3.beamFlares||[]).forEach(function(f){f.sp.visible=on&&fl>0.01; f.sp.material.opacity=f.base*fl});
+}
+/* Lens flare for a beam fixture in Render: a wide soft halo plus a
+   small bright core at the lens, levelled by the Flare slider. */
+function addBeamFlareRender(head,hex,str,mid){
+  if(!renderMode||!T3||T3._ghostBuild)return;
+  var halo=addGlowSprite(head,hex,0.85,0.5,0,0,0.22);
+  var core=addGlowSprite(head,hex,0.34,0.9,0,0,0.24);
+  T3.beamFlares=T3.beamFlares||[];
+  T3.beamFlares.push({sp:halo,base:0.5,mid:mid},{sp:core,base:0.9,mid:mid});
+}
+/* Beam impact for one fixture in Render — called from the beam
+   branch of buildLightsGroup with the head's world position /
+   direction / orientation worked out by the caller (the same
+   maths the gobo projection uses). The spotlight rides INSIDE the
+   head group, aimed down its +Z, so the sweep animation carries
+   its light with the beam; the pool disc rides in a counter-rotated
+   holder at the floor hit distance, flat on the surface, so a yaw
+   sweep keeps it flat and under the beam. */
+function addBeamImpactRender(head,o){
+  if(!renderMode||!T3||T3._ghostBuild||!o||!o.dir||!o.pos||!o.qHead)return;
+  T3.beamPools=T3.beamPools||[]; T3.beamSpots=T3.beamSpots||[];
+  var sizeC=clamp(+o.size||1,0.4,2.5), strC=clamp(+o.str||0,0,1);
+  if((T3._spotCount||0)<8){
+    T3._spotCount=(T3._spotCount||0)+1;
+    var spot=new THREE.SpotLight(new THREE.Color(o.hex),1,Math.max(4,(+o.len||12)*1.3),clamp(+o.ang||16,4,60)*Math.PI/180,0.6,1);
+    spot.position.set(0,0,0.06);
+    head.add(spot);
+    var tgt=new THREE.Object3D(); tgt.position.set(0,0,Math.max(1,(+o.len||12)/sizeC)); head.add(tgt);
+    spot.target=tgt;
+    T3.beamSpots.push({light:spot,base:0.35+1.7*strC,mid:o.mid});
+  }
+  var dir=o.dir, tHit=(dir.y<-0.05)?((+o.floorY||0)-o.pos.y)/dir.y:-1;
+  if(tHit>0.4&&tHit<(+o.len||12)*1.08){
+    var holder=new THREE.Group(); holder.position.set(0,0,tHit/sizeC);
+    var azim=Math.atan2(dir.x,dir.z);
+    var qFloor=new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI/2,0,0)).premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,azim,0)));
+    holder.quaternion.copy(o.qHead.clone().invert().multiply(qFloor));
+    head.add(holder);
+    var radW=Math.tan(clamp(+o.ang||16,4,60)*Math.PI/180)*tHit;
+    var disc=new THREE.Mesh(new THREE.CircleGeometry(Math.max(0.12,radW*0.98/sizeC),28),
+      new THREE.MeshBasicMaterial({map:poolTexture(),color:new THREE.Color(o.hex),transparent:true,opacity:0.6,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
+    disc.scale.set(1,clamp(1/Math.max(0.35,Math.abs(dir.y)),1,2.8),1); /* the throw stretches the pool along its fall */
+    disc.position.set(0,0,0.02);
+    disc.userData.ownGeo=true; disc.frustumCulled=false;
+    holder.add(disc);
+    /* The animation loop re-levels this pool every frame (holder +
+       head + floor are kept here), so it stays flat on the surface
+       and under the beam while the fixture sweeps. */
+    T3.beamPools.push({mesh:disc,holder:holder,head:head,floorY:+o.floorY||0,size:sizeC,t0:tHit,base:clamp(0.30+0.45*strC,0,0.8),mid:o.mid});
+  }
+}
 /* ── Glow sprites — the soft halo a real glowing pixel / lens
    throws around itself (bloom, in previz form). Battens and
    matrix panels emit NO beam cone at all: like the real units,
@@ -20848,7 +21117,8 @@ function updateCrowdInstances(c,t){
    • mount "stage" (and every other free fixture) → "stage": the fixture
      STANDS on the surface under its point on its own base, no clamp.
    The frame orients the fixture's FIXED parts (clamp, base, yoke);
-   pan / tilt never touch it — they turn the head alone. */
+   the Y rotation never touches it — the swing group inside it
+   turns the whole fixture about the base. */
 function fixtureMountFrame(m,f){
   if(f&&f.tm&&f.seg!==null&&f.seg!==undefined){
     var tm=modById(f.tm);
@@ -20882,10 +21152,12 @@ function fixtureMountFrame(m,f){
      of a tower (side mounts), or just the base plate standing on
      the deck (stage mounts) — plus the base and the YOKE ARMS.
      None of it ever rotates.
-   • the MOVING HEAD — the only part pan / tilt (and the beam
-     sweep animation) turns: the head body, its lens and the beam
-     cone hang off the head group, pivoting between the yoke arms
-     exactly like the real fixture.
+   • the HEAD — the head body, its lens and the beam cone hang
+     off the head group, slung between the yoke arms exactly like
+     the real fixture. NOTE: pan / tilt / roll do NOT turn this
+     head group — the caller builds both parts inside a SWING
+     group whose origin is the base / mounting point, and turns
+     THAT, so the whole fixture rotates from its base.
    Per preset: a moving head's base, yoke and head; a wash head's
    wide drum; a PAR can in its yoke; a profile spot's body and lens
    tube; a strobe / blinder panel on its stand; the compact beam
@@ -20909,7 +21181,9 @@ function addFixtureReal(parent,model,lensMat,frame,fx){
     sleeveV.userData.ownGeo=true; sleeveV.position.set(0,0.03,0); fixed.add(sleeveV); /* the coupler around the upright bar */
     bx(fixed,0.055,0.05,offZ,0,0.025,offZ/2); /* the clamp arm reaching out to the fixture */
   }
-  /* ── MOVING: the head group — pan / tilt turn THIS alone ── */
+  /* ── The head group — carries the body, lens and beam. It is
+     NOT the rotation pivot: the caller's swing group (origin at
+     the base) turns the whole fixture, this group included. ── */
   var head=new THREE.Group(); parent.add(head);
   function ln(w,h,z){var ms=new THREE.Mesh(unitPlane,lensMat); ms.scale.set(w,h,1); ms.position.set(0,0,z); head.add(ms); return ms}
   if(model==="mover"){
@@ -21099,9 +21373,9 @@ function buildLightsGroup(m,bb){
     var gselB=(T3&&state.vmode==="edit"&&selModId===m.id&&lightToolArmed===m.id&&!T3._ghostBuild)?lightGroupSelection(m):null;
     /* ── Custom placement: every fixture is its own. Position comes
        from its stored x/y/z — or, while attached, from the point t
-       along its truss segment, so it follows the truss. Pan / tilt
-       aim the beam per fixture (YXZ: pan around the world Y, then
-       tilt down). In Edit mode with this modifier selected, each
+       along its truss segment, so it follows the truss. Its Y-axis
+       rotation from the base turns it per fixture.
+       In Edit mode with this modifier selected, each
        fixture gets an invisible hit box for dragging. */
     (p.fixtures||[]).forEach(function(f,i){
       /* Layers visibility (Blender-style): a light whose own eye is
@@ -21122,10 +21396,18 @@ function buildLightsGroup(m,bb){
       if(f.tm&&f.seg!==null&&f.seg!==undefined)pos={x:pos.x-(+p.setX||0),y:pos.y-(+p.setY||0),z:pos.z-(+p.setZ||0)};
       var worldY=pos.y+(+p.setY||0);
       /* The fixture's MOUNT group sits at its point on the bar (or
-         on the stage) and NEVER rotates: it carries the clamp, base
-         and yoke, fixed to the truss on the mount frame's side.
-         Pan / tilt — and the sweep animation — turn only the HEAD
-         group inside it, like the real fixture. */
+         on the stage) and NEVER rotates: it carries the mount
+         frame, fixed to the truss on the mount frame's side. Inside
+         it, the SWING group — whose origin IS the fixture's base /
+         mounting point — carries the whole fixture (clamp, base,
+         yoke and head together): the Y-axis rotation, and the sweep
+         animation, turn the swing group, so EVERY light rotates
+         from its BASE — around the Y axis ONLY, no X tilt, no roll —
+         turning around the vertical axis through its mount, never
+         around its centre or head.
+         The fixture's stored position is its base position and
+         never moves when it is rotated — only its orientation
+         changes, around the base. */
       var frame=fixtureMountFrame(m,f);
       var pivot=new THREE.Group(); pivot.position.set(pos.x,pos.y,pos.z);
       pivot.quaternion.copy(frame.quat);
@@ -21137,23 +21419,39 @@ function buildLightsGroup(m,bb){
       /* The ACTUAL fixture: its preset body shape (moving head,
          wash head, PAR can, profile, strobe, beam fixture) with
          its lens in the light's colour — the beam cone below still
-         follows the fixture's Beam / Spot / Wash / BSW type. */
-      var head=addFixtureReal(pivot,modelC,lensMatC,frame,fxC);
-      var tiltR=clamp(+f.tilt||0,0,90)*Math.PI/180;
+         follows the fixture's Beam / Spot / Wash / BSW type. It is
+         built inside the SWING group, so the rotation below turns
+         the whole fixture about its base point (the swing group's
+         origin), not about the head. */
+      var swing=new THREE.Group(); pivot.add(swing);
+      var head=addFixtureReal(swing,modelC,lensMatC,frame,fxC);
       var sizeC=clamp(+f.size||1,0.4,2.5);
-      /* Battens and matrix panels TILT ONLY — they have no pan,
-         like the real units: any stored pan is ignored here. */
-      var tiltOnlyC=(modelC==="batten"||modelC==="matrix");
-      var panC=tiltOnlyC?0:clamp(+f.pan||0,-180,180)*Math.PI/180;
-      var headQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(tiltR,panC,0,"YXZ"));
-      head.quaternion.copy(headQ);
-      var headY=worldY+head.position.y*sizeC;
-      var lenC=beamLenFor(p,f,headY,tiltR);
+      /* ALL lights rotate ONLY around the Y axis, applied at the
+         BASE: the swing group turns about the vertical axis
+         through the fixture's base / mounting point, so the
+         fixture turns around its base while the base point itself
+         never moves — it stays ON its mounting surface (truss bar,
+         stage deck / floor, prop or screen wall), never floating
+         off it and never sinking into it. There is NO X-axis tilt
+         and NO Z-axis roll for any light, battens and matrix panels
+         included. Battens / matrix still emit NO cone either way —
+         they glow pixel / cell by cell. */
+      var rotYR=fixtureRotY(f)*Math.PI/180;
+      var headQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,rotYR,0,"YXZ"));
+      swing.quaternion.copy(headQ);
+      /* The head's offset from the base, swung by the base rotation
+         and the mount frame — where the head actually sits in the
+         world now that it turns about the base, not its centre.
+         The beam length, the gobo projection and the yellow
+         selection box all read the head from here. */
+      var headOffW=head.position.clone().applyQuaternion(headQ).multiplyScalar(sizeC).applyQuaternion(frame.quat);
+      var headY=worldY+headOffW.y;
+      var lenC=beamLenFor(p,f,headY,0); /* Y rotation only: the beam throws level from the turned head — no downward X tilt enters its length */
       /* This light's own beam strength (its card slider) — falling
          back to the rig's Beam strength until it is given one.
          Only beam lights use it: battens / matrix / lasers don't. */
       var strC=(f.bstr!=null&&isFinite(+f.bstr))?clamp(+f.bstr,5,100)/100:clamp(+p.opacity||30,4,85)/100;
-      var beamMatF=getBeamMat(fCol,strC*(1+(T3.haze||0)*0.7));
+      var beamMatF=(renderMode&&!T3._ghostBuild)?getBeamMatRender(fCol,strC):getBeamMat(fCol,strC*(1+(T3.haze||0)*0.7));
       if(modelC==="laser"){
         /* A laser draws NO cone: an aperture glow plus thin scanned
            rays worked by the animation loop like real scanners —
@@ -21191,6 +21489,15 @@ function buildLightsGroup(m,bb){
         var geoC=new THREE.ConeGeometry(Math.max(0.2,radC),lenB,20,1,true);
         geoC.translate(0,-lenB/2,0); geoC.rotateX(-Math.PI/2);
         var beamC=new THREE.Mesh(geoC,beamMatF); beamC.userData.ownGeo=true; beamC.frustumCulled=false; head.add(beamC);
+        if(renderMode&&!T3._ghostBuild){
+          /* Render-only realistic light for this fixture: flare at
+             the lens, a real spotlight down the beam and the pool
+             where it lands (see addBeamImpactRender). */
+          addBeamFlareRender(head,fCol,strC,m.id);
+          var hwPosB=headOffW.clone().add(pivot.position).add(g.position);
+          var hwDirB=new THREE.Vector3(0,0,1).applyQuaternion(headQ).applyQuaternion(frame.quat).normalize();
+          addBeamImpactRender(head,{pos:hwPosB,dir:hwDirB,qHead:frame.quat.clone().multiply(headQ),floorY:deckTopY(),ang:angC,len:lenB,size:sizeC,hex:fCol,str:strC,mid:m.id});
+        }
         if(modelC==="gobo"&&fxC){
           /* The projected gobo lands ON THE SURFACE: the beam ray
              is intersected with the stage deck / floor plane, and
@@ -21203,7 +21510,7 @@ function buildLightsGroup(m,bb){
              end-of-cone disc. */
           var foc=clamp(+fxC.focus||0,0,100)/100;
           var floorYC=state.stage3d&&state.stage3d.show?(+state.stage3d.deck||0):0;
-          var hwPos=head.position.clone().multiplyScalar(sizeC).applyQuaternion(frame.quat).add(pivot.position).add(g.position);
+          var hwPos=headOffW.clone().add(pivot.position).add(g.position);
           var hwDir=new THREE.Vector3(0,0,1).applyQuaternion(headQ).applyQuaternion(frame.quat).normalize();
           var tHit=(hwDir.y<-0.08)?(floorYC-hwPos.y)/hwDir.y:-1;
           var discMat=new THREE.MeshBasicMaterial({map:goboTexture(fxC),color:new THREE.Color(fCol),transparent:true,opacity:(0.3+foc*0.6)*clamp(strC*1.6,0.25,1),blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false});
@@ -21228,9 +21535,60 @@ function buildLightsGroup(m,bb){
         }
       }
       g.add(pivot);
-      /* The sweep animates the HEAD (its base aim is the head's own
-         pan / tilt quaternion) — the yoke and clamp stay fixed. */
-      T3.lightAnims.push({pivot:head,base:head.quaternion.clone(),animate:!!p.animate,phase:i*0.9,sweep:clamp(+p.sweep||0,0,60)*Math.PI/180*0.5,speed:0.4+clamp(+p.speed||40,0,100)/100*1.1,mid:m.id,tiltOnly:tiltOnlyC});
+      /* The sweep animates the SWING group at the base (its base
+         aim is the swing's own Y-rotation quaternion), so the
+         animated wobble also turns the fixture about its base
+         mount, never about its centre. */
+      T3.lightAnims.push({pivot:swing,base:swing.quaternion.clone(),animate:!!p.animate,phase:i*0.9,sweep:clamp(+p.sweep||0,0,60)*Math.PI/180*0.5,speed:0.4+clamp(+p.speed||40,0,100)/100*1.1,mid:m.id,yawOnly:true});
+      /* ── SELECTED LIGHT — bright yellow selection box + outline ──
+         Only the ONE selected light (the active fixture, modSelFix)
+         of the selected Lighting modifier gets it — unselected
+         lights get none. It is a yellow bounding box around the
+         fixture's HEAD (the part that aims / glows), drawn with a
+         translucent yellow fill, bright yellow edges and a tighter
+         yellow wireframe outline on the fixture itself, all with
+         depth test OFF and a top render order, so the selected
+         light reads clearly even when the fixture is small, dim or
+         behind another element — the user can always see WHICH
+         light is selected. The box sits at the fixture's head
+         position, turns with the fixture's Y-axis rotation about
+         its base (mount frame × Y rotation — the head offset is
+         read from the base pivot, so the box follows the
+         surface-mounted base) and scales with the fixture's stored
+         size, so it follows the light wherever it is placed.
+         Editor-only: it is never built for a ghost / preview build,
+         never in client view, the render loop hides it in Render
+         mode (see loop3D), and no export reads the live scene —
+         PNG / PSD / Technical PDF are 2D and the 3D model export
+         builds its own geometry (buildModel / modelLights), so the
+         box can never appear in any export. */
+      if(T3&&!T3._ghostBuild&&!clientMode&&selModId===m.id&&i===modSelFix){
+        var selW=0.56, selH=0.52, selD=0.56;
+        if(modelC==="batten"){selW=(fxC?(+fxC.len||1):1)+0.22; selH=0.32; selD=0.32}
+        else if(modelC==="matrix"){var mPW2=(fxC?Math.round(+fxC.cols||5):5)*(fxC?(+fxC.pitch||100):100)/1000, mPH2=(fxC?Math.round(+fxC.rows||5):5)*(fxC?(+fxC.pitch||100):100)/1000; selW=mPW2+0.2; selH=mPH2+0.2; selD=0.32}
+        else if(modelC==="strobe"){selW=0.54; selH=0.4; selD=0.26}
+        else if(modelC==="par"){selW=0.32; selH=0.36; selD=0.5}
+        else if(modelC==="profile"||modelC==="gobo"){selW=0.36; selH=0.38; selD=0.64}
+        else if(modelC==="laser"){selW=0.34; selH=0.36; selD=0.42}
+        else if(modelC==="washhead"){selW=0.46; selH=0.38; selD=0.36}
+        var selGrp=new THREE.Group();
+        /* headOffW is the head's offset swung about the BASE by
+           the fixture's rotation — the box follows the fixture as
+           it rotates from its base, not from a centre pivot. */
+        selGrp.position.set(pos.x+headOffW.x,pos.y+headOffW.y,pos.z+headOffW.z);
+        selGrp.quaternion.copy(frame.quat).multiply(headQ);
+        selGrp.scale.setScalar(sizeC);
+        var selGeo=new THREE.BoxGeometry(selW,selH,selD);
+        var selFill=new THREE.Mesh(selGeo,new THREE.MeshBasicMaterial({color:0xffd400,transparent:true,opacity:0.10,depthWrite:false,depthTest:false}));
+        selFill.userData.ownGeo=true; selFill.renderOrder=996; selFill.userData.lightSelBox=true; selGrp.add(selFill);
+        var selEdge=new THREE.LineSegments(new THREE.EdgesGeometry(selGeo),new THREE.LineBasicMaterial({color:0xffd400,transparent:true,opacity:1,depthTest:false}));
+        selEdge.userData.ownGeo=true; selEdge.renderOrder=997; selEdge.userData.lightSelBox=true; selGrp.add(selEdge);
+        var selWire=new THREE.Mesh(new THREE.BoxGeometry(selW,selH,selD),new THREE.MeshBasicMaterial({color:0xffe600,wireframe:true,transparent:true,opacity:0.5,depthTest:false}));
+        selWire.userData.ownGeo=true; selWire.scale.setScalar(0.93); selWire.renderOrder=997; selWire.userData.lightSelBox=true; selGrp.add(selWire);
+        selGrp.userData.lightSelBox=true; selGrp.userData.selMid=m.id;
+        g.add(selGrp);
+        T3.lightSelBoxes=T3.lightSelBoxes||[]; T3.lightSelBoxes.push(selGrp);
+      }
       if(T3&&state.vmode==="edit"&&selModId===m.id&&lightToolArmed===m.id&&!T3._ghostBuild){
         /* The hit / highlight boxes ride a little above the mount
            point: the fixture stands ON TOP of its point now (base +
@@ -21240,31 +21598,54 @@ function buildLightsGroup(m,bb){
         hb.userData.ownGeo=true; hb.position.set(pos.x,pos.y+0.22,pos.z); hb.renderOrder=998;
         hb.userData.modEdit={kind:"fix",mid:m.id,idx:i};
         g.add(hb); T3.modHit.push(hb);
-        if(i===modSelFix||(gselB&&gselB.idxs.indexOf(i)>=0)){
+        /* Group members keep a plain amber wireframe marker (the
+           single selected light's bright yellow selection box is
+           built above, outside this Edit gate). */
+        if(gselB&&gselB.idxs.indexOf(i)>=0&&i!==modSelFix){
           var hl=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.85,0.64),new THREE.MeshBasicMaterial({color:0xf59e0b,wireframe:true}));
           hl.userData.ownGeo=true; hl.position.set(pos.x,pos.y+0.22,pos.z); g.add(hl);
         }
         if(i===modSelFix&&!gselB){
-          /* Light gizmo \u2014 the selected light's own move gizmo, on
-             the same pattern as the truss gizmo: red X / green Y /
-             blue Z arrows (one axis each) plus a white centre ball.
-             Every drag slides the light along the truss bar it rides
-             (see the mod drag handlers). Registered in modHit as
-             kind "fgizmo". */
+          /* Light gizmo \u2014 the selected light's own gizmo, on the
+             same pattern as the truss gizmo. In Move mode: red X /
+             green Y / blue Z arrows (one axis each) plus a white
+             centre ball — every drag slides the light along the
+             truss bar it rides (see the mod drag handlers). In
+             Rotate mode: ONE ring only — the green Y rotation ring.
+             Every light rotates ONLY around the Y axis, so there
+             is no red X (tilt) ring and no blue Z (roll) ring for
+             any light, battens and matrix panels included.
+             Registered in modHit as kind "fgizmo". */
           var lg=new THREE.Group(); lg.position.set(pos.x,pos.y,pos.z);
-          lg.quaternion.copy(fixtureOrientQuat(m,i)); /* Transform Orientation: Local aligns the light's move arrows to the fixture's own (pan / tilt) axes */
+          lg.quaternion.copy(fixtureOrientQuat(m,i)); /* Transform Orientation: Local aligns the light's arrows / ring to the fixture's own Y-rotation axes */
           lg.scale.setScalar(clamp((T3.cam?T3.cam.radius:16)*0.075,0.5,4));
           function regL(mesh,sub,axis){mesh.userData.ownGeo=true; mesh.renderOrder=999; mesh.userData.modEdit={kind:"fgizmo",mid:m.id,idx:i,sub:sub,axis:axis||""}; lg.add(mesh); T3.modHit.push(mesh); return mesh}
-          var upL=new THREE.Vector3(0,1,0);
-          [["x",[1,0,0],0xef4444],["y",[0,1,0],0x22c55e],["z",[0,0,1],0x3b82f6]].forEach(function(axL){
-            var dirL=new THREE.Vector3(axL[1][0],axL[1][1],axL[1][2]);
-            var qL=new THREE.Quaternion().setFromUnitVectors(upL,dirL);
-            var cylL=regL(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.85,10),gizmoMat(axL[2])),"axis",axL[0]);
-            cylL.position.copy(dirL.clone().multiplyScalar(0.42)); cylL.quaternion.copy(qL);
-            var coneL=regL(new THREE.Mesh(new THREE.ConeGeometry(0.12,0.32,14),gizmoMat(axL[2])),"axis",axL[0]);
-            coneL.position.copy(dirL.clone().multiplyScalar(1.05)); coneL.quaternion.copy(qL);
-          });
-          regL(new THREE.Mesh(new THREE.SphereGeometry(0.14,14,10),gizmoMat(0xffffff)),"free","");
+          if(state.gizmoMode==="rotate"){
+            var ringAxesL=[["y",0x22c55e]]; /* Y rotation ring ONLY — no X tilt / Z roll rings for any light */
+            ringAxesL.forEach(function(rL){
+              var rrL=GIZMO_RING_R[rL[0]];
+              var ringL=regL(new THREE.Mesh(new THREE.TorusGeometry(rrL,0.03,10,72),gizmoMat(rL[1])),"rot",rL[0]);
+              if(rL[0]==="x")ringL.rotation.y=Math.PI/2;
+              if(rL[0]==="y")ringL.rotation.x=Math.PI/2;
+              lg.add(ringL);
+              var hitL=regL(new THREE.Mesh(new THREE.TorusGeometry(rrL,0.10,8,48),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false})),"rot",rL[0]);
+              hitL.rotation.copy(ringL.rotation);
+              lg.add(hitL);
+            });
+            var hubL=new THREE.Mesh(new THREE.SphereGeometry(0.11,16,12),gizmoMat(0xffffff));
+            hubL.userData.ownGeo=true; lg.add(hubL); /* visual pivot only — not a drag handle, like the display gizmo's rotate hub */
+          }else{
+            var upL=new THREE.Vector3(0,1,0);
+            [["x",[1,0,0],0xef4444],["y",[0,1,0],0x22c55e],["z",[0,0,1],0x3b82f6]].forEach(function(axL){
+              var dirL=new THREE.Vector3(axL[1][0],axL[1][1],axL[1][2]);
+              var qL=new THREE.Quaternion().setFromUnitVectors(upL,dirL);
+              var cylL=regL(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.85,10),gizmoMat(axL[2])),"axis",axL[0]);
+              cylL.position.copy(dirL.clone().multiplyScalar(0.42)); cylL.quaternion.copy(qL);
+              var coneL=regL(new THREE.Mesh(new THREE.ConeGeometry(0.12,0.32,14),gizmoMat(axL[2])),"axis",axL[0]);
+              coneL.position.copy(dirL.clone().multiplyScalar(1.05)); coneL.quaternion.copy(qL);
+            });
+            regL(new THREE.Mesh(new THREE.SphereGeometry(0.14,14,10),gizmoMat(0xffffff)),"free","");
+          }
           g.add(lg);
         }
       }
@@ -21310,33 +21691,51 @@ function buildLightsGroup(m,bb){
   var deckTop=state.stage3d.show?(+state.stage3d.deck||0):0;
   var target=v3(cx,deckTop+1.1,czC);
   var n=clamp(Math.round(+p.count||6),1,12);
-  var beamMat=getBeamMat(p.color||"#ffb45e",clamp(+p.opacity||30,4,85)/100*(1+(T3.haze||0)*0.7));
+  var rigStrA=clamp(+p.opacity||30,4,85)/100;
+  var beamMat=(renderMode&&!T3._ghostBuild)?getBeamMatRender(p.color||"#ffb45e",rigStrA):getBeamMat(p.color||"#ffb45e",rigStrA*(1+(T3.haze||0)*0.7));
   var lensMat=getLensMat(p.color||"#ffb45e");
   var modelA=fixtureModelOf({type:p.ltype||"beam"});
   for(var i=0;i<n;i++){
     var fx=n===1?cx:clamp(cx-spread/2+0.7+(spread-1.4)*(i/(n-1)),cx-spread/2,cx+spread/2);
-    /* Same realistic build as a placed fixture: a FIXED mount
-       (clamp + base + yoke on top of the truss, or the base standing
-       on top of the screen) and a HEAD that alone turns to aim. */
+    /* Same realistic build as a placed fixture, and the same
+       BASE pivot as a placed fixture: the mount group sits at the
+       point on the truss (or on top of the screen) and never
+       turns; the SWING group inside it — origin at the fixture's
+       base — carries the whole fixture and turns to aim, so the
+       rig's lights also rotate from their base, not their head. */
     var pivot=new THREE.Group();
     pivot.position.set(fx,mountY,mountZ);
-    var headA=addFixtureReal(pivot,modelA,lensMat,{kind:onTrussRig?"top":"screen",sec:secA,quat:new THREE.Quaternion()});
+    var swingA=new THREE.Group(); pivot.add(swingA);
+    var headA=addFixtureReal(swingA,modelA,lensMat,{kind:onTrussRig?"top":"screen",sec:secA,quat:new THREE.Quaternion()});
     var tgt=target.clone(); tgt.x=cx+(fx-cx)*0.55;
-    /* Aim the head at the target: pan around the yoke's vertical
-       axis, tilt about its horizontal axis — the mount never turns.
-       (The set offset shifts the whole group, mount and head
-       together, exactly as it did the old single-box fixture.) */
+    /* The AUTOMATIC rig's own target aim (not a fixture rotation
+       setting — placed fixtures rotate around Y only): the rig's
+       heads are aimed from the base at the stage target, the
+       elevation angle from the base, exactly as this generated
+       rig has always behaved. Pressing Edit snapshots these
+       fixtures with that angle kept as their Y rotation. (The set
+       offset shifts the whole group, mount and fixture together,
+       exactly as it did the old single-box fixture.) */
     var dirA=tgt.clone().sub(v3(fx,mountY+headA.position.y,mountZ));
     var distA=Math.max(0.5,dirA.length()); dirA.normalize();
-    var panA=Math.atan2(dirA.x,dirA.z), tiltA=clamp(Math.asin(clamp(-dirA.y,-1,1)),-1.1,1.5);
-    headA.quaternion.setFromEuler(new THREE.Euler(tiltA,panA,0,"YXZ"));
-    var len=beamLenFor(p,null,mountY+headA.position.y,Math.max(0,tiltA));
+    var tiltA=clamp(Math.asin(clamp(-dirA.y,-1,1)),-1.1,1.5);
+    swingA.quaternion.setFromEuler(new THREE.Euler(tiltA,0,0,"YXZ"));
+    var headOffA=headA.position.clone().applyQuaternion(swingA.quaternion);
+    var len=beamLenFor(p,null,mountY+headOffA.y,Math.max(0,tiltA));
     var rad=Math.tan(clamp((+p.angle||16)*lightTypeMul(p.ltype),4,60)*Math.PI/180)*len;
     var geo=new THREE.ConeGeometry(Math.max(0.2,rad),len,20,1,true);
     geo.translate(0,-len/2,0); geo.rotateX(-Math.PI/2); /* apex at the head, cone opening towards +Z (the aim) */
     var beam=new THREE.Mesh(geo,beamMat); beam.userData.ownGeo=true; beam.frustumCulled=false; headA.add(beam);
+    if(renderMode&&!T3._ghostBuild){
+      /* Render-only realistic light, same as a placed fixture:
+         lens flare, a real spotlight and the pool on the stage. */
+      addBeamFlareRender(headA,p.color||"#ffb45e",rigStrA,m.id);
+      var hwPosA=v3(fx,mountY,mountZ).add(headOffA).add(g.position);
+      var hwDirA=new THREE.Vector3(0,0,1).applyQuaternion(swingA.quaternion).normalize();
+      addBeamImpactRender(headA,{pos:hwPosA,dir:hwDirA,qHead:swingA.quaternion.clone(),floorY:deckTopY(),ang:clamp((+p.angle||16)*lightTypeMul(p.ltype),4,60),len:len,size:1,hex:p.color||"#ffb45e",str:rigStrA,mid:m.id});
+    }
     g.add(pivot);
-    T3.lightAnims.push({pivot:headA,base:headA.quaternion.clone(),animate:!!p.animate,phase:i*0.9,sweep:clamp(+p.sweep||0,0,60)*Math.PI/180*0.5,speed:0.4+clamp(+p.speed||40,0,100)/100*1.1,mid:m.id});
+    T3.lightAnims.push({pivot:swingA,base:swingA.quaternion.clone(),animate:!!p.animate,phase:i*0.9,sweep:clamp(+p.sweep||0,0,60)*Math.PI/180*0.5,speed:0.4+clamp(+p.speed||40,0,100)/100*1.1,mid:m.id,yawOnly:true});
   }
   return g;
 }
@@ -22205,7 +22604,8 @@ function buildOneModGroup(m,bb){
 }
 function buildModifiers3D(){
   if(T3.modGroup){T3.scene.remove(T3.modGroup); disposeModGroup(T3.modGroup); T3.modGroup=null}
-  T3.crowds=[]; T3.lightAnims=[]; T3.goboDiscs=[]; T3.glowAnims=[]; T3.laserAnims=[]; T3.modHit=[]; T3.modGroups={}; T3.suggestPreview=null; T3.lightPreview=null;
+  T3.crowds=[]; T3.lightAnims=[]; T3.goboDiscs=[]; T3.glowAnims=[]; T3.laserAnims=[]; T3.modHit=[]; T3.lightSelBoxes=[]; T3.modGroups={}; T3.suggestPreview=null; T3.lightPreview=null;
+  T3.beamMatsR=[]; T3.beamPools=[]; T3.beamSpots=[]; T3.beamFlares=[]; T3._spotCount=0;
   var bb=sceneBBox3D();
   var g=new THREE.Group();
   state.modifiers.forEach(function(m){
@@ -22218,6 +22618,7 @@ function buildModifiers3D(){
     if(m.type==="light"){var lpv=buildLightsPreviewGroup(m,bb); if(lpv)g.add(lpv)}
   });
   T3.scene.add(g); T3.modGroup=g;
+  if(renderMode)applyRenderBeamFx();
 }
 /* Rebuild ONE modifier's 3D group in place — the custom-build drag
    handlers use this so dragging a truss end or a fixture never
@@ -22234,6 +22635,10 @@ function rebuildModGroup(m){
   T3.glowAnims=(T3.glowAnims||[]).filter(function(d){return d.mid!==m.id});
   T3.laserAnims=(T3.laserAnims||[]).filter(function(d){return d.mid!==m.id});
   T3.crowds=(T3.crowds||[]).filter(function(c){return c.mid!==m.id});
+  T3.beamPools=(T3.beamPools||[]).filter(function(b){return b.mid!==m.id});
+  T3.beamSpots=(T3.beamSpots||[]).filter(function(b){return b.mid!==m.id});
+  T3.beamFlares=(T3.beamFlares||[]).filter(function(b){return b.mid!==m.id});
+  T3.lightSelBoxes=(T3.lightSelBoxes||[]).filter(function(b){return !b.userData||b.userData.selMid!==m.id});
   if(m.enabled){
     var bbR=sceneBBox3D();
     var mg=buildOneModGroup(m,bbR);
@@ -22264,14 +22669,20 @@ function animateModifiers3D(t){
     T3._crowdT=t;
     (T3.crowds||[]).forEach(function(c){if(c.animate)updateCrowdInstances(c,t)});
   }
-  /* L.pivot is the fixture's HEAD group — the sweep turns the head
-     alone; the clamp, base and yoke under it stay fixed to the
-     truss (or standing on the stage), like the real fixture. */
+  /* L.pivot is the fixture's SWING group, whose origin is the
+     fixture's BASE / mounting point — the sweep turns the whole
+     fixture about its base, like a real yoke-mounted fixture
+     swinging on its mount; the mount group under it (and the
+     fixture's stored base position) never moves. */
   (T3.lightAnims||[]).forEach(function(L){
     if(!L.animate||!L.sweep)return;
     if(!_animQ)_animQ=new THREE.Quaternion();
-    /* A batten / matrix panel sweeps in TILT only — it never pans. */
-    var e=new THREE.Euler(Math.sin(t*L.speed+L.phase)*L.sweep,L.tiltOnly?0:Math.sin(t*L.speed*0.77+L.phase*1.7)*L.sweep*0.7,0);
+    /* The rig SWEEP wobbles EVERY light in Y rotation only —
+       around the Y axis, about its base: the fixture's own set Y
+       rotation stays untouched in its base aim underneath (the
+       sweep is only the animation on top). No light ever tilts or
+       rolls, animated or not. */
+    var e=new THREE.Euler(0,Math.sin(t*L.speed+L.phase)*L.sweep,0);
     L.pivot.quaternion.copy(L.base).multiply(_animQ.setFromEuler(e));
   });
   /* Pixel glow — battens and matrix panels emit no beam: their
@@ -22313,6 +22724,31 @@ function animateModifiers3D(t){
      counter-clockwise at the set speed — on top of its set rotation. */
   (T3.goboDiscs||[]).forEach(function(d){
     if(d.mesh)d.mesh.rotation.z=d.base+(d.spin==="cw"||d.spin==="ccw"?t*d.speed*d.dir:0);
+  });
+  /* Beam pools (Render only): re-aimed every frame from the head's
+     real world position / direction, so each pool stays flat on the
+     deck / floor and centred under its beam while the fixture
+     sweeps — the holder rides inside the head, and this pass
+     re-levels it and re-sizes the disc for the live throw. */
+  (T3.beamPools||[]).forEach(function(p){
+    if(!p.holder||!p.head)return;
+    var hq=p.head.getWorldQuaternion(p._q||(p._q=new THREE.Quaternion()));
+    var hp=p.head.getWorldPosition(p._v||(p._v=new THREE.Vector3()));
+    var dir=p._d||(p._d=new THREE.Vector3()); dir.set(0,0,1).applyQuaternion(hq);
+    if(dir.y>=-0.05){p.holder.visible=false; return}
+    var tH=(p.floorY-hp.y)/dir.y;
+    if(!(tH>0.4)){p.holder.visible=false; return}
+    p.holder.visible=true;
+    p.holder.position.set(0,0,tH/p.size);
+    var qF=p._qf||(p._qf=new THREE.Quaternion());
+    var qY=p._qy||(p._qy=new THREE.Quaternion());
+    if(!p._e)p._e=new THREE.Euler(0,0,0);
+    p._e.set(0,Math.atan2(dir.x,dir.z),0); qY.setFromEuler(p._e);
+    if(!p._fe)p._fe=new THREE.Euler(-Math.PI/2,0,0);
+    qF.setFromEuler(p._fe).premultiply(qY);
+    p.holder.quaternion.copy(hq).invert().multiply(qF);
+    var sc=tH/Math.max(0.4,p.t0);
+    p.mesh.scale.set(sc,sc*clamp(1/Math.max(0.35,Math.abs(dir.y)),1,2.8),1);
   });
 }
 
