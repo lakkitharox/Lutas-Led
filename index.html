@@ -27,6 +27,24 @@ try{
   if(_csc&&/^[A-Za-z0-9]{6,16}$/.test(_csc)){window.__LUTAS_CLIENT__={code:_csc,payload:""};document.documentElement.classList.add("client-boot")}
   else{var _cm=(window.location.hash||"").match(/#s=([A-Za-z0-9\-_]+)/); if(_cm){window.__LUTAS_CLIENT__={code:"",payload:_cm[1]};document.documentElement.classList.add("client-boot")}}
 }catch(e){}</script>
+<script>/* Admin-route early boot: a direct visit to /adminpower (the
+   Admin Dashboard's own path) marks <html> before first paint, so
+   the editor never flashes — the stylesheet hides the editor and
+   shows the dashboard page shell (its access gate) instead. The
+   main script then takes over: only a signed-in admin ever sees
+   the users list; everyone else gets the gate's sign-in /
+   access-denied state. Client view always wins: a client link
+   never gets the admin page. On the live site a host rewrite
+   serves this same file at /adminpower (handled at deploy time);
+   in-app, the File → Admin Dashboard entry pushStates to the
+   path and Back returns to the editor path. */
+window.__LUTAS_ADMIN_ROUTE__=false;
+try{
+  if(!window.__LUTAS_CLIENT__&&/\/adminpower\/?$/.test(window.location.pathname||"")){
+    window.__LUTAS_ADMIN_ROUTE__=true;
+    document.documentElement.classList.add("admin-boot");
+  }
+}catch(e){}</script>
 <link rel="icon" type="image/png" href="data:image/png;base64,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"/>
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAARw0lEQVR4nGIYBYMIMDAwAAAAAP//GsWDCTAwMAAAAAD//xrFgwkwMDAAAAAA//9ipIJ7GJFoRiziwxn8R/IbiA3jI4sTDxgYGAAAAAD//yI30BjRMBMUMyLRIyVCQPgfEg1jI2PiAAMDAwAAAP//IjXQkCOCGQceKZGCHhl/cWDiI4aBgQEAAAD//yI2wNAjggWKWUFYUlJSi4ODw56ZmdmYiYlJkZGRUZKBgYGLgYGBnTI/D2rwk4GB4dv///+f//v37/7fv3/P/vjx4+Dz58+vMTAw/IbiP1BMXMQwMDAAAAAA//8iJkKQiyRYJLDx8vIKioqKxrGwsIQxMjKqDeOAJwn8////9p8/f1a+fv160efPn98zMDD8Qooc5CINEzAwMAAAAAD//yIUIbDIYIZGBDsrKyu3jIxMChsbWx4DA4PAIAmHwQg+/Pr1a9KTJ0/m/P79+ys0R4EiBpRbsEcKAwMDAAAA///CFyGMSLmCjYGBgUNMTEybn59/ChMTk/aICVYKwb9//65+/Pgx59WrV1cZGBh+QHMMLLegRgoDAwMAAAD//2LGYR8sMlih9QCXnJycLy8v72JGRkbpwRwAgw0wMjKKcXJyhnJzc9//+PHjfbxNYwYGBgAAAAD//8IWIcg5AxwZ8vLykZycnJOHeSVNS8DGysrqzcPD8+Ljx4830ZrGCMDAwAAAAAD//0KPEOQ6A5YzAjg5OSdBxUYB+YCJhYXFlZub++7Hjx/vIlXwCMDAwAAAAAD//0IPZFhkgOoMTjExMV1eXt75ozmDaoCRlZXVkZmZef/Xr1/fYnQkGRgYAAAAAP//YkKyCtbPABdVLCwsfPz8/KCcwT20w2DQAW5+fv6JoPCFJnRQeEPCnoGBAQAAAP//Qs4hyPUGp5ycXAYrK2vQSA89WgBGRkZRbm7ubx8+fDiL0gxmYPgPAAAA//+C5RCUJi43N7cwGxtb1vAKhsEF2NjYMkHhDK0eQOHOxMDAwAgAAAD//8IWIeygHjgjIyP/UPNkXV3dIHAFcQAUvqKiovFIxRYTAwMDIwAAAP//Qo4Q5N54yGD3EAw4OTkx3LhxA4yjoqLAdEZGxuBwHAHAysoaDI0QULgzMzAwMAIAAAD//0IeMORgYGDgERcXNxcQENgwqH3CwMBw5coVBhYWUMLCDa5evcoQHAzy8+AFHz58CHj58uVJBgaGLwwMDD8AAAAA//+C5RBYc5eFk5PTZrA6f+rUqfDcQCgyQEBbWxus9uRJkH8HJ4CGN8gzzAwMDEwAAAAA//9iQR9AZGZmNhhMTtfT02NYtWoVRWbw8/MzmJqaMpw+fZpq7qIWgIY3pMhiYGACAAAA//9iQZ9wYmJiUhhoRzIxMTFcuwaaVqAcJCUlMcyYMYNBXFx8YD2FA0DDGzLZx8DACAAAAP//guV72HwHM6iNPFCOmzVrFoOdnR3F5nz8+JHB3Nwczv/+/Tu4+NqyZQvFZlMbQMMbnDsYGBiYAAAAAP//YkGbDWRiZGTkoqeDFBQUGHbs2EE187q7uxnmzp2LIsbOPnhHfqDhDZnyZmBgBAAAAP//Qm72wjArPRwCq5ypGRkgUFpaCjZ38mTQ4DQE/Pnzh4Gbe9COAIHCGxL2DAyMAAAAAP//Qm6q0HxRQkNDA0NERAQtrYADV1dXcMS8evUKnEPU1dXpYi+ZABL2DAwMAAAAAP//Qm870iRCQAEzUEBMTAxss5aW1oC5gQgACXcGBgYAAAAA//9iosQUfOD48ePwYokScP78eQYNDQ2wCTCaHMDKykoV99AUMDAwAAAAAP//Ity7IhFQw8N///4Ft4qwAViknD17lux6AeZGSiKYJoCBgQEAAAD//6JqDlm5ciVF+uvr68GBhCsykIGxsTFYLaiJSy6A5ZhBU+EzMDAAAAAA//+iag759esXyXoePnzI4O7uTradsP7GunXryK4nQLkNBEDjXqDxrwEDDAwMAAAAAP//omoOefr0KdFqDQ0NwSmckshABkFBQWDzFi9eTLYZa9euBeeYlJQUqriJZMDAwAAAAAD//6JqhBAzPAEKNBAG9Z5pAVpbW8HmFxUVkW16SUkJOGI6Ojpo4kacgIGBAQAAAP//omqEPH/+nLquowBs27YNHDGg/gi5ICAggL6OZmBgAAAAAP//omqEvH79mprGUQU8fvwYHDGDvB8CAQwMDAAAAAD//6JqhDAyUr9fCSp6YM1UEO3h4UGWOf/+/YMXl4MWMDAwAAAAAP//omqEbN++nSrmgIY6YE3StLQ0sBgshU+YMAEsHhMTQ7b5pEQMyK6uri6y7SIJMDAwAAAAAP//ollPnRwwe/ZscABcvHgRrHv+/PnwwENP4TU1NWC1WVm0XRwDss/Pzw9s165du2hqFwMDAwMAAAD//6JqP+T/f7K31qH08AmlXpg8SE9eXh4YL1iwgGatIph9hw8fpm0vn4GBAQAAAP//GlQ5BAZAniamPoLlGFCHNCEhAaxv5syZNHOXra0t2L6lS5ei5GSqAQYGBgAAAAD//6JqhFCSQxigAZyeng5mX79+nehxMdC8O6xYs7e3B+vbvXs3RW7BBhwcHMBmR0dHg6VBdR1o4QXVAAMDAwAAAP//omqR9eXLF4rNOHjwIDhwdXV1GVavXk1SEQGr+C9fvswgKysL1vvu3TsGKysritx05swZBh4eHqxy5AwX4QQMDAwAAAAA//+iag75/Pkz1cwCBSooEkJCIGv2SBk6B0UmSO+bN28YhISEKBp2B+nDFRkgABqLoxpgYGAAAAAA//8aVEUWNgBaEAcKXF9fX7A0LHDZ2EBLYvEDGxsblBFhWsyHgHIg1QADAwMAAAD//xr0EQIDt2/fBgeul5cXWOjSpUtEBy5oRBik98WLF2A+SB+ojiJkl4EB4SVqVPUzAwMDAAAA//+i+gQVrcG9e/fAgSUqKorSDAXVE4RSK6hSBoGdO3cyyMvLY8hbW1szvH0L2kcDARwcoNW1dAQMDAwAAAAA//8adJU6sQA0bgaKGGZmZvAcxrFjx8BaQcP5+Mp1AQEBlMj49OkTg5mZGdnuAC2ioBpgYGAAAAAA//8alP0QUgBouhd5lhGU+kG5BtTKQgadnZ1g8RMnTqCI5+fn47SOmL7Q3bug7YJUAgwMDAAAAAD//xpyRRYuAIsY0CJsUEOAGv0QSUnQCSH4wbdv36jnCQYGBgAAAAD//xryOQQdgBbFUWtUF9TRJASoWqkzMDAAAAAA//8adhGCDG7dukWRfj4+0L5M/ODnT9CJGVQCDAwMAAAAAP//GlQRAlr1PpgAqFNJCFC1yGJgYAAAAAD//xqNkMEEGBgYAAAAAP//Gg0BCgGoMUE1wMDAAAAAAP//Go0QPEBZWZmgmt+/QScuUQkwMDAAAAAA//8ajRA8gO77ShgYGAAAAAD//xqNEDyA7kMnDAwMAAAAAP//GhQRIiwsDKZBU7H0BqB+Cy6gr69PX+cwMDAAAAAA//8a0AiBTYUePXoUzAetMAHxXVxc6OYG0NJTkJ3YWnj0HJsDAwYGBgAAAAD//xqQCAENbYACAbSCnQFpbhzWu54yZQpYXkpKiuZuaW9vB9OgXb8DvneEgYEBAAAA//+ie4TANv2DltRgG+JAFtu3bx/Ntwvs378fbJ+Pjw/cfbCIERQUpJm9WAEDAwMAAAD//xqQHAJa/k+ovkCOGJB6UCDRspK9c+cO2D7YURwg+wgtP6V2H4SBgYEBAAAA//8akAgBFVXoO2VxAVAggVaVgMCFCxdwlvfUAqC5FZCdxCzxIWbwkSTAwMAAAAAA//8a0EodtlOWUGsGtLIDFEiOjo5gPi3L+82bNxPlJhDA10IjCzAwMAAAAAD//6J6hJAzHA3aCgcKBEJbl0HbHUAREx8POmaKuosWYGapqqoSrYfaS4AYGBgYAAAAAP//onqEUJJqNm7cSFRdATrdB3kfIiWRAmpcDJqduQwMDAAAAAD//6J6hFCjooPVFdgA6FQfkBwxewFpvZkTtoqFaoCBgQEAAAD//6L6FC5o6Qw1ixEQABVT8+bNQ1mBqKmpCS4e8dn14cMHBmlp2h3ETfVlTwwMDAAAAAD//6LJnDooAEHDIbAeOKUAFuiglZGgHEIsAK0woSWg+pY3BgYGAAAAAP//olkrC7S+CRQx1NrsAjpPkZTIAAFaRci0adNosx2BgYEBAAAA//+iebMXVNTAlvBTAmi5KpJYADpwE+SXSZNA50vTADAwMAAAAAD//6JbP6S5uRnsmcG0U5dYABs1ePbsGW0tYmBgAAAAAP//ovu6LFjn7ty5cwxcXHQ9K40k8PLlS/BeE7oCBgYGAAAAAP//GrCeupGRETjVDYaiCBmANpWC3DUQkcHAwMAAAAAA//8a8JWLoOYrwwCfqQUCoDmYJ0+eDKgbGBgYGAAAAAD//xo0U7iEVhsiL0gD9eRhQx2gRgMIgNjkHCcLs3cwRAYDAwMDAAAA//8adGt7kXfYIgPQgoOcnBwwBgFQXQRrIMCa1rBIAh2elpiYiNMOSle80wwwMDAAAAAA//+C3RfCycDAwAuak1FXV78AFRtwAFrsDJpAwhZh+ACu4m/NmjXg/e2DDPy5efMmaGfQewYGhs8AAAAA//9CDvj/kOb+/++MjIy8g8HRsNFdXl5ekvYvIu8bAYHY2NhBeao1CPz//x+0FhVyww4DAwMAAAD//4JFyH+kCHk9WCIEBsjZTAoa5PT39wefwjBYIwMEQOEND38Ghv8AAAAA//9iQrsS9N+/f/+ou610AMHNmzfBBysPZvDv379H8Bt2GBj+AwAAAP//grWyYJdT/f39+/eV4RIhQwH8+fMHFN6Qa48YGP4BAAAA//9CziHg246/f/9+Yuh7c+iAb9++gcIbctM0A8N/AAAAAP//gkXIP6jA79evX1+FZqNRQGMACmdQeMPvyGVg+AcAAAD//0Iusv5C72j9+evXr8F3jcAwBNBwBvV4IVd8MzD8AwAAAP//Qi+yQDH16+XLlyv///9P/3WUIwiAwvfVq1egoQXY9d5/GRgY/gMAAAD//4LlEOQI+fnjx493P3/+pGwCYxTgBT9+/Fj0/ft30CkFiGu9GRj+AwAAAP//Qo6Qf7AiC3QHytOnTxf++/fv3miwUh+AwvXp06eLQOGMVGT9Y2Bg+A8AAAD//8J5WzR0Vd41bm5u78EylDJMwM+3b98Wff369QH0ZjZQpICKrb8MDAz/AQAAAP//whUh4Ej5/v37JzY2thfs7OyOtL5bZISAf58+fWp49erVYWhkgIZNYDnkPwMDAwMAAAD//8J2fTcyzfTly5fHHBwcoIixHI0UisC/r1+/9j579gx0RyRoLAgUIbD6A9JTZ2BgAAAAAP//wnVHOsqt+J8/f77Dxsb2DBQpjIyMo8UX6eDHp0+fmp89e7YeNPqPVlTBI4OBgYEBAAAA///Cd2k98hjX/y9fvjz89+/fSU5OTkNGRkbaLngaRuDfv38PXr9+XfT69WvQIjVYZPyA5g7km6IZGBgYGAAAAAD//yIUIQzIl7CDmsMfP37czsHB8YeFhUWDkZGR8LFuIxSAhtW/f/++4NGjR43fvn0DDdjCiimckcHAwMAAAAAA///CVyegXOkNvSuXC4q5OTk5xUVFRYPZ2dldmZiYZEZ6BMDAv3//nvz8+XP369ev137//v0lAwPDV2jlDcKgyIC1qMCtKhTNDAwMAAAAAP//IlRJI1/LyoYUMZxQDGJzCAsLa3NxcZmwsrJqMTMzyzAyMgoxMjJyD/NGAGju6Ov////f/f3798nv37+vffv27czbt29BY1OggAdhUD0BwrCIgEUGRs4AAwYGBgAAAAD//yImwBiRbgJlgd67xwa9dhqG2aDirMjXiNLjKr4BAsj1Kyy1g1pL4KEnaJEEw7ChEVjnD2dkMDAwMAAAAAD//yI2sJADlxkaMSxIkcCKdOMxM1IEDuscgjyPhDQ4C4sYWCTABg6RIxE7YGBgAAAAAP//IjXAGNFyDDMWzDTMcwcMoMy0IkUKMkbOEYRXBDIwMAAAAAD//wMAhSunF7zE8ysAAAAASUVORK5CYII="/>
 <title>LUTAS LED — Multi-Screen Layout, Signal Map & Actual-Size PNG Export</title>
@@ -827,6 +845,39 @@ html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:fle
 .proj-empty{border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:12px;text-align:center}
 .proj-empty p{font-size:13px;color:var(--muted);line-height:1.55;margin:0 0 12px}
 .acct-btn{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ── Subscription plans — Starter / Advance / VIP ──────────────────
+   The plan / Upgrade dialog (opened from Account and from any
+   locked control), the Modifier-pane and Share-dialog lock banners,
+   and the billing toggle. Yearly prices are exactly 12 × Monthly —
+   there is no discount, and no discount badge anywhere. */
+.modal.plan-modal{width:min(880px,100%)}
+.plan-cur{font-size:13px;color:var(--muted);margin:0 0 4px}
+.plan-cur b{color:var(--text)}
+.plan-billrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 4px}
+.plan-bill{display:flex;gap:2px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:2px}
+.plan-bill button{border:1px solid transparent;background:transparent;color:var(--muted);font-weight:700;font-size:12.5px;padding:6px 14px;border-radius:7px;white-space:nowrap}
+.plan-bill button.on{background:var(--accent);color:#111827;border-color:var(--accent)}
+.plan-billnote{font-size:12px;color:var(--muted);line-height:1.5}
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.plan-card{border:1px solid var(--line);border-radius:14px;padding:16px 14px;background:var(--panel2);display:flex;flex-direction:column}
+.plan-card.current{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.plan-card h3{margin:0;font-family:Archivo,sans-serif;font-size:16px}
+.plan-card .plan-tag{font-size:11px;font-weight:700;color:var(--accent);min-height:15px;margin-top:2px}
+.plan-price{font-family:Archivo,sans-serif;font-size:21px;font-weight:800;letter-spacing:-.02em;margin-top:10px;line-height:1.15}
+.plan-price small{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:0}
+.plan-price-usd{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.plan-feats{list-style:none;margin:12px 0 14px;padding:0;font-size:12.5px;line-height:1.5;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.plan-feats li{display:flex;gap:7px;align-items:flex-start}
+.plan-feats li b{color:var(--text);font-weight:600}
+.plan-feats .pf-ic{flex:none;width:15px;height:15px;margin-top:2px}
+.plan-feats li.locked-feat{color:var(--muted2)}
+.plan-card .btn{margin-top:auto;justify-content:center}
+.plan-checkout{margin-top:14px;border:1px solid var(--accent);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;background:var(--panel2)}
+.plan-checkout b{color:var(--text)}
+.plan-lock{border:1px solid var(--accent);border-radius:12px;padding:12px 14px;background:var(--panel2);margin-bottom:12px}
+.plan-lock b{font-size:13.5px;display:block;margin-bottom:3px}
+.plan-lock p{margin:0 0 10px;font-size:12.5px;color:var(--muted);line-height:1.55}
+@media(max-width:700px){.plan-grid{grid-template-columns:1fr}}
 /* ── Client gate — a private share asks for a name + the passkey
    before the render view loads. Dark card over the client frame,
    matching the client bar's glass styling. ── */
@@ -1249,6 +1300,87 @@ body:not(.learning-on) .learn{display:none}
   .menus{order:3}
   .cab-detail{white-space:normal;overflow-x:visible}
 }
+/* ── Pricing / Upgrade emphasis ───────────────────────────────────
+   The File-menu Pricing item, the sign-in window's Pricing buttons
+   and the plan cards' Upgrade buttons are deliberately BIG and
+   amber so the plans are findable at a glance. Amber is the theme
+   accent (--accent in Dark / Gray / Light) with dark text, so it
+   reads clearly in all three themes; icons inside stay flat
+   monochrome (currentColor). The theme-scoped selectors keep the
+   amber ahead of the .btn.primary theme overrides. */
+.menu button.menu-pricing{background:var(--accent);color:#161006;font-weight:800;font-size:14px;padding:11px 10px}
+.menu button.menu-pricing:hover{background:var(--accent);filter:brightness(1.08)}
+.menu button.menu-pricing .ic{color:#161006}
+.btn.cta-big{font-weight:800;font-size:15px;padding:14px 18px;border-radius:11px}
+:root[data-theme="dark"] .btn.cta-big,:root[data-theme="gray"] .btn.cta-big,:root[data-theme="light"] .btn.cta-big{background:var(--accent);color:#161006;border-color:var(--accent)}
+:root[data-theme="dark"] .btn.cta-big:hover,:root[data-theme="gray"] .btn.cta-big:hover,:root[data-theme="light"] .btn.cta-big:hover{background:var(--accent);border-color:var(--accent);filter:brightness(1.07)}
+.btn.cta-big:disabled{opacity:.55;filter:none;cursor:default}
+.plan-card .btn.cta-big{width:100%;padding:15px 18px;font-size:15.5px}
+/* ── Admin Dashboard — a SEPARATE full page, not a popup ──────────
+   #adminPage replaces the whole editor view when opened: it covers
+   the full viewport above everything else (top bar and confirm
+   dialogs included), scrolls on its own, and has its own header
+   with a Back to editor control. It only ever opens for a signed-in
+   user whose public.profiles.role is 'admin' — the File-menu entry
+   is hidden for everyone else and openAdminPage() refuses without
+   the admin flag. It never exists in client view (initAdmin and
+   openAdminPage both bail on a client-view request, and the auth /
+   plan code that sets the admin flag never runs there). All data
+   goes through Supabase REST with the signed-in admin's OWN token
+   (authHeaders) — no service key anywhere; row-level security
+   decides what the admin may read / update (see supabase-admin.sql
+   for the one-time setup: make the owner an admin + the admin RLS
+   policies). */
+#adminPage{position:fixed;inset:0;z-index:120;background:var(--bg);color:var(--text);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#adminPage.open{display:block}
+/* Direct /adminpower load, before the main script runs: the editor
+   stays hidden and the dashboard shell (access gate only — no user
+   data exists in the static markup) is what paints. The main
+   script removes .admin-boot and drives #adminPage via .open. */
+html.admin-boot .app{visibility:hidden}
+html.admin-boot #adminPage{display:block}
+#adminGate{max-width:520px;margin:38px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 22px;text-align:center}
+#adminGate h3{font-family:Archivo,sans-serif;font-size:17px;margin:0 0 8px}
+#adminGate p{font-size:13px;color:var(--muted);line-height:1.6;margin:0}
+#adminGate .admin-gate-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+#adminGate .admin-gate-actions a.btn{text-decoration:none}
+.admin-head{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border-bottom:1px solid var(--line);padding:12px 18px}
+.admin-head h2{font-family:Archivo,sans-serif;font-size:19px;margin:0;letter-spacing:-.01em}
+.admin-head .admin-sub{font-size:12px;color:var(--muted);width:100%;line-height:1.5}
+.admin-wrap{max-width:1020px;margin:0 auto;padding:18px 16px 40px}
+.admin-counts{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:4px 0 14px}
+@media(max-width:700px){.admin-counts{grid-template-columns:repeat(2,1fr)}}
+.admin-count{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+.admin-count span{display:block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.admin-count b{display:block;margin-top:3px;font-size:19px;font-family:Archivo,sans-serif;font-weight:800}
+.admin-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;margin-bottom:12px}
+.admin-tools .field{flex:1;min-width:180px}
+.admin-tools select{border:1px solid var(--line);background:var(--input);color:var(--text);border-radius:10px;padding:9px 10px;font-weight:600;font-size:13px}
+.admin-note{font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:0 0 14px}
+.admin-err{font-size:13px;color:#dc2626;line-height:1.6;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.4);border-radius:11px;padding:11px 13px;margin:0 0 14px}
+.admin-err[hidden],.admin-note[hidden]{display:none}
+.admin-user{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.admin-user.vvip{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.admin-u-top{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.admin-u-id{flex:1;min-width:200px}
+.admin-u-id b{font-size:14.5px;display:block;word-break:break-word}
+.admin-u-id span{display:block;font-size:12px;color:var(--muted);margin-top:2px;word-break:break-all}
+.admin-badge{flex:none;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line2);border-radius:999px;padding:4px 9px;color:var(--muted)}
+.admin-badge.plan{border-color:var(--accent);color:var(--text)}
+.admin-badge.role{color:var(--accent);border-color:var(--accent)}
+.admin-u-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:9px}
+.admin-u-meta b{color:var(--text);font-family:"IBM Plex Mono",monospace;font-weight:600}
+.admin-u-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.admin-u-actions label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.admin-u-actions select{border:1px solid var(--line);background:var(--input);color:var(--text);border-radius:9px;padding:8px 9px;font-weight:700;font-size:13px}
+.admin-shares{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:7px}
+.admin-share{display:flex;gap:9px;align-items:center;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12.5px}
+.admin-share b{font-size:12.5px}
+.admin-share .mono{font-size:11.5px;color:var(--muted)}
+.admin-share .exp{margin-left:auto;font-size:12px;color:var(--muted)}
+.admin-share .exp b{color:var(--text);font-size:12px}
+.admin-share .expired{color:#dc2626;font-weight:700}
+.admin-empty{font-size:13px;color:var(--muted);text-align:center;padding:26px 10px;border:1px dashed var(--line2);border-radius:12px}
 </style>
 </head>
 <body>
@@ -1294,6 +1426,15 @@ body:not(.learning-on) .learn{display:none}
         </div>
         <div class="sep"></div>
         <button id="mPrefs"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></svg> Preferences…</button>
+        <button id="mPricing" class="menu-pricing"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg> Pricing…</button>
+        <!-- Admin Dashboard entry — ADMIN ONLY: hidden unless the
+             signed-in user's public.profiles.role is 'admin'
+             (adminSetIsAdmin, driven by planFetch). Non-admins never
+             see it, and openAdminPage() refuses to open the page
+             without the admin flag, so unhiding it by hand is not
+             enough — every dashboard read / write also goes through
+             Supabase RLS with the admin's own token. -->
+        <button id="mAdmin" hidden><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Admin Dashboard</button>
         <button id="mLogout" disabled>Log out</button>
       </div>
     </div>
@@ -1914,7 +2055,12 @@ body:not(.learning-on) .learn{display:none}
            truss, speakers, haze); they never touch the 2D layout, ports
            or exports, and they save with the layout JSON. -->
       <div class="tab-pane" id="tab-modifier">
-        <div class="modlist-hl">
+        <div class="plan-lock" id="modPlanLock" hidden>
+          <b>Modifiers are locked on the Starter plan</b>
+          <p>Truss, Lighting, Crowd, Speakers, Haze, Props and Stage Settings are part of the Advance plan. Your 2D and 3D views, screens, exports and local save / load stay fully open on Starter.</p>
+          <button class="btn primary small" type="button" id="modPlanUpgrade">Upgrade to Advance</button>
+        </div>
+        <div class="modlist-hl" id="modListBox">
         <label class="lab modlist-lab">Modifier list</label>
         <div class="field"><span>Add a modifier to the stage</span>
           <select id="modAddSel">
@@ -2040,6 +2186,11 @@ body:not(.learning-on) .learn{display:none}
 <div class="modal-bg" id="shareModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
     <h3 id="shareTitle" style="margin:0 0 8px;font-family:Archivo,sans-serif">Share client view</h3>
+    <div class="plan-lock" id="sharePlanLock" hidden>
+      <b>Client link sharing is locked on your plan</b>
+      <p>Sharing a client link — short or long — is a VIP feature. Upgrade to VIP to create client links.</p>
+      <button class="btn primary small" type="button" id="sharePlanUpgrade">Upgrade to VIP</button>
+    </div>
     <p class="sub">The client sees only the 3D render and can move the camera — no editing, no save or load. Short links are stored in Supabase and this preview stays only 30 days.</p>
     <label class="lab" style="margin-top:10px">Who can open this link</label>
     <div class="seg c2" id="shareModeSeg">
@@ -2107,7 +2258,8 @@ body:not(.learning-on) .learn{display:none}
      Email, Password — saved to public.profiles after sign-up.
      Signed-in users save / load designs in public.designs (the My
      designs list below); signed-out users keep the local JSON save
-     / load. No plan checks or feature locks. -->
+     / load. The signed-in view also shows the user's subscription
+     plan (public.profiles.plan) and opens Plans & Upgrade. -->
 <div class="modal-bg" id="authModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
     <div class="auth-banner">
@@ -2140,15 +2292,176 @@ body:not(.learning-on) .learn{display:none}
       <p class="auth-note" id="authGoogleNote" hidden>Google sign-in is not enabled yet in Supabase — use email sign-in above.</p>
       <p class="auth-switch"><span id="authSwitchText">Don't have an account? </span><button type="button" class="auth-switch-link" id="authSwitchLink">Sign up</button></p>
       <p class="auth-note">You can also continue as a guest — the app works locally without an account; signing in only adds saving designs to your account.</p>
+      <p class="sub" style="margin:10px 0 0">Guest plan: <b>Starter — Free</b></p>
+      <button class="btn block cta-big" type="button" id="authPlanBtnGuest" style="margin-top:10px">Pricing — Plans &amp; Upgrade…</button>
     </div>
     <div id="authSignedIn" hidden>
       <p class="sub" style="margin:0">Signed in as <b id="authWho"></b></p>
+      <p class="sub" style="margin:8px 0 0">Your plan: <b id="authPlanName">Starter — Free</b></p>
+      <button class="btn block cta-big" type="button" id="authPlanBtn" style="margin-top:12px">Pricing — Plans &amp; Upgrade…</button>
       <button class="btn block" type="button" id="authProjectsBtn" style="margin-top:14px">My designs — open Projects…</button>
       <p class="auth-note">Your saved designs live in the Projects window: recent projects with Open, Duplicate, Rename and Delete.</p>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
         <button class="btn" type="button" id="authClose2">Close</button>
         <button class="btn primary" type="button" id="authSignOut">Sign out</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLANS & UPGRADE — the three PUBLIC subscription tiers
+     (Starter / Advance / VIP). The hidden VVIP plan is deliberately
+     NOT listed here: no card, no price, no Upgrade button — it is
+     granted only by admin assignment in Supabase. Opened from
+     Account (signed in or guest) and from any locked control (the
+     Modifier tab / pane on Starter, the Share dialog below VIP).
+     Monthly / Yearly toggle: Yearly is exactly Monthly × 12 — no
+     discount, and no discount badge anywhere. Checkout is NOT
+     connected yet (PayHere for LKR, Paddle for USD): an Upgrade tap
+     shows the chosen tier, period and price and says so plainly —
+     it never pretends a payment succeeded. Plans themselves are
+     stored per user in public.profiles.plan and assigned by admin
+     / VIP key only for now. -->
+<div class="modal-bg" id="planModal">
+  <div class="modal plan-modal" role="dialog" aria-modal="true" aria-labelledby="planTitle">
+    <h2 id="planTitle">Plans &amp; pricing</h2>
+    <p class="plan-cur">Your current plan: <b id="planCurrentName">Starter — Free</b><span id="planCurrentWho"></span></p>
+    <div class="plan-billrow">
+      <div class="plan-bill" role="group" aria-label="Billing period">
+        <button type="button" id="planPerMonthly" class="on">Monthly</button>
+        <button type="button" id="planPerYearly">Yearly</button>
+      </div>
+      <span class="plan-billnote">Yearly is exactly 12 × the monthly price — no discount.</span>
+    </div>
+    <div class="plan-grid">
+      <div class="plan-card" id="planCardStarter">
+        <h3>Starter</h3>
+        <div class="plan-tag">For trying the tool</div>
+        <div class="plan-price">Free</div>
+        <div class="plan-price-usd">No card needed</div>
+        <ul class="plan-feats">
+          <li><b>2D view</b>&nbsp;— layout, cabling &amp; ports</li>
+          <li><b>3D view</b>&nbsp;— the stage in 3D</li>
+          <li>PNG / PSD exports, local save &amp; load</li>
+          <li class="locked-feat">Modifiers locked — Truss, Lighting, Crowd, Speakers, Haze, Props, Stage Settings</li>
+          <li class="locked-feat">Client link sharing locked</li>
+        </ul>
+        <button class="btn" type="button" id="planBtnStarter" disabled>Current plan</button>
+      </div>
+      <div class="plan-card" id="planCardAdvance">
+        <h3>Advance</h3>
+        <div class="plan-tag">For working designers</div>
+        <div class="plan-price"><span id="planPriceAdvanceLkr">LKR 4,999.99</span> <small id="planPerAdvance">/ month</small></div>
+        <div class="plan-price-usd" id="planPriceAdvanceUsd">USD 15 / month</div>
+        <ul class="plan-feats">
+          <li>Everything in Starter</li>
+          <li><b>All modifiers</b>&nbsp;— Truss, Lighting, Crowd, Speakers, Haze, Props, Stage Settings</li>
+          <li class="locked-feat">Client link sharing locked — VIP only</li>
+        </ul>
+        <button class="btn primary cta-big" type="button" id="planBtnAdvance">Upgrade to Advance</button>
+      </div>
+      <div class="plan-card" id="planCardVip">
+        <h3>VIP</h3>
+        <div class="plan-tag">Everything, client-facing too</div>
+        <div class="plan-price"><span id="planPriceVipLkr">LKR 10,699.99</span> <small id="planPerVip">/ month</small></div>
+        <div class="plan-price-usd" id="planPriceVipUsd">USD 30 / month</div>
+        <ul class="plan-feats">
+          <li>Everything in Advance</li>
+          <li><b>Client link sharing</b>&nbsp;— short &amp; long client links, Public or Private</li>
+          <li>No locks anywhere</li>
+        </ul>
+        <button class="btn primary cta-big" type="button" id="planBtnVip">Upgrade to VIP</button>
+      </div>
+    </div>
+    <div class="plan-checkout" id="planCheckoutNote" hidden></div>
+    <div class="mrow">
+      <button class="btn" type="button" id="planClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD — a SEPARATE full page (not a popup, modal or
+     panel): File → Admin Dashboard (admins only) opens it and it
+     replaces the whole editor view — its own header, its own
+     scroll, and a Back to editor control to return. It manages
+     subscription plans / VVIP from public.profiles so the owner
+     never needs Supabase SQL for day-to-day plan changes: users
+     list with search + plan filter, counts per plan, a plan
+     selector per user (Starter / Advance / VIP / VVIP) behind a
+     confirm step, a clear Revoke VVIP action, per-user designs /
+     shares counts and a shares list with Extend +30 days — all
+     through Supabase REST with the signed-in admin's own token and
+     RLS (no service key; see supabase-admin.sql). Login history,
+     session revoke and suspend / ban are deliberately NOT here:
+     they need the Supabase Auth Admin API / a service key, which
+     must never ship in a browser app — the page states that limit.
+     Never part of client view. -->
+<div id="adminPage" role="region" aria-label="Admin Dashboard">
+  <div class="admin-head">
+    <button class="btn small" type="button" id="adminBack">← Back to editor</button>
+    <h2>Admin Dashboard</h2>
+    <span class="admin-badge role">Admin only</span>
+    <span class="plan-billnote" id="adminWho"></span>
+    <span class="admin-sub">Manage subscription plans and VVIP. Changes save straight to each user's profile in Supabase and take effect on their next plan check (and immediately in this list). VVIP is granted only here or from the backend — it is never sold in Plans &amp; Upgrade.</span>
+  </div>
+  <div class="admin-wrap">
+    <!-- Access gate — what a signed-out or non-admin visitor to
+         /adminpower (or anyone before the admin check resolves)
+         sees instead of the dashboard: no user data, no plan
+         controls, just the sign-in prompt / access-denied state
+         and a way back to the main app. adminSyncGate swaps this
+         for #adminMain only when the signed-in profile's role is
+         confirmed 'admin'. -->
+    <div id="adminGate">
+      <h3 id="adminGateTitle">Checking your access…</h3>
+      <p id="adminGateMsg">The Admin Dashboard is only available to a signed-in admin account. No user data is shown until an admin sign-in is confirmed.</p>
+      <div class="admin-gate-actions">
+        <button class="btn primary" type="button" id="adminGateSignIn">Sign in</button>
+        <a class="btn" id="adminGateHome" href="/">← Back to LUTAS LED</a>
+      </div>
+    </div>
+    <div id="adminMain" hidden>
+    <div class="admin-counts" aria-label="Users per plan">
+      <div class="admin-count"><span>Total users</span><b id="adminCountTotal">–</b></div>
+      <div class="admin-count"><span>Starter</span><b id="adminCountStarter">–</b></div>
+      <div class="admin-count"><span>Advance</span><b id="adminCountAdvance">–</b></div>
+      <div class="admin-count"><span>VIP</span><b id="adminCountVip">–</b></div>
+      <div class="admin-count"><span>VVIP</span><b id="adminCountVvip">–</b></div>
+    </div>
+    <div class="admin-tools">
+      <div class="field"><span>Search users</span><input type="text" id="adminSearch" placeholder="Filter by name or email" autocomplete="off"></div>
+      <select id="adminPlanFilter" aria-label="Filter by plan">
+        <option value="">All plans</option>
+        <option value="starter">Starter</option>
+        <option value="advance">Advance</option>
+        <option value="vip">VIP</option>
+        <option value="vvip">VVIP</option>
+      </select>
+      <button class="btn" type="button" id="adminRefresh">Refresh</button>
+    </div>
+    <p class="admin-err" id="adminErr" hidden></p>
+    <p class="admin-note" id="adminDataNote" hidden></p>
+    <div id="adminUserList"><div class="admin-empty">Loading users…</div></div>
+    <p class="admin-note" style="margin-top:16px"><b>What this page cannot do:</b> login history, signing a user out of their sessions, and suspending / banning accounts are not available here. Those need the Supabase Auth Admin API with a service key, which must never be put in a browser app — they stay in the Supabase dashboard itself. This page also never sees or stores passwords, passkey hashes, or card details.</p>
+    <div class="mrow" style="display:flex;justify-content:flex-start;margin-top:4px">
+      <button class="btn" type="button" id="adminBack2">← Back to LUTAS LED editor</button>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN CONFIRM — the confirm step for a plan change inside the
+     Admin Dashboard page: shows exactly whose plan changes from
+     what to what (including Revoke VVIP) and only writes to
+     Supabase on Confirm. -->
+<div class="modal-bg" id="adminConfirmModal" style="z-index:160">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="adminConfirmTitle">
+    <h2 id="adminConfirmTitle">Change plan?</h2>
+    <p class="sub" id="adminConfirmMsg"></p>
+    <p class="cc-err" id="adminConfirmErr"></p>
+    <div class="mrow">
+      <button class="btn" type="button" id="adminConfirmNo">Cancel</button>
+      <button class="btn primary" type="button" id="adminConfirmYes">Confirm change</button>
     </div>
   </div>
 </div>
@@ -5310,6 +5623,10 @@ document.querySelectorAll("[data-prefcat]").forEach(function(b){
   b.addEventListener("click",function(){setPrefCat(b.getAttribute("data-prefcat"))});
 });
 $("mPrefs").addEventListener("click",function(){closeMenus();openPrefs()});
+/* File → Pricing… — the amber-highlighted item under Preferences:
+   opens the same Plans & Upgrade dialog as Account and the locked
+   controls (openPlanModal is a hoisted function declaration). */
+$("mPricing").addEventListener("click",function(){closeMenus();openPlanModal()});
 $("prefsClose").addEventListener("click",function(){$("prefsModal").classList.remove("open")});
 $("prefsModal").addEventListener("click",function(ev){if(ev.target===this)this.classList.remove("open")});
 /* ══════════ KEYBOARD SHORTCUTS + SHORTCUT LAYOUT (Preferences) ════
@@ -11521,25 +11838,64 @@ function setTabUI(name){
    click explains why), and if one is open when the 2D view comes
    back the panel falls back to Screens. Selecting the 3D view
    unlocks and activates all three. Screens and Export never lock. */
-function tabLocked(name){return !view3dOpen&&(name==="object"||name==="3d"||name==="modifier")}
+/* ── SUBSCRIPTION PLAN ───────────────────────────────────────────
+   userPlan is "starter" | "advance" | "vip" | "vvip". Guests /
+   signed-out users are Starter. A signed-in user's plan comes from
+   their public.profiles.plan row (see planFetch in the AUTH
+   section); anything missing or unreadable falls back to Starter.
+   Starter locks every modifier; Advance unlocks modifiers but
+   locks client link sharing; VIP unlocks everything. VVIP is a
+   hidden, backend-only plan: it is granted ONLY by admin
+   assignment in Supabase (profiles.plan = 'vvip'), it unlocks
+   everything VIP unlocks with no locks at all, and it NEVER
+   appears in the Plans & Upgrade dialog — that dialog lists only
+   the three public tiers (Starter / Advance / VIP). Rank order:
+   starter < advance < vip < vvip. */
+var userPlan="starter";
+function planRankOf(p){return p==="vvip"?3:p==="vip"?2:p==="advance"?1:0}
+function planCanModifiers(){return planRankOf(userPlan)>=1}
+function planCanShare(){return planRankOf(userPlan)>=2}
+function tabLocked(name){
+  if(name==="modifier"&&!planCanModifiers())return true;
+  return !view3dOpen&&(name==="object"||name==="3d"||name==="modifier");
+}
 function switchTab(name,fromUser){
   if(tabLocked(name)){
-    if(fromUser)toast("Locked in the 2D view — the Object, 3D and Modifier panels work in the 3D view only. Press 3D View (top right) to unlock them.");
+    if(fromUser){
+      if(name==="modifier"&&view3dOpen&&!planCanModifiers()){
+        toast("Modifiers are locked on the Starter plan — Upgrade to Advance to unlock Truss, Lighting, Crowd, Speakers, Haze, Props and Stage Settings.");
+        openPlanModal();
+      }else toast("Locked in the 2D view — the Object, 3D and Modifier panels work in the 3D view only. Press 3D View (top right) to unlock them.");
+    }
     name="display";
   }
   setTabUI(name);
 }
 function syncTabLocks(){
-  var locked=!view3dOpen, keys=["object","3d","modifier"];
+  var keys=["object","3d","modifier"];
   keys.forEach(function(k){
+    var locked=(k==="modifier")?(!view3dOpen||!planCanModifiers()):!view3dOpen;
     var b=document.querySelector('#settingsTabs button[data-tab="'+k+'"]');
-    if(b){b.classList.toggle("locked",locked); b.setAttribute("aria-disabled",String(locked)); b.title=locked?"Locked in the 2D view — press 3D View to use this panel":""}
-    var p=$("tab-"+k); if(p){p.inert=locked; p.classList.toggle("locked-pane",locked)}
+    if(b){
+      b.classList.toggle("locked",locked); b.setAttribute("aria-disabled",String(locked));
+      b.title=!locked?"":(k==="modifier"&&view3dOpen&&!planCanModifiers())?"Locked on the Starter plan — Upgrade to Advance for modifiers":"Locked in the 2D view — press 3D View to use this panel";
+    }
+    var p=$("tab-"+k);
+    if(p){
+      /* The Modifier pane stays live while plan-locked in the 3D
+         view so its Upgrade banner button works; planLockSync
+         inerts the modifier controls themselves instead. */
+      var planOnly=(k==="modifier"&&view3dOpen&&!planCanModifiers());
+      p.inert=planOnly?false:locked;
+      p.classList.toggle("locked-pane",locked&&!planOnly);
+    }
   });
-  if(locked){
+  var anyLocked=keys.some(function(k){return tabLocked(k)});
+  if(anyLocked){
     var onB=document.querySelector("#settingsTabs button.on");
-    if(onB&&keys.indexOf(onB.getAttribute("data-tab"))>=0)setTabUI("display");
+    if(onB&&keys.indexOf(onB.getAttribute("data-tab"))>=0&&tabLocked(onB.getAttribute("data-tab")))setTabUI("display");
   }
+  if(typeof planLockSync==="function")planLockSync();
 }
 document.querySelectorAll("#settingsTabs button[data-tab]").forEach(function(b){
   b.addEventListener("click",function(){switchTab(b.getAttribute("data-tab"),true)});
@@ -13681,7 +14037,7 @@ function saveJson(){
 }
 $("mSave").addEventListener("click",function(){closeMenus(); if(typeof authUser!=="undefined"&&authUser)cloudSaveDesign(); else {saveJson(); projMarkSaved()}});
 /* ══ File menu — Open project / Open recent / Save as / Import
-   props / Export submenu / Log out ═══════════════════════════════
+   props / Export submenu / Pricing / Log out ════════════════════
    Every item routes into the same paths the rest of the app uses:
    Open project is the Projects window, Open recent loads a cloud
    design exactly like Projects → Open, Save as creates a NEW
@@ -14299,7 +14655,10 @@ function fillCommentSqlBlocks(){
    there never blocks sign-in), including the sign-up form's extra
    fields once their columns exist. Signed-in users save / load in
    public.designs; signed-out users keep the local JSON flow
-   exactly as before. No plan checks, no feature locks. The client
+   exactly as before. The user's subscription plan is read from
+   public.profiles.plan by planFetch (see SUBSCRIPTION PLANS below);
+   a missing plan column falls back to Starter and never blocks
+   sign-in. The client
    view (?client=1 / share links) never initialises any of this:
    initAuth returns immediately for a client-view request, and the
    account button lives in the top bar, which client view hides. */
@@ -14336,6 +14695,9 @@ function authDisplayName(u){
 }
 function authSetUser(u){
   authUser=u||null;
+  /* The plan follows the signed-in user: guests are Starter, and a
+     signed-in user's plan is read from public.profiles.plan. */
+  if(typeof planFetch==="function")planFetch(authUser);
   var b=$("btnAccount");
   if(b)b.textContent=authUser?authDisplayName(authUser):"Sign in";
   var lo=$("mLogout"); if(lo)lo.disabled=!authUser;
@@ -14408,13 +14770,19 @@ function authLoadPendingProfile(u){
 }
 function authUpsertProfile(u){
   if(!u||!u.id)return Promise.resolve();
-  var base={id:u.id,email:u.email||"",display_name:authDisplayName(u),role:"user"};
+  /* role is deliberately NOT sent: the upsert merges on id, so
+     writing role:"user" here would silently strip an 'admin' role
+     (and any plan-adjacent backend state) on every sign-in. New
+     rows take the column default ('user' — see supabase-admin.sql);
+     role changes happen only from the backend / Admin Dashboard
+     setup, never from this upsert. */
+  var base={id:u.id,email:u.email||"",display_name:authDisplayName(u)};
   function post(body){
     return supaFetch(SUPABASE_URL+"/rest/v1/profiles",{method:"POST",headers:authHeaders({"Prefer":"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify(body)},15000);
   }
   var pend=authLoadPendingProfile(u);
   if(!pend)return post(base).then(function(){},function(){}); /* profile row must never block sign-in */
-  var full={id:u.id,email:u.email||"",display_name:(pend.display_name||"").trim()||authDisplayName(u),occupation:pend.occupation||null,birthday:pend.birthday||null,gender:pend.gender||null,country:pend.country||null,role:"user"};
+  var full={id:u.id,email:u.email||"",display_name:(pend.display_name||"").trim()||authDisplayName(u),occupation:pend.occupation||null,birthday:pend.birthday||null,gender:pend.gender||null,country:pend.country||null};
   return post(full).then(function(res){
     if(res&&res.ok){authStorePendingProfile(null); return}
     /* Extra columns not there yet — base row only; the extra fields
@@ -14429,6 +14797,510 @@ function authSignedInAs(u,sessionData){
   authSetUser(u);
   authUpsertProfile(u);
 }
+/* ══════════ SUBSCRIPTION PLANS — tiers, prices, gating ══════════
+   Prices are fixed by the product owner. Yearly is EXACTLY
+   Monthly × 12 — no discount, ever:
+     Advance — Monthly LKR 4,999.99 / USD 15 → Yearly LKR 59,999.88 / USD 180
+     VIP     — Monthly LKR 10,699.99 / USD 30 → Yearly LKR 128,399.88 / USD 360
+   The plan itself is stored per user in public.profiles.plan
+   ("starter" | "advance" | "vip" | "vvip"); see supabase-plan.sql
+   for the one-time column SQL. planFetch reads it after sign-in;
+   if the column does not exist yet, the read fails and the user
+   simply stays on Starter — sign-in is never blocked by the plan
+   read. VVIP is hidden and backend-only: it has NO card, NO price
+   and NO Upgrade button in the Plans & Upgrade dialog (the dialog
+   lists only Starter / Advance / VIP), there is no VVIP checkout,
+   and it is granted only by admin assignment in Supabase
+   (update public.profiles set plan = 'vvip' where email = '…').
+   A VVIP user's dialog states their current plan is VVIP and
+   marks every public tier as included — never as an upgrade.
+   Checkout is NOT connected: PayHere (LKR) and Paddle (USD)
+   merchant accounts do not exist yet, so an Upgrade tap only
+   shows the chosen tier / period / price and states that plainly.
+   No payment is taken, no card details are collected or stored,
+   and no plan ever changes from an Upgrade tap — plans change by
+   admin assignment / VIP key only. */
+var PLAN_DEFS={
+  starter:{name:"Starter",lkr:0,usd:0},
+  advance:{name:"Advance",lkr:4999.99,usd:15},
+  vip:{name:"VIP",lkr:10699.99,usd:30},
+  vvip:{name:"VVIP",lkr:0,usd:0,hidden:true}
+};
+var planBilling="monthly";
+function planName(){return (PLAN_DEFS[userPlan]||PLAN_DEFS.starter).name}
+function planLabel(){
+  if(userPlan==="starter")return "Starter — Free";
+  if(userPlan==="vvip")return "VVIP — all features unlocked";
+  var d=PLAN_DEFS[userPlan];
+  return d.name+" — "+planFmtLkr(d.lkr)+" / "+planFmtUsd(d.usd)+" monthly";
+}
+function planFmtLkr(n){return "LKR "+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function planFmtUsd(n){return "USD "+Number(n).toLocaleString("en-US",{maximumFractionDigits:(n%1?2:0)})}
+function planPriceFor(key){
+  var d=PLAN_DEFS[key]; if(!d)return {lkr:0,usd:0};
+  return planBilling==="yearly"?{lkr:+(d.lkr*12).toFixed(2),usd:+(d.usd*12).toFixed(2)}:{lkr:d.lkr,usd:d.usd};
+}
+function planSet(p){
+  userPlan=(p==="advance"||p==="vip"||p==="vvip")?p:"starter";
+  var an=$("authPlanName"); if(an)an.textContent=planLabel();
+  syncTabLocks();
+  planLockSync();
+  planRenderPrices();
+}
+function planFetch(u){
+  if(!u||!u.id){planSet("starter"); adminSetIsAdmin(false); return Promise.resolve()}
+  /* plan and role ride in the same read: role === 'admin' is what
+     unlocks the Admin Dashboard entry / page (adminSetIsAdmin).
+     Any failure — including the plan column not existing yet —
+     falls back to Starter and non-admin; sign-in is never blocked. */
+  var url=SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(u.id)+"&select=plan,role";
+  return supaFetch(url,{method:"GET",headers:authHeaders()},12000).then(function(res){
+    if(!res.ok){planSet("starter"); adminSetIsAdmin(false); return null} /* includes the plan column not existing yet */
+    return res.json().then(function(rows){
+      var row=(rows&&rows[0])||{};
+      var p=String(row.plan||"starter").toLowerCase();
+      planSet((p==="advance"||p==="vip"||p==="vvip")?p:"starter");
+      adminSetIsAdmin(String(row.role||"").toLowerCase()==="admin");
+    });
+  }).catch(function(){planSet("starter"); adminSetIsAdmin(false)});
+}
+/* Keeps every plan-locked surface in step with userPlan: the
+   Modifier pane banner + its controls, the Share dialog banner +
+   its controls, and the Share button's tooltip. Called from
+   syncTabLocks (view changes) and planSet (plan changes). */
+function planLockSync(){
+  var mods=planCanModifiers();
+  var banner=$("modPlanLock"); if(banner)banner.hidden=mods;
+  var listBox=$("modListBox"); if(listBox)listBox.inert=!mods;
+  var params=$("modParams"); if(params)params.inert=!mods;
+  var share=planCanShare();
+  var sBanner=$("sharePlanLock"); if(sBanner)sBanner.hidden=share;
+  ["shareModePublic","shareModePrivate","shareGenKey","shareKey","shareOpenBtn"].forEach(function(id){
+    var el=$(id); if(el)el.disabled=!share;
+  });
+  var sb=$("btnShareClient");
+  if(sb)sb.title=share
+    ? "Share / Client view — opens the share dialog: copy a link carrying this exact stage design, Public (opens straight away) or Private (the client enters their name + your passkey first). The client sees only the 3D render and can move the camera — no panels, no tools, no editing, no save / load"
+    : "Share / Client view — LOCKED on your plan: client link sharing is a VIP feature. Upgrade to VIP to share client links.";
+}
+function planRenderPrices(){
+  var per=planBilling==="yearly"?"/ year":"/ month";
+  ["advance","vip"].forEach(function(key){
+    var cap=key.charAt(0).toUpperCase()+key.slice(1);
+    var pr=planPriceFor(key);
+    var lkr=$("planPrice"+cap+"Lkr"); if(lkr)lkr.textContent=planFmtLkr(pr.lkr);
+    var usd=$("planPrice"+cap+"Usd"); if(usd)usd.textContent=planFmtUsd(pr.usd)+" "+per;
+    var pl=$("planPer"+cap); if(pl)pl.textContent=per;
+  });
+  var pm=$("planPerMonthly"), py=$("planPerYearly");
+  if(pm)pm.classList.toggle("on",planBilling==="monthly");
+  if(py)py.classList.toggle("on",planBilling==="yearly");
+  var cur=$("planCurrentName"); if(cur)cur.textContent=planLabel();
+  var who=$("planCurrentWho");
+  if(who)who.textContent=authUser?(" · signed in as "+(authUser.email||"")):" · you are browsing as a guest";
+  [["starter","planBtnStarter"],["advance","planBtnAdvance"],["vip","planBtnVip"]].forEach(function(pair){
+    var card=$("planCard"+pair[0].charAt(0).toUpperCase()+pair[0].slice(1));
+    if(card)card.classList.toggle("current",userPlan===pair[0]);
+    var btn=$(pair[1]); if(!btn)return;
+    if(userPlan==="vvip"){btn.disabled=true; btn.textContent="Included in VVIP"}
+    else if(userPlan===pair[0]){btn.disabled=true; btn.textContent="Current plan"}
+    else if(pair[0]==="starter"){btn.disabled=true; btn.textContent="Free — the plan below yours"}
+    else{btn.disabled=false; btn.textContent="Upgrade to "+PLAN_DEFS[pair[0]].name}
+  });
+  var note=$("planCheckoutNote"); if(note)note.hidden=true;
+}
+function openPlanModal(){
+  if(isClientViewRequest())return;
+  planRenderPrices();
+  $("planModal").classList.add("open");
+}
+function closePlanModal(){$("planModal").classList.remove("open")}
+function planUpgradeTap(key){
+  /* VVIP is never purchasable: no card, no price, no checkout. It
+     is granted only by admin assignment in Supabase. */
+  if(key==="vvip")return;
+  /* No fake checkout: show exactly what was chosen and state that
+     checkout is not connected yet. The plan does NOT change here. */
+  var pr=planPriceFor(key);
+  var note=$("planCheckoutNote"); if(!note)return;
+  note.innerHTML="";
+  var b=document.createElement("b");
+  b.textContent=PLAN_DEFS[key].name+" — "+(planBilling==="yearly"?"Yearly":"Monthly")+": "+planFmtLkr(pr.lkr)+" / "+planFmtUsd(pr.usd)+(planBilling==="yearly"?" per year":" per month")+". ";
+  note.appendChild(b);
+  note.appendChild(document.createTextNode("Checkout is not yet connected — PayHere (for LKR) and Paddle (for USD) merchant accounts are not set up, so no payment can be taken here and no card details are collected. For now, plans are changed by admin assignment or a VIP key only; your plan stays "+planName()+" until then."));
+  note.hidden=false;
+  note.scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+function initPlans(){
+  if(isClientViewRequest())return;
+  var pm=$("planPerMonthly"), py=$("planPerYearly");
+  if(pm)pm.addEventListener("click",function(){planBilling="monthly"; planRenderPrices()});
+  if(py)py.addEventListener("click",function(){planBilling="yearly"; planRenderPrices()});
+  var ba=$("planBtnAdvance"); if(ba)ba.addEventListener("click",function(){planUpgradeTap("advance")});
+  var bv=$("planBtnVip"); if(bv)bv.addEventListener("click",function(){planUpgradeTap("vip")});
+  var pc=$("planClose"); if(pc)pc.addEventListener("click",closePlanModal);
+  var pmo=$("planModal"); if(pmo)pmo.addEventListener("click",function(ev){if(ev.target===this)closePlanModal()});
+  var apb=$("authPlanBtn"); if(apb)apb.addEventListener("click",function(){closeAuthDialog(); openPlanModal()});
+  var apg=$("authPlanBtnGuest"); if(apg)apg.addEventListener("click",function(){closeAuthDialog(); openPlanModal()});
+  var mu=$("modPlanUpgrade"); if(mu)mu.addEventListener("click",function(){openPlanModal()});
+  var su=$("sharePlanUpgrade"); if(su)su.addEventListener("click",function(){$("shareModal").classList.remove("open"); openPlanModal()});
+  planSet(userPlan);
+}
+/* ══════════ ADMIN DASHBOARD — separate page, admins only ══════
+   A full page (#adminPage) that replaces the editor view; opened
+   from File → Admin Dashboard, which is rendered only while
+   adminIsAdmin is true. adminIsAdmin comes from the signed-in
+   user's own public.profiles row (role === 'admin', read by
+   planFetch with the user's own token). Non-admins never see the
+   menu entry, and openAdminPage refuses for them regardless —
+   visibility is only the first gate: every read / write below is
+   a Supabase REST call with the admin's OWN session token
+   (authHeaders), so row-level security is the real enforcement
+   (policies in supabase-admin.sql). There is NO service key in
+   this app, and the dashboard never requests passwords, passkey
+   hashes (shares are read with an explicit safe column list that
+   excludes passkey_hash and payload) or card details.
+   Deliberately absent, by design: login history, session revoke,
+   suspend / ban — those need the Supabase Auth Admin API / a
+   service key and cannot be done safely from a browser app; the
+   page says so. Plan changes PATCH public.profiles.plan for that
+   user and update the list in place immediately; changing your
+   own plan also re-runs planSet so your own locks follow at once.
+   Share extension PATCHes public.shares.expires_at (+30 days from
+   the current expiry, or from now if already expired / unset) —
+   if the shares RLS refuses an admin update, the refusal is shown
+   and nothing pretends to have saved. */
+var adminIsAdmin=false;
+var adminUsers=[], adminSharesByOwner={}, adminDesignCounts=null, adminShareCounts=null, adminExpanded={}, adminPending=null, adminLoadedOnce=false;
+function adminSetIsAdmin(b){
+  adminIsAdmin=!!b;
+  var m=$("mAdmin"); if(m)m.hidden=!adminIsAdmin;
+  if(!adminIsAdmin){
+    adminPending=null;
+    var cm=$("adminConfirmModal"); if(cm)cm.classList.remove("open");
+    /* On the /adminpower route the page itself stays up showing
+       the access gate (that URL IS the dashboard page); anywhere
+       else, losing admin closes the page outright. */
+    if(!isAdminPath()){var pg=$("adminPage"); if(pg)pg.classList.remove("open")}
+  }
+  adminSyncGate();
+}
+/* ── /adminpower routing ─────────────────────────────────────────
+   The dashboard page lives at the path /adminpower. On the live
+   host a rewrite serves this same file there (deploy-time step);
+   inside the app, navigation is pushState between the editor path
+   and …/adminpower, popstate keeps Back / Forward honest, and a
+   direct load at /adminpower enters the route from boot (the head
+   script already hid the editor via .admin-boot). The admin gate
+   applies identically however the page was reached. */
+function isAdminPath(){return /\/adminpower\/?$/.test(window.location.pathname||"")}
+function adminEditorPath(){
+  var p=(window.location.pathname||"/").replace(/\/adminpower\/?$/,"");
+  if(!p)p="/";
+  if(p.charAt(p.length-1)!=="/")p+="/";
+  return p;
+}
+function adminPageUrl(){return adminEditorPath()+"adminpower"}
+/* Swaps the page between the access gate and the dashboard proper.
+   The dashboard (#adminMain) is shown ONLY for a confirmed admin;
+   the gate covers signed-out (sign-in prompt) and signed-in
+   non-admin (access denied) visitors, with no user data either
+   way. Called whenever the auth / role state moves. */
+function adminSyncGate(){
+  var gate=$("adminGate"), main=$("adminMain"), pg=$("adminPage");
+  if(!gate||!main)return;
+  var who=$("adminWho"); if(who)who.textContent=authUser?("Signed in as "+(authUser.email||"")):"";
+  var pageOpen=!!(pg&&pg.classList.contains("open"))||document.documentElement.classList.contains("admin-boot");
+  if(adminIsAdmin&&authUser){
+    gate.hidden=true; main.hidden=false;
+    if(pageOpen&&!adminLoadedOnce)adminLoadData();
+    return;
+  }
+  gate.hidden=false; main.hidden=true;
+  var t=$("adminGateTitle"), msg=$("adminGateMsg"), si=$("adminGateSignIn");
+  if(authUser){
+    if(t)t.textContent="Access denied";
+    if(msg)msg.textContent="You are signed in as "+(authUser.email||"this account")+", but this account is not an admin. The Admin Dashboard — the users list and plan controls — is only available to an account whose profile role is 'admin'.";
+    if(si)si.hidden=true;
+  }else{
+    if(t)t.textContent="Admin sign-in required";
+    if(msg)msg.textContent="The Admin Dashboard is only available to a signed-in admin account. Sign in with an admin account to continue — no user data is shown until an admin sign-in is confirmed.";
+    if(si)si.hidden=false;
+  }
+}
+function adminShowPage(){
+  document.documentElement.classList.remove("admin-boot");
+  var pg=$("adminPage"); if(!pg)return;
+  pg.classList.add("open"); pg.scrollTop=0;
+  var who=$("adminWho"); if(who)who.textContent=authUser?("Signed in as "+(authUser.email||"")):"";
+  adminSyncGate();
+  if(adminIsAdmin&&authUser)adminLoadData();
+}
+function adminPlanOf(u){var p=String((u&&u.plan)||"starter").toLowerCase(); return (p==="advance"||p==="vip"||p==="vvip")?p:"starter"}
+function adminUserName(u){return String((u&&(u.display_name||""))||"").trim()||String((u&&u.email)||"").split("@")[0]||"User"}
+function adminShowErr(msg){
+  var e=$("adminErr"); if(!e)return;
+  e.textContent=msg||""; e.hidden=!msg;
+}
+function adminRlsHint(what){
+  return "Supabase refused to "+what+" (row-level security). The admin policies may not be installed yet — run supabase-admin.sql once in the Supabase SQL editor (it makes the owner an admin and adds the admin read / update policies), then Refresh here. Nothing was changed.";
+}
+function openAdminPage(){
+  if(isClientViewRequest())return; /* never in client view */
+  if(!authUser||!adminIsAdmin){toast("Admin Dashboard is available to admin accounts only."); return}
+  closeMenus();
+  /* The in-app entry navigates to the dashboard's own path,
+     /adminpower — a real pushState navigation, not just a view
+     toggle — so the page is shareable / reloadable as a URL and
+     Back returns to the editor. */
+  try{if(!isAdminPath())history.pushState({lutasAdmin:true},"",adminPageUrl())}catch(e){}
+  adminShowPage();
+}
+function closeAdminPage(){
+  document.documentElement.classList.remove("admin-boot");
+  var pg=$("adminPage"); if(pg)pg.classList.remove("open");
+  var cm=$("adminConfirmModal"); if(cm)cm.classList.remove("open");
+  adminPending=null;
+  /* Back to the main app at the editor path (/ on the live site). */
+  try{if(isAdminPath())history.pushState({lutasAdmin:false},"",adminEditorPath())}catch(e){}
+}
+/* Keeps the visible view in step with the URL on Back / Forward
+   and on a direct /adminpower load: admin path → the dashboard
+   page (gate or dashboard per role), anything else → the editor. */
+function adminRouteSync(){
+  if(isClientViewRequest())return;
+  if(isAdminPath())adminShowPage();
+  else{
+    document.documentElement.classList.remove("admin-boot");
+    var pg=$("adminPage"); if(pg)pg.classList.remove("open");
+    var cm=$("adminConfirmModal"); if(cm)cm.classList.remove("open");
+    adminPending=null;
+  }
+}
+function adminLoadData(){
+  if(!authUser||!adminIsAdmin)return;
+  adminShowErr("");
+  var note=$("adminDataNote"); if(note)note.hidden=true;
+  var list=$("adminUserList");
+  if(list&&!adminLoadedOnce)list.innerHTML='<div class="admin-empty">Loading users…</div>';
+  /* Users: explicit safe columns only — id, display name, email,
+     plan, role, signup date. Nothing else on the profile row is
+     requested. */
+  var url=SUPABASE_URL+"/rest/v1/profiles?select=id,display_name,email,plan,role,created_at&order=created_at.desc&limit=1000";
+  supaFetch(url,{method:"GET",headers:authHeaders()},20000).then(function(res){
+    if(!res.ok)throw new Error("profiles "+res.status);
+    return res.json();
+  }).then(function(rows){
+    adminUsers=Array.isArray(rows)?rows:[];
+    adminLoadedOnce=true;
+    adminRenderUsers();
+  }).catch(function(){
+    /* created_at may not exist on older profile tables — retry
+       without it (signup date then shows as —). */
+    var url2=SUPABASE_URL+"/rest/v1/profiles?select=id,display_name,email,plan,role&order=email.asc&limit=1000";
+    return supaFetch(url2,{method:"GET",headers:authHeaders()},20000).then(function(res){
+      if(!res.ok)throw new Error("profiles "+res.status);
+      return res.json();
+    }).then(function(rows){
+      adminUsers=Array.isArray(rows)?rows:[];
+      adminLoadedOnce=true;
+      adminRenderUsers();
+    }).catch(function(){
+      if(list)list.innerHTML='<div class="admin-empty">Could not load the users list.</div>';
+      adminShowErr(adminRlsHint("read the users list"));
+    });
+  });
+  /* Designs count per user — counts only, from the owner_id column;
+     a refusal just leaves counts unavailable (shown as —). */
+  adminDesignCounts=null;
+  supaFetch(SUPABASE_URL+"/rest/v1/designs?select=owner_id&limit=5000",{method:"GET",headers:authHeaders()},20000).then(function(res){
+    if(!res.ok)throw new Error("designs "+res.status);
+    return res.json();
+  }).then(function(rows){
+    var counts={};
+    (Array.isArray(rows)?rows:[]).forEach(function(r){if(r&&r.owner_id)counts[r.owner_id]=(counts[r.owner_id]||0)+1});
+    adminDesignCounts=counts;
+    if($("adminPage").classList.contains("open"))adminRenderUsers();
+  }).catch(function(){adminDesignCounts=false; adminNoteCounts()});
+  /* Shares per user — safe columns only (NO passkey_hash, NO
+     payload): project name, code, mode, expiry, owner. */
+  adminShareCounts=null; adminSharesByOwner={};
+  supaFetch(SUPABASE_URL+"/rest/v1/shares?select=code,project_name,mode,expires_at,created_at,owner_id&order=created_at.desc&limit=1000",{method:"GET",headers:authHeaders()},20000).then(function(res){
+    if(!res.ok)throw new Error("shares "+res.status);
+    return res.json();
+  }).then(function(rows){
+    var counts={}, byOwner={};
+    (Array.isArray(rows)?rows:[]).forEach(function(r){
+      if(!r||!r.owner_id)return;
+      counts[r.owner_id]=(counts[r.owner_id]||0)+1;
+      (byOwner[r.owner_id]=byOwner[r.owner_id]||[]).push(r);
+    });
+    adminShareCounts=counts; adminSharesByOwner=byOwner;
+    if($("adminPage").classList.contains("open"))adminRenderUsers();
+  }).catch(function(){adminShareCounts=false; adminSharesByOwner={}; adminNoteCounts()});
+}
+function adminNoteCounts(){
+  var note=$("adminDataNote"); if(!note)return;
+  /* Counts read as — only when their table read was actually
+     refused (false), never merely because nobody has rows yet. */
+  if(adminDesignCounts===false||adminShareCounts===false){
+    note.textContent="Designs / shares counts are unavailable for some users — the designs and shares tables only return rows their row-level security allows this admin token to read, and no admin read policy exists for them yet. Plans above are unaffected.";
+    note.hidden=false;
+  }
+}
+function adminRenderUsers(){
+  var counts={starter:0,advance:0,vip:0,vvip:0};
+  adminUsers.forEach(function(u){counts[adminPlanOf(u)]++});
+  var set=function(id,v){var el=$(id); if(el)el.textContent=String(v)};
+  set("adminCountTotal",adminUsers.length);
+  set("adminCountStarter",counts.starter); set("adminCountAdvance",counts.advance);
+  set("adminCountVip",counts.vip); set("adminCountVvip",counts.vvip);
+  var q=(($("adminSearch")&&$("adminSearch").value)||"").trim().toLowerCase();
+  var pf=($("adminPlanFilter")&&$("adminPlanFilter").value)||"";
+  var rows=adminUsers.filter(function(u){
+    if(pf&&adminPlanOf(u)!==pf)return false;
+    if(!q)return true;
+    return adminUserName(u).toLowerCase().indexOf(q)>=0||String(u.email||"").toLowerCase().indexOf(q)>=0;
+  });
+  var list=$("adminUserList"); if(!list)return;
+  if(!rows.length){
+    list.innerHTML='<div class="admin-empty">'+(adminUsers.length?"No users match the search / filter.":"No users found.")+'</div>';
+    return;
+  }
+  list.innerHTML=rows.map(function(u){
+    var plan=adminPlanOf(u), isSelf=!!(authUser&&u.id===authUser.id);
+    var dn=adminDesignCounts?String(adminDesignCounts[u.id]||0):"—";
+    var sn=adminShareCounts?String(adminShareCounts[u.id]||0):"—";
+    var shares=adminSharesByOwner[u.id]||[];
+    var html='<div class="admin-user'+(plan==="vvip"?" vvip":"")+'">'
+      +'<div class="admin-u-top"><div class="admin-u-id"><b>'+escHtml(adminUserName(u))+(isSelf?" (you)":"")+'</b><span>'+escHtml(u.email||"")+'</span></div>'
+      +'<span class="admin-badge plan">'+escHtml(PLAN_DEFS[plan].name)+'</span>'
+      +(String(u.role||"").toLowerCase()==="admin"?'<span class="admin-badge role">Admin</span>':"")
+      +'</div>'
+      +'<div class="admin-u-meta"><span>Signed up <b>'+escHtml(u.created_at?fmtShareDate(u.created_at):"—")+'</b></span><span>Designs <b>'+dn+'</b></span><span>Shares <b>'+sn+'</b></span></div>'
+      +'<div class="admin-u-actions"><label for="adminPlanSel-'+escHtml(u.id)+'">Plan</label>'
+      +'<select id="adminPlanSel-'+escHtml(u.id)+'" data-admin-plan="'+escHtml(u.id)+'">'
+      +["starter","advance","vip","vvip"].map(function(k){return '<option value="'+k+'"'+(k===plan?" selected":"")+'>'+PLAN_DEFS[k].name+'</option>'}).join("")
+      +'</select>'
+      +(plan==="vvip"?'<button class="btn small" type="button" data-admin-revoke="'+escHtml(u.id)+'">Revoke VVIP → Starter</button>':"")
+      +(shares.length?'<button class="btn small" type="button" data-admin-shares="'+escHtml(u.id)+'">'+(adminExpanded[u.id]?"Hide shares":"Show shares ("+shares.length+")")+'</button>':"")
+      +'</div>';
+    if(adminExpanded[u.id]&&shares.length){
+      html+='<div class="admin-shares">'+shares.map(function(s){
+        var exp=s.expires_at?new Date(s.expires_at):null;
+        var expired=exp&&!isNaN(exp.getTime())&&exp.getTime()<Date.now();
+        return '<div class="admin-share"><b>'+escHtml(s.project_name||"Stage design")+'</b><span class="mono">'+escHtml(s.code||"")+'</span><span class="admin-badge">'+(String(s.mode||"").toLowerCase()==="private"?"Private":"Public")+'</span>'
+          +'<span class="exp">Expires <b>'+escHtml(s.expires_at?fmtShareDate(s.expires_at):"—")+'</b>'+(expired?' <span class="expired">Expired</span>':"")+'</span>'
+          +'<button class="btn small" type="button" data-admin-extend="'+escHtml(s.code||"")+'">Extend +30 days</button></div>';
+      }).join("")+'</div>';
+    }
+    html+='</div>';
+    return html;
+  }).join("");
+  Array.prototype.forEach.call(list.querySelectorAll("[data-admin-plan]"),function(sel){
+    sel.addEventListener("change",function(){
+      var uid=sel.getAttribute("data-admin-plan");
+      var u=adminUsers.filter(function(x){return x.id===uid})[0];
+      if(!u){adminRenderUsers(); return}
+      var from=adminPlanOf(u), to=sel.value;
+      sel.value=from; /* nothing is saved until the confirm step */
+      if(to===from)return;
+      adminAskPlanChange(u,from,to);
+    });
+  });
+  Array.prototype.forEach.call(list.querySelectorAll("[data-admin-revoke]"),function(b){
+    b.addEventListener("click",function(){
+      var uid=b.getAttribute("data-admin-revoke");
+      var u=adminUsers.filter(function(x){return x.id===uid})[0];
+      if(u)adminAskPlanChange(u,"vvip","starter");
+    });
+  });
+  Array.prototype.forEach.call(list.querySelectorAll("[data-admin-shares]"),function(b){
+    b.addEventListener("click",function(){
+      var uid=b.getAttribute("data-admin-shares");
+      adminExpanded[uid]=!adminExpanded[uid];
+      adminRenderUsers();
+    });
+  });
+  Array.prototype.forEach.call(list.querySelectorAll("[data-admin-extend]"),function(b){
+    b.addEventListener("click",function(){adminExtendShare(b.getAttribute("data-admin-extend"),b)});
+  });
+}
+function adminAskPlanChange(u,from,to){
+  if(!adminIsAdmin||!authUser)return;
+  adminPending={id:u.id,from:from,to:to};
+  var msg=$("adminConfirmMsg"); if(!msg)return;
+  var name=adminUserName(u)+(u.email?" ("+u.email+")":"");
+  if(from==="vvip"&&to!=="vvip"){
+    msg.textContent="Revoke VVIP for "+name+"? Their plan changes from VVIP to "+PLAN_DEFS[to].name+" — VVIP-only access ends and the "+PLAN_DEFS[to].name+" plan's locks will apply to them.";
+  }else if(to==="vvip"){
+    msg.textContent="Give VVIP to "+name+"? Their plan changes from "+PLAN_DEFS[from].name+" to VVIP — everything unlocked, including all modifiers and client link sharing. VVIP is never sold; only an admin can grant or revoke it.";
+  }else{
+    msg.textContent="Change "+name+"'s plan from "+PLAN_DEFS[from].name+" to "+PLAN_DEFS[to].name+"?";
+  }
+  if(u.id===authUser.id)msg.textContent+=" This is your own account — your own plan and locks update too.";
+  var err=$("adminConfirmErr"); if(err)err.textContent="";
+  $("adminConfirmModal").classList.add("open");
+}
+function adminDoPlanChange(){
+  var p=adminPending; if(!p)return;
+  var yes=$("adminConfirmYes"); if(yes)yes.disabled=true;
+  supaFetch(SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(p.id),{method:"PATCH",headers:authHeaders({"Prefer":"return=representation"}),body:JSON.stringify({plan:p.to})},20000).then(function(res){
+    if(!res.ok)throw new Error("patch "+res.status);
+    return res.json().catch(function(){return []});
+  }).then(function(){
+    adminUsers.forEach(function(u){if(u.id===p.id)u.plan=p.to});
+    if(authUser&&p.id===authUser.id)planSet(p.to); /* own locks follow at once */
+    adminPending=null;
+    $("adminConfirmModal").classList.remove("open");
+    adminRenderUsers(); /* the new plan shows immediately, counts included */
+    toast("Plan updated to "+PLAN_DEFS[p.to].name+".");
+  }).catch(function(){
+    var err=$("adminConfirmErr");
+    if(err)err.textContent=adminRlsHint("update that user's plan");
+  }).then(function(){if(yes)yes.disabled=false});
+}
+function adminExtendShare(code,btn){
+  if(!code||!adminIsAdmin||!authUser)return;
+  var share=null, ownerId=null;
+  Object.keys(adminSharesByOwner).forEach(function(k){(adminSharesByOwner[k]||[]).forEach(function(s){if(s.code===code){share=s; ownerId=k}})});
+  if(!share)return;
+  var base=(share.expires_at&&!isNaN(new Date(share.expires_at).getTime()))?Math.max(new Date(share.expires_at).getTime(),Date.now()):Date.now();
+  var next=new Date(base+30*86400000).toISOString();
+  if(btn)btn.disabled=true;
+  supaFetch(SUPABASE_URL+"/rest/v1/shares?code=eq."+encodeURIComponent(code),{method:"PATCH",headers:authHeaders({"Prefer":"return=representation"}),body:JSON.stringify({expires_at:next})},20000).then(function(res){
+    if(!res.ok)throw new Error("share patch "+res.status);
+    return res.json().catch(function(){return []});
+  }).then(function(rows){
+    if(rows&&rows.length===0)throw new Error("no row updated");
+    share.expires_at=next;
+    adminRenderUsers();
+    toast("Share "+code+" extended to "+fmtShareDate(next)+".");
+  }).catch(function(){
+    if(btn)btn.disabled=false;
+    adminShowErr(adminRlsHint("extend that share"));
+  });
+}
+function initAdmin(){
+  if(isClientViewRequest())return; /* the Admin Dashboard never exists in client view */
+  var m=$("mAdmin"); if(m)m.addEventListener("click",function(){openAdminPage()});
+  var b1=$("adminBack"); if(b1)b1.addEventListener("click",closeAdminPage);
+  var b2=$("adminBack2"); if(b2)b2.addEventListener("click",closeAdminPage);
+  var rf=$("adminRefresh"); if(rf)rf.addEventListener("click",function(){adminLoadedOnce=false; adminLoadData()});
+  var sr=$("adminSearch"); if(sr)sr.addEventListener("input",adminRenderUsers);
+  var fl=$("adminPlanFilter"); if(fl)fl.addEventListener("change",adminRenderUsers);
+  var no=$("adminConfirmNo"); if(no)no.addEventListener("click",function(){$("adminConfirmModal").classList.remove("open"); adminPending=null; adminRenderUsers()});
+  var ys=$("adminConfirmYes"); if(ys)ys.addEventListener("click",adminDoPlanChange);
+  var cm=$("adminConfirmModal"); if(cm)cm.addEventListener("click",function(ev){if(ev.target===this){this.classList.remove("open"); adminPending=null; adminRenderUsers()}});
+  var gs=$("adminGateSignIn"); if(gs)gs.addEventListener("click",function(){openAuthDialog()});
+  var gh=$("adminGateHome"); if(gh){try{gh.setAttribute("href",adminEditorPath())}catch(e){}}
+  window.addEventListener("popstate",adminRouteSync);
+  adminSetIsAdmin(false);
+  /* Direct load at /adminpower: open the dashboard page itself —
+     the gate shows until the admin check resolves, then either
+     the dashboard (admin) or the denied / sign-in state. */
+  if(isAdminPath()||window.__LUTAS_ADMIN_ROUTE__)adminRouteSync();
+}
 function isClientViewRequest(){
   if(clientMode)return true;
   try{var q=new URLSearchParams(window.location.search||""); return q.get("client")==="1"||!!q.get("share")}catch(e){return false}
@@ -14439,6 +15311,9 @@ function isClientViewRequest(){
    reopens it. */
 function authAutoOpen(){
   if(isClientViewRequest()||authUser||authGuestDismissed)return;
+  /* On /adminpower the dashboard's own gate carries the sign-in
+     prompt — the login popup does not auto-open over it. */
+  if(typeof isAdminPath==="function"&&isAdminPath())return;
   openAuthDialog();
 }
 function openAuthDialog(){
@@ -14999,6 +15874,17 @@ function sharePageBase(){
   return u.split("#")[0].split("?")[0];
 }
 function rebuildShareLink(){
+  /* Plan gate: client link sharing (short AND long links) is VIP
+     only. Below VIP no link is built at all — the dialog shows the
+     Upgrade to VIP banner instead. */
+  if(!planCanShare()){
+    shareBuildSeq++; shareLink=""; shareUrl=""; shareCode=""; shareExpiresAt="";
+    var lf=$("shareLinkField"); if(lf){lf.value=""; lf.placeholder="Locked — Upgrade to VIP to share client links"}
+    var ln=$("shareShortNote"); if(ln){ln.textContent="Client link sharing is locked on your plan — Upgrade to VIP to create short or long client links."; ln.classList.add("warn")}
+    var lcb=$("shareCopyBtn"); if(lcb)lcb.disabled=true;
+    var scbLock=$("shareCommentsBox"); if(scbLock)scbLock.hidden=true;
+    return;
+  }
   var seq=++shareBuildSeq;
   /* The payload also carries the Render look: the snapshot frozen by
      the Render bar's Save settings button when one exists, otherwise
@@ -18352,6 +19238,14 @@ function trussSpecLines(m){
 }
 function addModifier(type){
   var def=MOD_DEFS[type]; if(!def)return;
+  /* Plan gate: modifiers are Advance / VIP only. The Modifier pane
+     is inert for Starter anyway; this is the belt-and-braces guard
+     for every other path that could add one. */
+  if(!planCanModifiers()){
+    toast("Modifiers are locked on the Starter plan — Upgrade to Advance to unlock Truss, Lighting, Crowd, Speakers, Haze, Props and Stage Settings.");
+    openPlanModal();
+    return;
+  }
   /* There is ONE Props container: choosing Props again selects the
      existing one instead of stacking empty duplicates — all imported
      models live in its list. */
@@ -23029,6 +23923,8 @@ if(clientMode){
   bootClientView();
 }else{
   initAuth();
+  initPlans();
+  initAdmin();
   initNotifications();
   requestAnimationFrame(function(){fitView()});
 }
