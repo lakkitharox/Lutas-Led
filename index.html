@@ -44,7 +44,10 @@ try{
     window.__LUTAS_ADMIN_ROUTE__=true;
     document.documentElement.classList.add("admin-boot");
   }
-}catch(e){}</script>
+}catch(e){}
+/* The gate this boot shows is the admin page's OWN login form —
+   a main-app sign-in, however it happened, never unlocks it. */
+</script>
 <link rel="icon" type="image/png" href="data:image/png;base64,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"/>
 <link rel="apple-touch-icon" href="data:image/png;base64,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"/>
 <title>LUTAS LED — Multi-Screen Layout, Signal Map & Actual-Size PNG Export</title>
@@ -1320,16 +1323,19 @@ body:not(.learning-on) .learn{display:none}
    #adminPage replaces the whole editor view when opened: it covers
    the full viewport above everything else (top bar and confirm
    dialogs included), scrolls on its own, and has its own header
-   with a Back to editor control. It only ever opens for a signed-in
-   user whose public.profiles.role is 'admin' — the File-menu entry
-   is hidden for everyone else and openAdminPage() refuses without
-   the admin flag. It never exists in client view (initAdmin and
-   openAdminPage both bail on a client-view request, and the auth /
-   plan code that sets the admin flag never runs there). All data
-   goes through Supabase REST with the signed-in admin's OWN token
-   (authHeaders) — no service key anywhere; row-level security
-   decides what the admin may read / update (see supabase-admin.sql
-   for the one-time setup: make the owner an admin + the admin RLS
+   with a Back to editor control. The page has its OWN separate
+   admin login (the gate's email + password form): the main app's
+   sign-in never opens it — the password is verified by Supabase
+   Auth and the email must then be listed in the Supabase admin
+   list table (public.admin_users) before any user data shows.
+   Admins are added / removed ONLY in Supabase; there is no
+   add-admin control anywhere in the app. It never exists in
+   client view (initAdmin and openAdminPage both bail on a
+   client-view request). All dashboard data goes through Supabase
+   REST with the ADMIN session's own token (adminAuthHeaders) —
+   no service key anywhere; row-level security decides what the
+   admin may read / update (see supabase-admin.sql for the
+   one-time setup: the admin list table + the admin RLS
    policies). */
 #adminPage{position:fixed;inset:0;z-index:120;background:var(--bg);color:var(--text);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #adminPage.open{display:block}
@@ -1361,6 +1367,14 @@ html.admin-boot #adminPage{display:block}
 #adminGate p{font-size:13px;color:var(--muted);line-height:1.6;margin:0}
 #adminGate .admin-gate-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
 #adminGate .admin-gate-actions a.btn{text-decoration:none}
+/* The gate's own admin login form — this page's separate login,
+   not the main app's sign-in dialog. Fields stack full-width and
+   stay readable on a phone; the error line reuses .admin-err. */
+#adminLoginForm{margin-top:16px;text-align:left;display:flex;flex-direction:column;gap:10px}
+#adminLoginForm .admin-err{margin:0}
+#adminLoginForm .btn{width:100%}
+#adminGate .admin-badge{margin-bottom:10px}
+.admin-gate-note{margin-top:16px!important;font-size:12px!important;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px 12px;text-align:left}
 .admin-head{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border-bottom:1px solid var(--line);padding:12px 18px}
 .admin-head h2{font-family:Archivo,sans-serif;font-size:19px;margin:0;letter-spacing:-.01em}
 .admin-head .admin-sub{font-size:12px;color:var(--muted);width:100%;line-height:1.5}
@@ -1444,13 +1458,14 @@ html.admin-boot #adminPage{display:block}
         <div class="sep"></div>
         <button id="mPrefs"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></svg> Preferences…</button>
         <button id="mPricing" class="menu-pricing"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg> Pricing…</button>
-        <!-- Admin Dashboard entry — ADMIN ONLY: hidden unless the
-             signed-in user's public.profiles.role is 'admin'
-             (adminSetIsAdmin, driven by planFetch). Non-admins never
-             see it, and openAdminPage() refuses to open the page
-             without the admin flag, so unhiding it by hand is not
-             enough — every dashboard read / write also goes through
-             Supabase RLS with the admin's own token. -->
+        <!-- Admin Dashboard entry — shown only while a separate
+             ADMIN session exists in this page view (adminSetIsAdmin,
+             driven solely by the /adminpower page's own admin
+             login — never by the main app sign-in). The entry only
+             navigates to /adminpower; the page itself always asks
+             for its own admin login before showing any data, and
+             every dashboard read / write goes through Supabase RLS
+             with the admin session's own token. -->
         <button id="mAdmin" hidden><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Admin Dashboard</button>
         <button id="mLogout" disabled>Log out</button>
       </div>
@@ -2419,21 +2434,36 @@ html.admin-boot #adminPage{display:block}
     <h2>Admin Dashboard</h2>
     <span class="admin-badge role">Admin only</span>
     <span class="plan-billnote" id="adminWho"></span>
-    <span class="admin-sub">Manage subscription plans and VVIP. Changes save straight to each user's profile in Supabase and take effect on their next plan check (and immediately in this list). VVIP is granted only here or from the backend — it is never sold in Plans &amp; Upgrade.</span>
+    <button class="btn small" type="button" id="adminSignOut" hidden>Admin log out</button>
+    <span class="admin-sub">Manage subscription plans and VVIP. Changes save straight to each user's profile in Supabase and take effect on their next plan check (and immediately in this list). VVIP is granted only here or from the backend — it is never sold in Plans &amp; Upgrade. Who can log in to this page is NOT managed here: admins are added or removed only in Supabase, in the public.admin_users table.</span>
   </div>
   <div class="admin-wrap">
-    <!-- Access gate — what a signed-out or non-admin visitor to
-         /adminpower (or anyone before the admin check resolves)
-         sees instead of the dashboard: no user data, no plan
-         controls, just the sign-in prompt / access-denied state
-         and a way back to the main app. adminSyncGate swaps this
-         for #adminMain only when the signed-in profile's role is
-         confirmed 'admin'. -->
+    <!-- Access gate — what every visitor to /adminpower sees
+         until they pass THIS page's own separate admin login:
+         a dedicated email + password form that belongs to the
+         admin page alone. It is NOT the main LUTAS LED sign-in:
+         being signed in to the main app never opens this page,
+         and this login never signs anyone into the main app.
+         The password is verified by Supabase Auth; only after
+         that does the page check the signed-in email against
+         the Supabase admin list (public.admin_users) — a match
+         swaps this gate for #adminMain, anything else is Access
+         denied with no user data shown. Admins are added or
+         removed ONLY in Supabase (Table Editor / SQL on
+         public.admin_users) — there is no add-admin control
+         anywhere in the app. -->
     <div id="adminGate">
-      <h3 id="adminGateTitle">Checking your access…</h3>
-      <p id="adminGateMsg">The Admin Dashboard is only available to a signed-in admin account. No user data is shown until an admin sign-in is confirmed.</p>
+      <span class="admin-badge role">Separate admin login</span>
+      <h3 id="adminGateTitle">Admin login</h3>
+      <p id="adminGateMsg">This page has its own login, separate from the main LUTAS LED app. Signing in to the main app does not sign you in here — enter an admin email and password to continue. No user data is shown until an admin login is confirmed.</p>
+      <form id="adminLoginForm" autocomplete="off">
+        <div class="field"><span>Admin email</span><input type="email" id="adminLoginEmail" placeholder="admin@example.com" autocomplete="username" required></div>
+        <div class="field"><span>Admin password</span><input type="password" id="adminLoginPassword" placeholder="Admin account password" autocomplete="current-password" required></div>
+        <p class="admin-err" id="adminLoginErr" hidden></p>
+        <button class="btn primary cta-big" type="submit" id="adminLoginBtn">Log in to Admin</button>
+      </form>
+      <p class="admin-gate-note">Who can log in here is controlled only from Supabase: an email must be listed in the <b>public.admin_users</b> table (added or removed in the Supabase Table Editor / SQL editor). There is no way to add an admin from inside LUTAS LED or from this page.</p>
       <div class="admin-gate-actions">
-        <button class="btn primary" type="button" id="adminGateSignIn">Sign in</button>
         <a class="btn" id="adminGateHome" href="/">← Back to LUTAS LED</a>
       </div>
     </div>
@@ -14865,21 +14895,22 @@ function planSet(p){
   planRenderPrices();
 }
 function planFetch(u){
-  if(!u||!u.id){planSet("starter"); adminSetIsAdmin(false); return Promise.resolve()}
-  /* plan and role ride in the same read: role === 'admin' is what
-     unlocks the Admin Dashboard entry / page (adminSetIsAdmin).
-     Any failure — including the plan column not existing yet —
-     falls back to Starter and non-admin; sign-in is never blocked. */
-  var url=SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(u.id)+"&select=plan,role";
+  if(!u||!u.id){planSet("starter"); return Promise.resolve()}
+  /* Plan ONLY. This read deliberately never touches admin state:
+     the Admin Dashboard has its own separate login on /adminpower
+     (adminLoginSubmit), and signing in to the main app — whatever
+     the profile says — must never grant admin access. Any failure
+     — including the plan column not existing yet — falls back to
+     Starter; sign-in is never blocked. */
+  var url=SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(u.id)+"&select=plan";
   return supaFetch(url,{method:"GET",headers:authHeaders()},12000).then(function(res){
-    if(!res.ok){planSet("starter"); adminSetIsAdmin(false); return null} /* includes the plan column not existing yet */
+    if(!res.ok){planSet("starter"); return null} /* includes the plan column not existing yet */
     return res.json().then(function(rows){
       var row=(rows&&rows[0])||{};
       var p=String(row.plan||"starter").toLowerCase();
       planSet((p==="advance"||p==="vip"||p==="vvip")?p:"starter");
-      adminSetIsAdmin(String(row.role||"").toLowerCase()==="admin");
     });
-  }).catch(function(){planSet("starter"); adminSetIsAdmin(false)});
+  }).catch(function(){planSet("starter")});
 }
 /* Keeps every plan-locked surface in step with userPlan: the
    Modifier pane banner + its controls, the Share dialog banner +
@@ -14970,35 +15001,106 @@ function initPlans(){
   var su=$("sharePlanUpgrade"); if(su)su.addEventListener("click",function(){$("shareModal").classList.remove("open"); openPlanModal()});
   planSet(userPlan);
 }
-/* ══════════ ADMIN DASHBOARD — separate page, admins only ══════
-   A full page (#adminPage) that replaces the editor view; opened
-   from File → Admin Dashboard, which is rendered only while
-   adminIsAdmin is true. adminIsAdmin comes from the signed-in
-   user's own public.profiles row (role === 'admin', read by
-   planFetch with the user's own token). Non-admins never see the
-   menu entry, and openAdminPage refuses for them regardless —
-   visibility is only the first gate: every read / write below is
-   a Supabase REST call with the admin's OWN session token
-   (authHeaders), so row-level security is the real enforcement
-   (policies in supabase-admin.sql). There is NO service key in
-   this app, and the dashboard never requests passwords, passkey
-   hashes (shares are read with an explicit safe column list that
-   excludes passkey_hash and payload) or card details.
+/* ══════════ ADMIN DASHBOARD — separate page, SEPARATE LOGIN ══
+   A full page (#adminPage) that replaces the editor view, at its
+   own path /adminpower. It has its OWN login, separate from the
+   main LUTAS LED app in every way:
+
+   • The gate carries a dedicated admin email + password form
+     (adminLoginSubmit). The main app's sign-in dialog is never
+     used here, and being signed in to the main app — with ANY
+     profile, plan or role — never opens this page: opening
+     /adminpower always asks for the admin login first.
+   • The password is verified by Supabase Auth itself (the
+     /auth/v1/token password grant, the admin account's own
+     Supabase password). It is never stored by the app — not as
+     plain text, not as a hash — and never leaves the browser
+     except to Supabase Auth over HTTPS.
+   • Only after Supabase Auth accepts the password does the page
+     check the email against the Supabase admin list table,
+     public.admin_users. A match starts the single admin session
+     for this page; no match is Access denied and the token is
+     discarded — no user data is ever loaded or shown.
+   • Who is an admin is controlled ONLY from Supabase: add or
+     remove a row in public.admin_users (Table Editor / SQL).
+     There is deliberately NO add-admin / make-admin control in
+     LUTAS LED or on this page.
+   • The admin session (adminSession) is its own token pair,
+     held in memory for this page view only — never written to
+     localStorage, never shared with the main app session
+     (authSession). Reloading /adminpower asks for the admin
+     login again. Every dashboard read / write goes through
+     Supabase REST with the ADMIN session's token
+     (adminAuthHeaders via adminApi), so row-level security is
+     the real enforcement (policies in supabase-admin.sql).
+     There is NO service key in this app, and the dashboard
+     never requests passwords, passkey hashes (shares are read
+     with an explicit safe column list that excludes
+     passkey_hash and payload) or card details.
    Deliberately absent, by design: login history, session revoke,
    suspend / ban — those need the Supabase Auth Admin API / a
    service key and cannot be done safely from a browser app; the
    page says so. Plan changes PATCH public.profiles.plan for that
-   user and update the list in place immediately; changing your
-   own plan also re-runs planSet so your own locks follow at once.
-   Share extension PATCHes public.shares.expires_at (+30 days from
-   the current expiry, or from now if already expired / unset) —
-   if the shares RLS refuses an admin update, the refusal is shown
-   and nothing pretends to have saved. */
+   user and update the list in place immediately; changing the
+   main app's own signed-in user's plan also re-runs planSet so
+   their locks follow at once. Share extension PATCHes
+   public.shares.expires_at (+30 days from the current expiry, or
+   from now if already expired / unset) — if the shares RLS
+   refuses an admin update, the refusal is shown and nothing
+   pretends to have saved. */
 var adminIsAdmin=false;
+/* The separate admin session: {access_token, refresh_token,
+   expires_at, user:{id,email}}. In-memory only — see the block
+   comment above. null means "no admin login on this page yet",
+   whatever the main app session is doing. */
+var adminSession=null;
+/* Set when an admin login passed Supabase Auth but the email is
+   NOT in public.admin_users: the gate shows Access denied for
+   that email instead of the plain login prompt. */
+var adminDeniedEmail="";
+/* Set when an admin session ends on its own (token expired /
+   refused): the gate explains why the login is being asked for
+   again. */
+var adminGateNotice="";
 var adminUsers=[], adminSharesByOwner={}, adminDesignCounts=null, adminShareCounts=null, adminExpanded={}, adminPending=null, adminLoadedOnce=false;
+function adminAuthHeaders(extra){
+  var tok=(adminSession&&adminSession.access_token)||SUPABASE_ANON_KEY;
+  var h={"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+tok,"Content-Type":"application/json"};
+  if(extra)Object.keys(extra).forEach(function(k){h[k]=extra[k]});
+  return h;
+}
+/* Every dashboard REST call funnels through here: refresh the
+   admin token first if it is about to expire, then call with the
+   admin session's headers — never the main app's. A 401 means
+   the admin session is over: drop it and return to the gate. */
+function adminRefreshIfNeeded(){
+  if(!adminSession||!adminSession.refresh_token)return Promise.resolve();
+  var exp=adminSession.expires_at||0;
+  if(exp&&Math.floor(Date.now()/1000)<exp-60)return Promise.resolve();
+  if(!exp)return Promise.resolve();
+  return supaFetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:supaHeaders(),body:JSON.stringify({refresh_token:adminSession.refresh_token})},15000)
+    .then(function(res){return res.json().then(function(d){
+      if(!res.ok||!d.access_token)throw new Error("admin refresh failed");
+      adminSession.access_token=d.access_token;
+      if(d.refresh_token)adminSession.refresh_token=d.refresh_token;
+      adminSession.expires_at=d.expires_at||(d.expires_in?Math.floor(Date.now()/1000)+(+d.expires_in):0);
+    })});
+}
+function adminApi(url,opts){
+  opts=opts||{};
+  return adminRefreshIfNeeded().then(function(){
+    var o={}; Object.keys(opts).forEach(function(k){o[k]=opts[k]});
+    o.headers=adminAuthHeaders(opts.headers||null);
+    return supaFetch(url,o,20000);
+  }).then(function(res){
+    if(res.status===401){adminExpireSession(); throw new Error("admin session expired")}
+    return res;
+  });
+}
 function adminSetIsAdmin(b){
   adminIsAdmin=!!b;
   var m=$("mAdmin"); if(m)m.hidden=!adminIsAdmin;
+  var so=$("adminSignOut"); if(so)so.hidden=!adminIsAdmin;
   if(!adminIsAdmin){
     adminPending=null;
     var cm=$("adminConfirmModal"); if(cm)cm.classList.remove("open");
@@ -15008,6 +15110,90 @@ function adminSetIsAdmin(b){
     if(!isAdminPath()){var pg=$("adminPage"); if(pg)pg.classList.remove("open")}
   }
   adminSyncGate();
+}
+/* Ends the admin session (Admin log out, or a token Supabase no
+   longer accepts): the token pair is dropped, the loaded user
+   data is cleared from the page, and the gate returns to its
+   login form. The main app session is untouched — the two
+   logins are separate in both directions. */
+function adminClearSession(notice){
+  var tok=adminSession&&adminSession.access_token;
+  adminSession=null;
+  adminUsers=[]; adminSharesByOwner={}; adminDesignCounts=null; adminShareCounts=null; adminExpanded={}; adminLoadedOnce=false;
+  var list=$("adminUserList"); if(list)list.innerHTML="";
+  adminGateNotice=notice||"";
+  adminSetIsAdmin(false);
+  if(tok){
+    /* Best-effort: end the session on Supabase's side too. */
+    try{supaFetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+tok,"Content-Type":"application/json"}},8000).then(function(){},function(){})}catch(e){}
+  }
+}
+function adminExpireSession(){
+  if(!adminSession)return;
+  adminDeniedEmail="";
+  adminClearSession("Your admin session expired — log in again to continue.");
+}
+function adminSignOut(){adminClearSession(""); toast("Admin session ended. The main LUTAS LED app sign-in is unchanged.")}
+/* The gate's own login: email + password → Supabase Auth verifies
+   the password → the email must be listed in public.admin_users.
+   Only then does an admin session exist. A token from a login
+   whose email is NOT in the admin list is discarded at once —
+   it never becomes a session and never loads any data. */
+function adminLoginSetBusy(b){
+  var btn=$("adminLoginBtn"); if(btn){btn.disabled=!!b; btn.textContent=b?"Checking…":"Log in to Admin"}
+}
+function adminLoginShowErr(msg){
+  var e=$("adminLoginErr"); if(!e)return;
+  e.textContent=msg||""; e.hidden=!msg;
+}
+function adminLoginSubmit(ev){
+  if(ev&&ev.preventDefault)ev.preventDefault();
+  if(adminSession)return;
+  var em=($("adminLoginEmail")&&$("adminLoginEmail").value||"").trim();
+  var pw=($("adminLoginPassword")&&$("adminLoginPassword").value)||"";
+  adminLoginShowErr("");
+  if(!em||!pw){adminLoginShowErr("Enter the admin email and password."); return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){adminLoginShowErr("That email address doesn't look valid."); return}
+  adminDeniedEmail=""; adminGateNotice="";
+  adminLoginSetBusy(true);
+  /* Step 1 — Supabase Auth verifies the password. Nothing about
+     the password is kept: only the returned token pair is held,
+     and only if step 2 passes. */
+  supaFetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:supaHeaders(),body:JSON.stringify({email:em,password:pw})},20000).then(function(res){
+    return res.json().then(function(d){
+      if(!res.ok||!d.access_token||!d.user)throw {authErr:true,data:d,status:res.status};
+      return d;
+    });
+  }).then(function(d){
+    /* Step 2 — the admin list check, with the just-issued token:
+       public.admin_users may only be read for one's OWN email
+       (its RLS), so this reveals nothing about other admins. */
+    var headers={"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+d.access_token,"Content-Type":"application/json"};
+    var url=SUPABASE_URL+"/rest/v1/admin_users?select=email&email=eq."+encodeURIComponent(em.toLowerCase())+"&limit=1";
+    return supaFetch(url,{method:"GET",headers:headers},15000).then(function(res){
+      if(!res.ok)throw new Error("admin list check "+res.status);
+      return res.json();
+    }).then(function(rows){
+      if(rows&&rows.length){
+        /* Confirmed admin: start the one admin session. */
+        adminSession={access_token:d.access_token,refresh_token:d.refresh_token||"",expires_at:d.expires_at||(d.expires_in?Math.floor(Date.now()/1000)+(+d.expires_in):0),user:{id:d.user.id||"",email:d.user.email||em}};
+        var pwEl=$("adminLoginPassword"); if(pwEl)pwEl.value="";
+        adminLoginSetBusy(false);
+        adminSetIsAdmin(true); /* adminSyncGate swaps the gate for the dashboard and starts the data load */
+      }else{
+        /* Valid LUTAS LED account, but NOT an admin: deny, and
+           discard the token — it never becomes a session. */
+        try{supaFetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:headers},8000).then(function(){},function(){})}catch(e){}
+        adminDeniedEmail=em;
+        adminLoginSetBusy(false);
+        adminSyncGate();
+      }
+    });
+  }).catch(function(err){
+    adminLoginSetBusy(false);
+    if(err&&err.authErr){adminLoginShowErr(authErrorText(err.data,err.status)); return}
+    adminLoginShowErr("Couldn't complete the admin check — the admin list table (public.admin_users) may not be set up in Supabase yet, or the connection failed. No data was loaded.");
+  });
 }
 /* ── /adminpower routing ─────────────────────────────────────────
    The dashboard page lives at the path /adminpower. On the live
@@ -15026,39 +15212,39 @@ function adminEditorPath(){
 }
 function adminPageUrl(){return adminEditorPath()+"adminpower"}
 /* Swaps the page between the access gate and the dashboard proper.
-   The dashboard (#adminMain) is shown ONLY for a confirmed admin;
-   the gate covers signed-out (sign-in prompt) and signed-in
-   non-admin (access denied) visitors, with no user data either
-   way. Called whenever the auth / role state moves. */
+   The dashboard (#adminMain) is shown ONLY while a separate admin
+   session exists (adminSession, from this page's own login). The
+   main app's sign-in state is never consulted here: a visitor
+   signed in to LUTAS LED still gets this login form, and after a
+   failed admin-list check they get Access denied — with no user
+   data either way. Called whenever the admin session moves. */
 function adminSyncGate(){
   var gate=$("adminGate"), main=$("adminMain"), pg=$("adminPage");
   if(!gate||!main)return;
-  var who=$("adminWho"); if(who)who.textContent=authUser?("Signed in as "+(authUser.email||"")):"";
+  var who=$("adminWho"); if(who)who.textContent=adminSession?("Admin session: "+(adminSession.user.email||"")):"";
   var pageOpen=!!(pg&&pg.classList.contains("open"))||document.documentElement.classList.contains("admin-boot");
-  if(adminIsAdmin&&authUser){
+  if(adminIsAdmin&&adminSession){
     gate.hidden=true; main.hidden=false;
     if(pageOpen&&!adminLoadedOnce)adminLoadData();
     return;
   }
   gate.hidden=false; main.hidden=true;
-  var t=$("adminGateTitle"), msg=$("adminGateMsg"), si=$("adminGateSignIn");
-  if(authUser){
+  var t=$("adminGateTitle"), msg=$("adminGateMsg");
+  if(adminDeniedEmail){
     if(t)t.textContent="Access denied";
-    if(msg)msg.textContent="You are signed in as "+(authUser.email||"this account")+", but this account is not an admin. The Admin Dashboard — the users list and plan controls — is only available to an account whose profile role is 'admin'.";
-    if(si)si.hidden=true;
+    if(msg)msg.textContent=adminDeniedEmail+" signed in successfully, but that email is not in the Supabase admin list (public.admin_users), so this page stays locked and no user data is shown. Admins are added only in Supabase — there is no way to grant access from inside the app.";
   }else{
-    if(t)t.textContent="Admin sign-in required";
-    if(msg)msg.textContent="The Admin Dashboard is only available to a signed-in admin account. Sign in with an admin account to continue — no user data is shown until an admin sign-in is confirmed.";
-    if(si)si.hidden=false;
+    if(t)t.textContent="Admin login";
+    if(msg)msg.textContent="This page has its own login, separate from the main LUTAS LED app. Signing in to the main app does not sign you in here — enter an admin email and password to continue. No user data is shown until an admin login is confirmed."+(adminGateNotice?(" "+adminGateNotice):"");
   }
 }
 function adminShowPage(){
   document.documentElement.classList.remove("admin-boot");
   var pg=$("adminPage"); if(!pg)return;
   pg.classList.add("open"); pg.scrollTop=0;
-  var who=$("adminWho"); if(who)who.textContent=authUser?("Signed in as "+(authUser.email||"")):"";
+  var who=$("adminWho"); if(who)who.textContent=adminSession?("Admin session: "+(adminSession.user.email||"")):"";
   adminSyncGate();
-  if(adminIsAdmin&&authUser)adminLoadData();
+  if(adminIsAdmin&&adminSession)adminLoadData();
 }
 function adminPlanOf(u){var p=String((u&&u.plan)||"starter").toLowerCase(); return (p==="advance"||p==="vip"||p==="vvip")?p:"starter"}
 function adminUserName(u){return String((u&&(u.display_name||""))||"").trim()||String((u&&u.email)||"").split("@")[0]||"User"}
@@ -15067,11 +15253,14 @@ function adminShowErr(msg){
   e.textContent=msg||""; e.hidden=!msg;
 }
 function adminRlsHint(what){
-  return "Supabase refused to "+what+" (row-level security). The admin policies may not be installed yet — run supabase-admin.sql once in the Supabase SQL editor (it makes the owner an admin and adds the admin read / update policies), then Refresh here. Nothing was changed.";
+  return "Supabase refused to "+what+" (row-level security). The admin setup may not be installed yet — run supabase-admin.sql once in the Supabase SQL editor (it creates the public.admin_users admin list and the admin read / update policies), then Refresh here. Nothing was changed.";
 }
 function openAdminPage(){
   if(isClientViewRequest())return; /* never in client view */
-  if(!authUser||!adminIsAdmin){toast("Admin Dashboard is available to admin accounts only."); return}
+  /* The entry only navigates: the page itself always gates on
+     its own separate admin login. With no admin session yet, the
+     visitor lands on the login form — the main app's sign-in
+     state is irrelevant here, in both directions. */
   closeMenus();
   /* The in-app entry navigates to the dashboard's own path,
      /adminpower — a real pushState navigation, not just a view
@@ -15102,16 +15291,17 @@ function adminRouteSync(){
   }
 }
 function adminLoadData(){
-  if(!authUser||!adminIsAdmin)return;
+  if(!adminSession||!adminIsAdmin)return;
   adminShowErr("");
   var note=$("adminDataNote"); if(note)note.hidden=true;
   var list=$("adminUserList");
   if(list&&!adminLoadedOnce)list.innerHTML='<div class="admin-empty">Loading users…</div>';
   /* Users: explicit safe columns only — id, display name, email,
-     plan, role, signup date. Nothing else on the profile row is
-     requested. */
-  var url=SUPABASE_URL+"/rest/v1/profiles?select=id,display_name,email,plan,role,created_at&order=created_at.desc&limit=1000";
-  supaFetch(url,{method:"GET",headers:authHeaders()},20000).then(function(res){
+     plan, signup date. Nothing else on the profile row is
+     requested. All reads use the ADMIN session's token (adminApi),
+     never the main app session's. */
+  var url=SUPABASE_URL+"/rest/v1/profiles?select=id,display_name,email,plan,created_at&order=created_at.desc&limit=1000";
+  adminApi(url,{method:"GET"}).then(function(res){
     if(!res.ok)throw new Error("profiles "+res.status);
     return res.json();
   }).then(function(rows){
@@ -15119,10 +15309,11 @@ function adminLoadData(){
     adminLoadedOnce=true;
     adminRenderUsers();
   }).catch(function(){
+    if(!adminSession)return; /* session ended mid-load (e.g. 401) — the gate already explains */
     /* created_at may not exist on older profile tables — retry
        without it (signup date then shows as —). */
-    var url2=SUPABASE_URL+"/rest/v1/profiles?select=id,display_name,email,plan,role&order=email.asc&limit=1000";
-    return supaFetch(url2,{method:"GET",headers:authHeaders()},20000).then(function(res){
+    var url2=SUPABASE_URL+"/rest/v1/profiles?select=id,display_name,email,plan&order=email.asc&limit=1000";
+    return adminApi(url2,{method:"GET"}).then(function(res){
       if(!res.ok)throw new Error("profiles "+res.status);
       return res.json();
     }).then(function(rows){
@@ -15137,7 +15328,7 @@ function adminLoadData(){
   /* Designs count per user — counts only, from the owner_id column;
      a refusal just leaves counts unavailable (shown as —). */
   adminDesignCounts=null;
-  supaFetch(SUPABASE_URL+"/rest/v1/designs?select=owner_id&limit=5000",{method:"GET",headers:authHeaders()},20000).then(function(res){
+  adminApi(SUPABASE_URL+"/rest/v1/designs?select=owner_id&limit=5000",{method:"GET"}).then(function(res){
     if(!res.ok)throw new Error("designs "+res.status);
     return res.json();
   }).then(function(rows){
@@ -15149,7 +15340,7 @@ function adminLoadData(){
   /* Shares per user — safe columns only (NO passkey_hash, NO
      payload): project name, code, mode, expiry, owner. */
   adminShareCounts=null; adminSharesByOwner={};
-  supaFetch(SUPABASE_URL+"/rest/v1/shares?select=code,project_name,mode,expires_at,created_at,owner_id&order=created_at.desc&limit=1000",{method:"GET",headers:authHeaders()},20000).then(function(res){
+  adminApi(SUPABASE_URL+"/rest/v1/shares?select=code,project_name,mode,expires_at,created_at,owner_id&order=created_at.desc&limit=1000",{method:"GET"}).then(function(res){
     if(!res.ok)throw new Error("shares "+res.status);
     return res.json();
   }).then(function(rows){
@@ -15192,14 +15383,13 @@ function adminRenderUsers(){
     return;
   }
   list.innerHTML=rows.map(function(u){
-    var plan=adminPlanOf(u), isSelf=!!(authUser&&u.id===authUser.id);
+    var plan=adminPlanOf(u), isSelf=!!(adminSession&&u.id===adminSession.user.id);
     var dn=adminDesignCounts?String(adminDesignCounts[u.id]||0):"—";
     var sn=adminShareCounts?String(adminShareCounts[u.id]||0):"—";
     var shares=adminSharesByOwner[u.id]||[];
     var html='<div class="admin-user'+(plan==="vvip"?" vvip":"")+'">'
       +'<div class="admin-u-top"><div class="admin-u-id"><b>'+escHtml(adminUserName(u))+(isSelf?" (you)":"")+'</b><span>'+escHtml(u.email||"")+'</span></div>'
       +'<span class="admin-badge plan">'+escHtml(PLAN_DEFS[plan].name)+'</span>'
-      +(String(u.role||"").toLowerCase()==="admin"?'<span class="admin-badge role">Admin</span>':"")
       +'</div>'
       +'<div class="admin-u-meta"><span>Signed up <b>'+escHtml(u.created_at?fmtShareDate(u.created_at):"—")+'</b></span><span>Designs <b>'+dn+'</b></span><span>Shares <b>'+sn+'</b></span></div>'
       +'<div class="admin-u-actions"><label for="adminPlanSel-'+escHtml(u.id)+'">Plan</label>'
@@ -15251,7 +15441,7 @@ function adminRenderUsers(){
   });
 }
 function adminAskPlanChange(u,from,to){
-  if(!adminIsAdmin||!authUser)return;
+  if(!adminIsAdmin||!adminSession)return;
   adminPending={id:u.id,from:from,to:to};
   var msg=$("adminConfirmMsg"); if(!msg)return;
   var name=adminUserName(u)+(u.email?" ("+u.email+")":"");
@@ -15262,14 +15452,15 @@ function adminAskPlanChange(u,from,to){
   }else{
     msg.textContent="Change "+name+"'s plan from "+PLAN_DEFS[from].name+" to "+PLAN_DEFS[to].name+"?";
   }
-  if(u.id===authUser.id)msg.textContent+=" This is your own account — your own plan and locks update too.";
+  if(adminSession&&u.id===adminSession.user.id)msg.textContent+=" This is the account you logged in to this page with.";
+  if(authUser&&u.id===authUser.id)msg.textContent+=" It is also the account signed in to the main app in this browser — its plan and locks update too.";
   var err=$("adminConfirmErr"); if(err)err.textContent="";
   $("adminConfirmModal").classList.add("open");
 }
 function adminDoPlanChange(){
-  var p=adminPending; if(!p)return;
+  var p=adminPending; if(!p||!adminSession)return;
   var yes=$("adminConfirmYes"); if(yes)yes.disabled=true;
-  supaFetch(SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(p.id),{method:"PATCH",headers:authHeaders({"Prefer":"return=representation"}),body:JSON.stringify({plan:p.to})},20000).then(function(res){
+  adminApi(SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(p.id),{method:"PATCH",headers:{"Prefer":"return=representation"},body:JSON.stringify({plan:p.to})}).then(function(res){
     if(!res.ok)throw new Error("patch "+res.status);
     return res.json().catch(function(){return []});
   }).then(function(){
@@ -15285,14 +15476,14 @@ function adminDoPlanChange(){
   }).then(function(){if(yes)yes.disabled=false});
 }
 function adminExtendShare(code,btn){
-  if(!code||!adminIsAdmin||!authUser)return;
+  if(!code||!adminIsAdmin||!adminSession)return;
   var share=null, ownerId=null;
   Object.keys(adminSharesByOwner).forEach(function(k){(adminSharesByOwner[k]||[]).forEach(function(s){if(s.code===code){share=s; ownerId=k}})});
   if(!share)return;
   var base=(share.expires_at&&!isNaN(new Date(share.expires_at).getTime()))?Math.max(new Date(share.expires_at).getTime(),Date.now()):Date.now();
   var next=new Date(base+30*86400000).toISOString();
   if(btn)btn.disabled=true;
-  supaFetch(SUPABASE_URL+"/rest/v1/shares?code=eq."+encodeURIComponent(code),{method:"PATCH",headers:authHeaders({"Prefer":"return=representation"}),body:JSON.stringify({expires_at:next})},20000).then(function(res){
+  adminApi(SUPABASE_URL+"/rest/v1/shares?code=eq."+encodeURIComponent(code),{method:"PATCH",headers:{"Prefer":"return=representation"},body:JSON.stringify({expires_at:next})}).then(function(res){
     if(!res.ok)throw new Error("share patch "+res.status);
     return res.json().catch(function(){return []});
   }).then(function(rows){
@@ -15316,7 +15507,11 @@ function initAdmin(){
   var no=$("adminConfirmNo"); if(no)no.addEventListener("click",function(){$("adminConfirmModal").classList.remove("open"); adminPending=null; adminRenderUsers()});
   var ys=$("adminConfirmYes"); if(ys)ys.addEventListener("click",adminDoPlanChange);
   var cm=$("adminConfirmModal"); if(cm)cm.addEventListener("click",function(ev){if(ev.target===this){this.classList.remove("open"); adminPending=null; adminRenderUsers()}});
-  var gs=$("adminGateSignIn"); if(gs)gs.addEventListener("click",function(){openAuthDialog()});
+  /* The gate's own admin login form — this page's separate login.
+     It NEVER opens the main app's sign-in dialog: the two logins
+     are separate in both directions. */
+  var lf=$("adminLoginForm"); if(lf)lf.addEventListener("submit",adminLoginSubmit);
+  var so=$("adminSignOut"); if(so)so.addEventListener("click",adminSignOut);
   var gh=$("adminGateHome"); if(gh){try{gh.setAttribute("href",adminEditorPath())}catch(e){}}
   window.addEventListener("popstate",adminRouteSync);
   adminSetIsAdmin(false);
