@@ -1333,6 +1333,23 @@ body:not(.learning-on) .learn{display:none}
    policies). */
 #adminPage{position:fixed;inset:0;z-index:120;background:var(--bg);color:var(--text);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #adminPage.open{display:block}
+/* Admin-route sign-in elevation — /adminpower ONLY. #adminPage sits
+   at z-index:120, above the default .modal-bg layer (80), so the
+   sign-in dialog opened from the admin gate used to be added to the
+   page BEHIND the gate: present in the DOM but covered visually, so
+   Sign in looked dead. On the admin route — a direct /adminpower
+   load (html.admin-boot) or the dashboard page open in-app
+   (#adminPage.open) — lift the sign-in dialog, and the Plans dialog
+   its Pricing button can open, above the admin page, its sticky
+   header and its confirm dialog (160), so every control inside
+   (Email, Password, Sign in, Forgot password?, Continue as guest,
+   Continue with Google, mode-switch link) is visible and clickable.
+   The .admin-top class set by openAuthDialog / openPlanModal is the
+   same lift for browsers without :has(). Off the admin route no
+   rule here applies and the editor dialogs keep their normal layer. */
+html.admin-boot #authModal,html:has(#adminPage.open) #authModal,#authModal.admin-top{z-index:320}
+html.admin-boot #planModal,html:has(#adminPage.open) #planModal,#planModal.admin-top{z-index:330}
+html.admin-boot .toast,html:has(#adminPage.open) .toast{z-index:340}
 /* Direct /adminpower load, before the main script runs: the editor
    stays hidden and the dashboard shell (access gate only — no user
    data exists in the static markup) is what paints. The main
@@ -14912,9 +14929,16 @@ function planRenderPrices(){
 function openPlanModal(){
   if(isClientViewRequest())return;
   planRenderPrices();
-  $("planModal").classList.add("open");
+  var pm=$("planModal"); if(!pm)return;
+  /* Same admin-route lift as the sign-in dialog: the Pricing button
+     inside the sign-in dialog reaches this dialog from /adminpower,
+     where it must not land behind #adminPage either. */
+  var onAdmin=false;
+  try{onAdmin=(typeof authOnAdminRoute==="function"&&authOnAdminRoute())||(typeof isAdminPath==="function"&&isAdminPath())||document.documentElement.classList.contains("admin-boot")}catch(e){}
+  pm.classList.toggle("admin-top",!!onAdmin);
+  pm.classList.add("open");
 }
-function closePlanModal(){$("planModal").classList.remove("open")}
+function closePlanModal(){var pm=$("planModal"); if(pm){pm.classList.remove("open"); pm.classList.remove("admin-top")}}
 function planUpgradeTap(key){
   /* VVIP is never purchasable: no card, no price, no checkout. It
      is granted only by admin assignment in Supabase. */
@@ -15316,18 +15340,35 @@ function authAutoOpen(){
   if(typeof isAdminPath==="function"&&isAdminPath())return;
   openAuthDialog();
 }
+function authOnAdminRoute(){
+  try{
+    if(typeof isAdminPath==="function"&&isAdminPath())return true;
+    if(document.documentElement.classList.contains("admin-boot"))return true;
+    if(window.__LUTAS_ADMIN_ROUTE__)return true;
+    var pg=$("adminPage"); if(pg&&pg.classList.contains("open"))return true;
+  }catch(e){}
+  return false;
+}
 function openAuthDialog(){
   if(isClientViewRequest())return;
   authShowErr("");
   syncAuthDialog();
-  $("authModal").classList.add("open");
+  var am=$("authModal"); if(!am)return;
+  /* On /adminpower the dialog must sit ABOVE #adminPage (z 120):
+     tag it .admin-top (see the admin-route CSS) before opening, or
+     it renders behind the gate and the gate Sign in looks dead. */
+  am.classList.toggle("admin-top",authOnAdminRoute());
+  am.classList.add("open");
+  if(!authUser){var em=$("authEmail"); if(em){try{em.focus({preventScroll:true})}catch(e){try{em.focus()}catch(e2){}}}}
 }
 function closeAuthDialog(){
   /* Closing the popup while signed out IS the guest choice: record
      it so no pending auth check can auto-open the popup again
-     during this page view. */
+     during this page view. On /adminpower this returns cleanly to
+     the admin gate: the dialog is fully removed (no .open, no
+     .admin-top left behind). */
   if(!authUser)authGuestDismissed=true;
-  $("authModal").classList.remove("open");
+  var am=$("authModal"); if(am){am.classList.remove("open"); am.classList.remove("admin-top")}
 }
 function syncAuthDialog(){
   var out=$("authSignedOut"), inn=$("authSignedIn");
