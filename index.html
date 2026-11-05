@@ -1441,6 +1441,11 @@ html.admin-boot #adminPage{display:block}
 .admin-share .exp b{color:var(--text);font-size:12px}
 .admin-share .expired{color:#dc2626;font-weight:700}
 .admin-empty{font-size:13px;color:var(--muted);text-align:center;padding:26px 10px;border:1px dashed var(--line2);border-radius:12px}
+.admin-h{font-size:16px;margin:24px 0 8px}
+.admin-countries{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.admin-country{font-size:12px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.admin-country b{color:var(--text)}
+.admin-visit{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -2569,6 +2574,16 @@ html.admin-boot #adminPage{display:block}
     <p class="admin-err" id="adminErr" hidden></p>
     <p class="admin-note" id="adminDataNote" hidden></p>
     <div id="adminUserList"><div class="admin-empty">Loading users…</div></div>
+    <h3 class="admin-h">Visitors</h3>
+    <p class="admin-note"><b>Anonymous by design.</b> This section counts everyone who opens LUTAS LED — guests and signed-in visitors alike — separately from the signed-in users above. A visitor is only an approximate, hashed identifier: <b>no name, no email and no raw IP address is ever stored</b>. The country is read from the IP address on the server (the IP itself is hashed there and discarded), and a visit is linked to an account only if that visitor signs in during the visit — otherwise it stays anonymous. Totals and the country breakdown cover the most recent visits listed below.</p>
+    <div class="admin-counts" style="grid-template-columns:repeat(3,1fr)" aria-label="Visitor totals">
+      <div class="admin-count"><span>Total visits</span><b id="adminVisitTotal">–</b></div>
+      <div class="admin-count"><span>Approx. unique visitors</span><b id="adminVisitUnique">–</b></div>
+      <div class="admin-count"><span>Avg. stay</span><b id="adminVisitAvg">–</b></div>
+    </div>
+    <div class="admin-countries" id="adminVisitCountries" aria-label="Visits by country"></div>
+    <div id="adminVisitList"><div class="admin-empty">Loading visitors…</div></div>
+    <p class="admin-note" id="adminVisitNote" hidden></p>
     <p class="admin-note" style="margin-top:16px"><b>What this page cannot do:</b> login history, signing a user out of their sessions, and suspending / banning accounts are not available here. Those need the Supabase Auth Admin API with a service key, which must never be put in a browser app — they stay in the Supabase dashboard itself. This page also never sees or stores passwords, passkey hashes, or card details.</p>
     <div class="mrow" style="display:flex;justify-content:flex-start;margin-top:4px">
       <button class="btn" type="button" id="adminBack2">← Back to LUTAS LED editor</button>
@@ -2763,6 +2778,7 @@ html.admin-boot #adminPage{display:block}
       <p class="about-desc">LUTAS LED is a web-based digital stage visualisation tool designed to empower stage designers and visual artists to create, plan, and preview their LED stage designs — anytime, anywhere.</p>
       <p class="about-desc">We'd love to hear your thoughts, suggestions, and feedback as we continue developing the platform.</p>
       <p class="about-desc">Share your feedback: hello@lutas.digital</p>
+      <p class="about-desc">Privacy: visits to LUTAS LED are counted anonymously — a hashed identifier, the country, the device type and how long the page was open. Guests are never identified by name or email, and no IP address is stored. A visit is linked to an account only when that visitor signs in during the visit.</p>
       <div class="about-info"><span>Version</span><strong>V1.0.0.0.1</strong></div>
       <div class="about-info"><span>Developed by</span><strong>Team LUTAS</strong></div>
       <div class="about-info"><span>Created on</span><strong>October 22, 2026</strong></div>
@@ -14840,6 +14856,9 @@ function authSetUser(u){
   /* The notifications bell tracks this user's shares: re-check
      what there is to track whenever the signed-in user changes. */
   if(typeof notifOnAuthChange==="function")notifOnAuthChange();
+  /* If this page visit began as a guest, link it to the account
+     that just became known (anonymous until this moment). */
+  if(typeof visitLinkUser==="function")visitLinkUser();
 }
 function authSignOutLocal(){authStoreSession(null); authSetUser(null); currentProjectId=null}
 function authErrorText(err,status){
@@ -15197,6 +15216,22 @@ var adminSheetCheckInFlight=false;
    state the gate is Log in only, whatever this says. */
 var adminGateView="";
 var adminUsers=[], adminSharesByOwner={}, adminDesignCounts=null, adminShareCounts=null, adminExpanded={}, adminPending=null, adminLoadedOnce=false;
+/* Which dashboard RPC set answered the users list: "rpc" =
+   admin_dashboard_profiles() from the canonical
+   supabase-admin.sql (rows carry the profile id), or "list" =
+   admin_list_users() from the earlier installed setup (same
+   token check server-side, same safe columns, but NO profile
+   id — those users are keyed by email instead, and plan
+   changes use the p_email signature of admin_set_user_plan).
+   The two sets exist because the dashboard functions were
+   installed in this Supabase project under the "list" names;
+   the canonical call is always tried first, so running the
+   full supabase-admin.sql later switches the page over with
+   no page change. */
+var adminDashMode="";
+function adminUserKey(u){return (u&&u.id)?String(u.id):("e:"+String((u&&u.email)||"").trim().toLowerCase())}
+function adminRpcMissing(err){return !!(err&&err.status===404)}
+function adminRpcErrText(err){var d=err&&err.data; return (d&&(d.message||d.details))?String(d.message||d.details):""}
 /* One Supabase RPC call with the public anon key — the RPCs are
    SECURITY DEFINER and do their own checking server-side, so no
    Supabase Auth token is involved anywhere in the admin flow. */
@@ -15207,6 +15242,142 @@ function adminRpc(name,args){
       return d;
     });
   });
+}
+/* ── Anonymous visitor analytics ───────────────────────────────
+   Every page load (editor, /adminpower, and client view alike)
+   starts ONE visit: a random per-load visit id held in memory
+   only — nothing is stored in the browser. The page pings the
+   SECURITY DEFINER visit_ping() RPC on load, again every 30 s
+   while the tab is open, and once more when the tab is hidden
+   or closed, so the server-side last_seen is the real leave
+   time and the stay duration is load → leave, not just the
+   load instant. The page sends ONLY the visit id, which view
+   is showing, the device type, and — once the visitor has
+   signed in during this visit — their account id, so the
+   visit can be linked to that account. The IP address never
+   reaches the page and is never sent by it: visit_ping()
+   reads it from the request headers INSIDE Supabase, hashes
+   it there with a server-side salt, reads the country from
+   the gateway's server-side IP-country header, and stores
+   only the hashes + country. A guest is anonymous by design:
+   no name, no email, no raw IP is ever stored for a visit.
+   If the visits SQL has not been run yet, visit_ping() 404s
+   and every ping is swallowed silently — analytics can never
+   break or block the app. */
+var visitId=null, visitTimer=null;
+var adminVisits=null;
+function visitRandHex(n){
+  var a=new Uint8Array(n), s="", i;
+  if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(a);
+  else for(i=0;i<n;i++)a[i]=Math.floor(Math.random()*256);
+  for(i=0;i<n;i++)s+=("0"+a[i].toString(16)).slice(-2);
+  return s;
+}
+function visitViewName(){
+  if(isClientViewRequest())return "Client view";
+  if(isAdminPath())return "Admin page";
+  return (typeof view3dOpen!=="undefined"&&view3dOpen)?"3D view":"2D view";
+}
+function visitDevice(){
+  var ua=(navigator.userAgent||"").toLowerCase();
+  if(/ipad|tablet/.test(ua))return "Tablet";
+  if(/mobi|iphone|ipod|android/.test(ua))return "Mobile";
+  return "Desktop";
+}
+function visitPing(finalPing){
+  if(!visitId)return;
+  try{
+    var body={p_visit_id:visitId,p_view:visitViewName(),p_device:visitDevice()};
+    var au=(typeof authUser!=="undefined"&&authUser&&authUser.id)?authUser.id:null;
+    if(au)body.p_user_id=au;
+    var opts={method:"POST",headers:supaHeaders(),body:JSON.stringify(body)};
+    if(finalPing)opts.keepalive=true;
+    supaFetch(SUPABASE_URL+"/rest/v1/rpc/visit_ping",opts,8000).then(function(){},function(){});
+  }catch(e){}
+}
+function visitInit(){
+  if(visitId)return;
+  visitId=visitRandHex(16);
+  visitPing(false);
+  visitTimer=setInterval(function(){if(!document.hidden)visitPing(false)},30000);
+  document.addEventListener("visibilitychange",function(){if(document.hidden)visitPing(true)});
+  window.addEventListener("pagehide",function(){visitPing(true)});
+}
+/* Called whenever the signed-in user becomes known (authSetUser):
+   if this visit began as a guest, this ping carries the account
+   id and the server links the visit to that account. Until then
+   the visit stays fully anonymous. */
+function visitLinkUser(){
+  if(visitId&&(typeof authUser!=="undefined"&&authUser&&authUser.id))visitPing(false);
+}
+/* ── Admin → Visitors ──────────────────────────────────────────
+   Read ONLY through the token-checked SECURITY DEFINER RPC
+   admin_dashboard_visits() — the same separate admin session
+   as the rest of /adminpower. No Supabase Auth, no direct
+   table read: without a live admin token the RPC returns an
+   empty list server-side, and without the function installed
+   it 404s and the section says so, naming the server error. */
+function adminLoadVisits(){
+  if(!adminSession||!adminIsAdmin)return;
+  var list=$("adminVisitList"); if(!list)return;
+  if(!adminVisits)list.innerHTML='<div class="admin-empty">Loading visitors…</div>';
+  adminRpc("admin_dashboard_visits",{p_token:adminSession.token}).then(function(rows){
+    if(!Array.isArray(rows))throw new Error("visits rpc");
+    adminVisits=rows;
+    adminRenderVisits();
+  }).catch(function(err){
+    if(!adminSession)return; /* session ended mid-load */
+    list.innerHTML='<div class="admin-empty">Could not load the visitors list.</div>';
+    var note=$("adminVisitNote");
+    if(note){
+      note.hidden=false;
+      note.textContent="Visits are read by the token-checked admin_dashboard_visits() check in Supabase. If it is not installed yet, run the updated supabase-admin.sql once (it adds the public.visits table, the visit_ping logger and the admin visits check), then log in to Admin again and Refresh here."+(adminRpcErrText(err)?(" Supabase said: "+adminRpcErrText(err)):"");
+    }
+  });
+}
+function visitDurationSec(v){
+  if(!v||!v.first_seen||!v.last_seen)return null;
+  var a=new Date(v.first_seen).getTime(), b=new Date(v.last_seen).getTime();
+  if(isNaN(a)||isNaN(b))return null;
+  return Math.max(0,Math.round((b-a)/1000));
+}
+function fmtDuration(sec){
+  if(sec===null||sec===undefined||isNaN(sec))return "—";
+  if(sec<60)return sec+"s";
+  var m=Math.floor(sec/60), s=sec%60;
+  if(m<60)return m+"m"+(s?(" "+s+"s"):"");
+  return Math.floor(m/60)+"h "+(m%60)+"m";
+}
+function adminRenderVisits(){
+  var rows=adminVisits||[];
+  var set=function(id,v){var el=$(id); if(el)el.textContent=String(v)};
+  set("adminVisitTotal",rows.length);
+  var seen={}, countries={}, totalDur=0, durN=0;
+  rows.forEach(function(v){
+    if(!v)return;
+    if(v.visitor_hash)seen[v.visitor_hash]=1;
+    var c=String(v.country||"").trim()||"Unknown";
+    countries[c]=(countries[c]||0)+1;
+    var d=visitDurationSec(v);
+    if(d!==null){totalDur+=d; durN++}
+  });
+  set("adminVisitUnique",Object.keys(seen).length);
+  set("adminVisitAvg",durN?fmtDuration(Math.round(totalDur/durN)):"—");
+  var cEl=$("adminVisitCountries");
+  if(cEl){
+    var cs=Object.keys(countries).map(function(k){return {c:k,n:countries[k]}}).sort(function(a,b){return (b.n-a.n)||(a.c<b.c?-1:1)});
+    cEl.innerHTML=cs.map(function(x){return '<span class="admin-country"><b>'+escHtml(x.c)+'</b> '+x.n+'</span>'}).join("");
+  }
+  var list=$("adminVisitList"); if(!list)return;
+  if(!rows.length){list.innerHTML='<div class="admin-empty">No visits recorded yet.</div>'; return}
+  list.innerHTML=rows.map(function(v){
+    var d=visitDurationSec(v);
+    var who=v.linked_email?('<b>'+escHtml(v.linked_email)+'</b> <span class="admin-badge">signed in</span>'):('<span class="mono" title="Approximate visitor — hashed identifier, not an identity">visitor '+escHtml(String(v.visitor_hash||"").slice(0,10))+'…</span>');
+    return '<div class="admin-visit">'
+      +'<div class="admin-u-top"><div class="admin-u-id">'+who+'</div><span class="admin-badge">'+escHtml(String(v.country||"").trim()||"Unknown")+'</span></div>'
+      +'<div class="admin-u-meta"><span>First visit <b>'+escHtml(v.first_seen?fmtShareDate(v.first_seen):"—")+'</b></span><span>Last seen <b>'+escHtml(v.last_seen?fmtShareDate(v.last_seen):"—")+'</b></span><span>Stayed <b>'+fmtDuration(d)+'</b></span><span>Viewed <b>'+escHtml(v.view||"—")+'</b></span><span>Device <b>'+escHtml(v.device||"—")+'</b></span></div>'
+      +'</div>';
+  }).join("");
 }
 function adminSetIsAdmin(b){
   adminIsAdmin=!!b;
@@ -15231,7 +15402,7 @@ function adminSetIsAdmin(b){
 function adminClearSession(notice){
   var tok=adminSession&&adminSession.token;
   adminSession=null;
-  adminUsers=[]; adminSharesByOwner={}; adminDesignCounts=null; adminShareCounts=null; adminExpanded={}; adminLoadedOnce=false;
+  adminUsers=[]; adminSharesByOwner={}; adminDesignCounts=null; adminShareCounts=null; adminExpanded={}; adminLoadedOnce=false; adminDashMode=""; adminVisits=null;
   var list=$("adminUserList"); if(list)list.innerHTML="";
   adminGateNotice=notice||"";
   adminSetIsAdmin(false);
@@ -15612,13 +15783,35 @@ function adminLoadData(){
      is no Supabase Auth token and no direct table read. */
   adminRpc("admin_dashboard_profiles",{p_token:adminSession.token}).then(function(rows){
     if(!Array.isArray(rows))throw new Error("profiles rpc");
+    adminDashMode="rpc";
+    return rows;
+  },function(err){
+    if(!adminRpcMissing(err))throw err;
+    /* The canonical dashboard RPC is NOT installed in this
+       Supabase project (404 / PGRST202 — verified live: the
+       functions were installed under the earlier "list" names
+       instead). Fall back to admin_list_users(): it re-checks
+       the same admin session token server-side and returns the
+       same safe profile columns (email, display name, plan,
+       signup date) — just without the profile id, so those
+       rows are keyed by email (adminUserKey) and plan changes
+       use the p_email signature. Without this fallback the
+       users list NEVER loads here even though public.profiles
+       has rows — that was the reported bug. */
+    return adminRpc("admin_list_users",{p_token:adminSession.token}).then(function(rows){
+      if(!Array.isArray(rows))throw new Error("users list rpc");
+      adminDashMode="list";
+      return rows.map(function(r){return {id:null,email:(r&&r.email)||"",display_name:(r&&r.display_name)||"",plan:(r&&r.plan)||"starter",created_at:(r&&r.created_at)||null}});
+    });
+  }).then(function(rows){
     adminUsers=rows;
     adminLoadedOnce=true;
     adminRenderUsers();
-  }).catch(function(){
+  }).catch(function(err){
     if(!adminSession)return; /* session ended mid-load — the gate already explains */
     if(list)list.innerHTML='<div class="admin-empty">Could not load the users list.</div>';
-    adminShowErr(adminRlsHint("read the users list"));
+    var detail=adminRpcErrText(err);
+    adminShowErr(adminRlsHint("read the users list")+(detail?(" Supabase said: "+detail):""));
   });
   /* Designs count per user — counts only, aggregated server-side
      by admin_dashboard_designs() ({owner_id, count} rows). A
@@ -15644,13 +15837,16 @@ function adminLoadData(){
     adminShareCounts=counts; adminSharesByOwner=byOwner;
     if($("adminPage").classList.contains("open"))adminRenderUsers();
   }).catch(function(){adminShareCounts=false; adminSharesByOwner={}; adminNoteCounts()});
+  /* Visitors (anonymous analytics) — separate section, separate
+     token-checked RPC, loaded alongside the users data. */
+  adminLoadVisits();
 }
 function adminNoteCounts(){
   var note=$("adminDataNote"); if(!note)return;
   /* Counts read as — only when their table read was actually
      refused (false), never merely because nobody has rows yet. */
   if(adminDesignCounts===false||adminShareCounts===false){
-    note.textContent="Designs / shares counts are unavailable for some users — the designs and shares tables only return rows their row-level security allows this admin token to read, and no admin read policy exists for them yet. Plans above are unaffected.";
+    note.textContent="Designs / shares counts are unavailable — the server-side count functions (admin_dashboard_designs / admin_dashboard_shares) are not installed in this Supabase project under those names, or returned nothing for this admin token. The users list and plan changes above are unaffected.";
     note.hidden=false;
   }
 }
@@ -15675,6 +15871,7 @@ function adminRenderUsers(){
   }
   list.innerHTML=rows.map(function(u){
     var plan=adminPlanOf(u), isSelf=!!(adminSession&&u.email&&String(u.email).toLowerCase()===String(adminSession.user.email||"").toLowerCase());
+    var ukey=adminUserKey(u);
     var dn=adminDesignCounts?String(adminDesignCounts[u.id]||0):"—";
     var sn=adminShareCounts?String(adminShareCounts[u.id]||0):"—";
     var shares=adminSharesByOwner[u.id]||[];
@@ -15683,14 +15880,14 @@ function adminRenderUsers(){
       +'<span class="admin-badge plan">'+escHtml(PLAN_DEFS[plan].name)+'</span>'
       +'</div>'
       +'<div class="admin-u-meta"><span>Signed up <b>'+escHtml(u.created_at?fmtShareDate(u.created_at):"—")+'</b></span><span>Designs <b>'+dn+'</b></span><span>Shares <b>'+sn+'</b></span></div>'
-      +'<div class="admin-u-actions"><label for="adminPlanSel-'+escHtml(u.id)+'">Plan</label>'
-      +'<select id="adminPlanSel-'+escHtml(u.id)+'" data-admin-plan="'+escHtml(u.id)+'">'
+      +'<div class="admin-u-actions"><label for="adminPlanSel-'+escHtml(ukey)+'">Plan</label>'
+      +'<select id="adminPlanSel-'+escHtml(ukey)+'" data-admin-plan="'+escHtml(ukey)+'">'
       +["starter","advance","vip","vvip"].map(function(k){return '<option value="'+k+'"'+(k===plan?" selected":"")+'>'+PLAN_DEFS[k].name+'</option>'}).join("")
       +'</select>'
-      +(plan==="vvip"?'<button class="btn small" type="button" data-admin-revoke="'+escHtml(u.id)+'">Revoke VVIP → Starter</button>':"")
-      +(shares.length?'<button class="btn small" type="button" data-admin-shares="'+escHtml(u.id)+'">'+(adminExpanded[u.id]?"Hide shares":"Show shares ("+shares.length+")")+'</button>':"")
+      +(plan==="vvip"?'<button class="btn small" type="button" data-admin-revoke="'+escHtml(ukey)+'">Revoke VVIP → Starter</button>':"")
+      +(shares.length?'<button class="btn small" type="button" data-admin-shares="'+escHtml(ukey)+'">'+(adminExpanded[ukey]?"Hide shares":"Show shares ("+shares.length+")")+'</button>':"")
       +'</div>';
-    if(adminExpanded[u.id]&&shares.length){
+    if(adminExpanded[ukey]&&shares.length){
       html+='<div class="admin-shares">'+shares.map(function(s){
         var exp=s.expires_at?new Date(s.expires_at):null;
         var expired=exp&&!isNaN(exp.getTime())&&exp.getTime()<Date.now();
@@ -15705,7 +15902,7 @@ function adminRenderUsers(){
   Array.prototype.forEach.call(list.querySelectorAll("[data-admin-plan]"),function(sel){
     sel.addEventListener("change",function(){
       var uid=sel.getAttribute("data-admin-plan");
-      var u=adminUsers.filter(function(x){return x.id===uid})[0];
+      var u=adminUsers.filter(function(x){return adminUserKey(x)===uid})[0];
       if(!u){adminRenderUsers(); return}
       var from=adminPlanOf(u), to=sel.value;
       sel.value=from; /* nothing is saved until the confirm step */
@@ -15716,7 +15913,7 @@ function adminRenderUsers(){
   Array.prototype.forEach.call(list.querySelectorAll("[data-admin-revoke]"),function(b){
     b.addEventListener("click",function(){
       var uid=b.getAttribute("data-admin-revoke");
-      var u=adminUsers.filter(function(x){return x.id===uid})[0];
+      var u=adminUsers.filter(function(x){return adminUserKey(x)===uid})[0];
       if(u)adminAskPlanChange(u,"vvip","starter");
     });
   });
@@ -15733,7 +15930,7 @@ function adminRenderUsers(){
 }
 function adminAskPlanChange(u,from,to){
   if(!adminIsAdmin||!adminSession)return;
-  adminPending={id:u.id,from:from,to:to};
+  adminPending={id:u.id||null,email:u.email||"",key:adminUserKey(u),from:from,to:to};
   var msg=$("adminConfirmMsg"); if(!msg)return;
   var name=adminUserName(u)+(u.email?" ("+u.email+")":"");
   if(from==="vvip"&&to!=="vvip"){
@@ -15751,17 +15948,32 @@ function adminAskPlanChange(u,from,to){
 function adminDoPlanChange(){
   var p=adminPending; if(!p||!adminSession)return;
   var yes=$("adminConfirmYes"); if(yes)yes.disabled=true;
-  adminRpc("admin_set_user_plan",{p_token:adminSession.token,p_user_id:p.id,p_plan:p.to}).then(function(ok){
+  var tok=adminSession.token;
+  /* Two installed signatures exist for this function: the
+     canonical (p_token, p_user_id, p_plan) and the earlier
+     installed (p_token, p_email, p_plan) — PostgREST verifies
+     live that only the p_email one exists in this project.
+     "list"-mode users have no profile id at all, so they must
+     use p_email; canonical users try p_user_id first and fall
+     back to p_email on a 404 (mixed installs). */
+  var byEmail=function(){return adminRpc("admin_set_user_plan",{p_token:tok,p_email:p.email,p_plan:p.to})};
+  var call=(p.id&&adminDashMode!=="list")
+    ? adminRpc("admin_set_user_plan",{p_token:tok,p_user_id:p.id,p_plan:p.to}).catch(function(err){
+        if(adminRpcMissing(err)&&p.email)return byEmail();
+        throw err;
+      })
+    : byEmail();
+  call.then(function(ok){
     if(ok!==true)throw new Error("plan rpc refused");
-    adminUsers.forEach(function(u){if(u.id===p.id)u.plan=p.to});
-    if(authUser&&p.id===authUser.id)planSet(p.to); /* own locks follow at once */
+    adminUsers.forEach(function(u){if(adminUserKey(u)===p.key)u.plan=p.to});
+    if(authUser&&p.id&&p.id===authUser.id)planSet(p.to); /* own locks follow at once */
     adminPending=null;
     $("adminConfirmModal").classList.remove("open");
     adminRenderUsers(); /* the new plan shows immediately, counts included */
     toast("Plan updated to "+PLAN_DEFS[p.to].name+".");
-  }).catch(function(){
-    var err=$("adminConfirmErr");
-    if(err)err.textContent=adminRlsHint("update that user's plan");
+  }).catch(function(err){
+    var cerr=$("adminConfirmErr");
+    if(cerr)cerr.textContent=adminRlsHint("update that user's plan")+(adminRpcErrText(err)?(" Supabase said: "+adminRpcErrText(err)):"");
   }).then(function(){if(yes)yes.disabled=false});
 }
 function adminExtendShare(code,btn){
@@ -15772,14 +15984,20 @@ function adminExtendShare(code,btn){
   var base=(share.expires_at&&!isNaN(new Date(share.expires_at).getTime()))?Math.max(new Date(share.expires_at).getTime(),Date.now()):Date.now();
   var next=new Date(base+30*86400000).toISOString();
   if(btn)btn.disabled=true;
-  adminRpc("admin_extend_share",{p_token:adminSession.token,p_code:code,p_expires_at:next}).then(function(ok){
+  adminRpc("admin_extend_share",{p_token:adminSession.token,p_code:code,p_expires_at:next}).catch(function(err){
+    /* The earlier installed signature is (p_token, p_code) —
+       it extends by 30 days server-side, the same +30 days
+       computed above, so the local update below stays right. */
+    if(adminRpcMissing(err))return adminRpc("admin_extend_share",{p_token:adminSession.token,p_code:code});
+    throw err;
+  }).then(function(ok){
     if(ok!==true)throw new Error("share rpc refused");
     share.expires_at=next;
     adminRenderUsers();
     toast("Share "+code+" extended to "+fmtShareDate(next)+".");
-  }).catch(function(){
+  }).catch(function(err){
     if(btn)btn.disabled=false;
-    adminShowErr(adminRlsHint("extend that share"));
+    adminShowErr(adminRlsHint("extend that share")+(adminRpcErrText(err)?(" Supabase said: "+adminRpcErrText(err)):""));
   });
 }
 function initAdmin(){
@@ -24521,6 +24739,9 @@ if(!clientMode){
     toast("Recovered draft discarded — this fresh layout is the saved state now.");
   });
 })();
+/* Anonymous visitor analytics starts on every load — editor,
+   /adminpower and client view alike (see visitInit above). */
+visitInit();
 if(clientMode){
   /* Client-only boot: auth, the sign-in popup, the account button,
      Projects and notifications are never initialised for a client
