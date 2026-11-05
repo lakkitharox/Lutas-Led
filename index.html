@@ -1375,20 +1375,11 @@ html.admin-boot #adminPage{display:block}
 #adminGate .admin-err{color:#dc2626}
 #adminLoginForm .btn{width:100%}
 #adminGate .admin-badge{margin-bottom:10px}
-/* Gate mode tabs — Log in / Sign up for THIS page's own admin
-   account flow (Supabase Auth), above the shared email + password
-   form. Sign up adds a confirm-password field and the plain
-   not-an-admin rule; Log in adds Forgot password. */
-.admin-mode-tabs{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:4px;margin-top:16px}
-.admin-mode-tabs button{flex:1;border:1px solid transparent;background:transparent;color:var(--muted);font-weight:700;font-size:13px;padding:8px 10px;border-radius:8px}
-.admin-mode-tabs button.on{background:var(--text);color:var(--bg);border-color:var(--text)}
 #adminGate .admin-ok{font-size:13px;color:#15803d;line-height:1.6;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.4);border-radius:11px;padding:11px 13px;margin:0;text-align:left}
 @media(prefers-color-scheme:dark){#adminGate .admin-ok{color:#4ade80}}
 :root[data-theme="dark"] #adminGate .admin-ok{color:#4ade80}
 :root[data-theme="gray"] #adminGate .admin-ok,:root[data-theme="light"] #adminGate .admin-ok{color:#15803d}
 #adminLoginForm .admin-ok{margin:0}
-.admin-signup-rule{font-size:12.5px!important;color:var(--muted);line-height:1.6;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin:0!important;text-align:left}
-.admin-signup-rule b{color:var(--text)}
 .admin-gate-links{display:flex;margin-top:2px}
 .admin-linkbtn{border:0;background:transparent;color:var(--accent);font-weight:700;font-size:12.5px;padding:4px 2px;text-align:left}
 /* Set-new-password form — shown on the gate ONLY when the visitor
@@ -2458,36 +2449,43 @@ html.admin-boot #adminPage{display:block}
     <span class="admin-badge role">Admin only</span>
     <span class="plan-billnote" id="adminWho"></span>
     <button class="btn small" type="button" id="adminSignOut" hidden>Admin log out</button>
-    <span class="admin-sub">Manage subscription plans and VVIP. Changes save straight to each user's profile in Supabase and take effect on their next plan check (and immediately in this list). VVIP is granted only here or from the backend — it is never sold in Plans &amp; Upgrade. Who can log in to this page is NOT managed here: admins are added or removed only in Supabase, in the public.admin_users table — the one exception was the first-admin bootstrap sign-up on this page, which works only while that table is still empty.</span>
+    <span class="admin-sub">Manage subscription plans and VVIP. Changes save straight to each user's profile in Supabase and take effect on their next plan check (and immediately in this list). VVIP is granted only here or from the backend — it is never sold in Plans &amp; Upgrade. Who can log in to this page is NOT managed here: there is only ONE admin, set only in Supabase, in the public.admin_users table — no sign-up and no add-admin control exists in the app.</span>
   </div>
   <div class="admin-wrap">
     <!-- Access gate — what every visitor to /adminpower sees
-         until they pass THIS page's own separate admin account
-         flow: Log in and Sign up modes on a dedicated form that
-         belongs to the admin page alone, plus Forgot password.
+         until they pass THIS page's own separate admin login:
+         Log in ONLY, on a dedicated form that belongs to the
+         admin page alone, plus Forgot password for the admin
+         account. There is NO sign-up here — an earlier build's
+         admin Sign up created a regular Supabase Auth user and
+         mixed the two logins together; it has been removed.
          It is NOT the main LUTAS LED sign-in: being signed in to
-         the main app never opens this page, and this flow never
-         signs anyone into the main app.
-         Sign up creates a Supabase Auth account for the email +
-         password entered here. Log in's password is verified by
-         Supabase Auth; only after that does the page check the
-         email against the Supabase admin list
-         (public.admin_users) — a match swaps this gate for
-         #adminMain, anything else is Access denied with no user
-         data shown. Sign up alone does NOT grant admin: it opens
-         the dashboard only when the email is already listed in
-         public.admin_users, or while that table is still
-         completely empty (the one-time first-admin bootstrap —
-         the claim is enforced in Supabase itself, see
-         supabase-admin.sql). After the first admin exists,
-         admins are added or removed ONLY in Supabase (Table
-         Editor / SQL on public.admin_users) — there is no
-         add-admin control anywhere in the app.
-         Forgot password emails a Supabase reset link that lands
-         back on THIS page: the gate then shows the
-         set-new-password form (#adminResetForm), and the new
-         password is set through Supabase Auth before the visitor
-         logs in here with it. -->
+         the main app never opens this page, and this login never
+         signs anyone into the main app. The two are separate in
+         both directions: a regular user (any of the 1000+ users,
+         any plan) can NEVER log in here, even with their correct
+         password, and the one admin account can NEVER log in as
+         a regular user in the main app (the main sign-in rejects
+         it — see authSubmitForm / authGuardNotAdmin).
+         Log in's password is verified by Supabase Auth — it is
+         the admin account's own Supabase Auth password, never
+         stored in a table and never shown. Only after Supabase
+         accepts it does the page check the email against the
+         Supabase admin list (public.admin_users): there is only
+         ONE admin, and that single email is set ONLY in Supabase
+         by the owner. A match swaps this gate for #adminMain;
+         anything else is Access denied with no user data shown.
+         There is no sign-up, no bootstrap and no add-admin
+         control anywhere in the app, and no way to turn a
+         regular user into an admin or the admin into a regular
+         user from inside the app.
+         Forgot password is for that one admin account only: it
+         emails a Supabase reset link that lands back on THIS
+         page, the gate shows the set-new-password form
+         (#adminResetForm), and the new password is set through
+         Supabase Auth only after the recovery token is re-checked
+         against the admin list — then the admin logs in here
+         with it. -->
     <div id="adminGate">
       <span class="admin-badge role">Separate admin login</span>
       <h3 id="adminGateTitle">Admin login</h3>
@@ -2502,15 +2500,9 @@ html.admin-boot #adminPage{display:block}
         </div>
       </form>
       <div id="adminGateForms">
-        <div class="admin-mode-tabs" role="tablist" aria-label="Admin log in or sign up">
-          <button type="button" id="adminModeIn" class="on" role="tab" aria-selected="true">Log in</button>
-          <button type="button" id="adminModeUp" role="tab" aria-selected="false">Sign up</button>
-        </div>
         <form id="adminLoginForm" autocomplete="off">
           <div class="field"><span>Admin email</span><input type="email" id="adminLoginEmail" placeholder="admin@example.com" autocomplete="username" required></div>
           <div class="field"><span id="adminPwLab">Admin password</span><input type="password" id="adminLoginPassword" placeholder="Admin account password" autocomplete="current-password" required></div>
-          <div class="field" id="adminConfirmField" hidden><span>Confirm password</span><input type="password" id="adminLoginPassword2" placeholder="Type the password again" autocomplete="new-password"></div>
-          <p class="admin-signup-rule" id="adminSignupRule" hidden><b>Sign up does not make you an admin.</b> It only creates a Supabase account with your own email and password. You can log in here only if that email is already listed in the Supabase admin list (<b>public.admin_users</b>) — <b>or</b> while that list is still completely empty: the very first sign-up then becomes the first admin (bootstrap). After the first admin exists, every later sign-up still gets <b>Access denied</b> here, with no user data shown, until the owner adds that email to <b>public.admin_users</b> in Supabase (Table Editor / SQL). There is no other way to become an admin.</p>
           <p class="admin-err" id="adminLoginErr" hidden></p>
           <p class="admin-ok" id="adminLoginInfo" hidden></p>
           <button class="btn primary cta-big" type="submit" id="adminLoginBtn">Log in to Admin</button>
@@ -2519,7 +2511,7 @@ html.admin-boot #adminPage{display:block}
           </div>
         </form>
       </div>
-      <p class="admin-gate-note">Who can log in here is controlled only from Supabase: an email must be listed in the <b>public.admin_users</b> table (added or removed in the Supabase Table Editor / SQL editor) — the single exception is the first-admin bootstrap described under Sign up, which works only while that table is still empty. Passwords themselves live only in Supabase Auth, never in this table or this page: use <b>Forgot password</b> above and Supabase emails you a link that returns here to set a new one.</p>
+      <p class="admin-gate-note">There is only <b>one admin</b>, and who it is is controlled only from Supabase: the single admin email sits in the <b>public.admin_users</b> table, set by the owner in the Supabase Table Editor / SQL editor. There is no sign-up on this page and no way in the app to add an admin or to turn a regular user into one. Regular LUTAS LED users — there can be more than 1000 of them — can never log in here. The admin password itself lives only in Supabase Auth, never in this table or this page: use <b>Forgot password</b> above and Supabase emails the admin a link that returns here to set a new one.</p>
       <div class="admin-gate-actions">
         <a class="btn" id="adminGateHome" href="/">← Back to LUTAS LED</a>
       </div>
@@ -14762,10 +14754,17 @@ function fillCommentSqlBlocks(){
    exactly as before. The user's subscription plan is read from
    public.profiles.plan by planFetch (see SUBSCRIPTION PLANS below);
    a missing plan column falls back to Starter and never blocks
-   sign-in. The client
-   view (?client=1 / share links) never initialises any of this:
-   initAuth returns immediately for a client-view request, and the
-   account button lives in the top bar, which client view hides. */
+   sign-in. SEPARATION: this main-app session (authSession,
+   stored on the device) is for regular users ONLY — the one
+   admin account is rejected here on every entry path (see
+   AUTH_ADMIN_MSG / authRestoreAccept below), and the separate
+   admin session on /adminpower is a different, in-memory-only
+   token pair that is never stored here and never shared with
+   this one. Signing in or out of one never affects the other.
+   The client view (?client=1 / share links) never initialises
+   any of this: initAuth returns immediately for a client-view
+   request, and the account button lives in the top bar, which
+   client view hides. */
 var AUTH_STORE_KEY="lutasLED.authSession";
 var authUser=null, authSession=null, authMode="in";
 /* Set the moment the visitor dismisses the login popup while
@@ -15060,66 +15059,75 @@ function initPlans(){
 }
 /* ══════════ ADMIN DASHBOARD — separate page, SEPARATE LOGIN ══
    A full page (#adminPage) that replaces the editor view, at its
-   own path /adminpower. It has its OWN account flow, separate
-   from the main LUTAS LED app in every way:
+   own path /adminpower. It has its OWN login, separate from the
+   main LUTAS LED app in every way, in BOTH directions:
 
    • The gate carries a dedicated admin email + password form
-     with Log in and Sign up modes, plus Forgot password
-     (adminLoginSubmit / adminSignUpSubmit / adminForgotPassword).
-     The main app's sign-in dialog is never used here, and being
-     signed in to the main app — with ANY profile, plan or role —
-     never opens this page: opening /adminpower always asks for
-     the admin login first.
-   • Sign up creates a Supabase Auth account for the email +
-     password entered on this page (/auth/v1/signup). Log in's
-     password is verified by Supabase Auth itself (the
-     /auth/v1/token password grant, the admin account's own
-     Supabase password). Passwords are never stored by the app —
-     not as plain text, not as a hash — and never leave the
-     browser except to Supabase Auth over HTTPS.
+     with Log in ONLY, plus Forgot password for the admin account
+     (adminLoginSubmit / adminForgotPassword). There is NO
+     sign-up on this page: an earlier build's admin Sign up
+     created a regular Supabase Auth user and mixed the two
+     logins together — it, and the first-admin bootstrap that
+     went with it, have been removed entirely. The main app's
+     sign-in dialog is never used here, and being signed in to
+     the main app — with ANY profile, plan or role — never opens
+     this page: opening /adminpower always asks for the admin
+     login first.
+   • There is only ONE admin. Log in's password is verified by
+     Supabase Auth itself (the /auth/v1/token password grant —
+     the admin account's own Supabase Auth password). Passwords
+     are never stored by the app — not as plain text, not as a
+     hash, never in a table — and never leave the browser except
+     to Supabase Auth over HTTPS.
    • Only after Supabase Auth accepts the password does the page
      check the email against the Supabase admin list table,
-     public.admin_users. A match starts the single admin session
-     for this page; no match is Access denied and the token is
-     discarded — no user data is ever loaded or shown.
-   • Sign up does NOT by itself grant admin. The finish check
-     (adminAuthFinish) grants access only when the email is
-     already listed in public.admin_users — or, while that table
-     is still completely empty, via the one-time first-admin
-     bootstrap claim (adminAttemptBootstrap), which Supabase
-     itself enforces through the claim_first_admin() RPC / the
-     bootstrap insert policy in supabase-admin.sql: the claim
-     can only ever insert the caller's OWN email, and only when
-     no admin row exists yet. Once any admin exists the claim
-     always fails, and a later sign-up stays Access denied until
-     the email is added to admin_users in Supabase.
-   • Forgot password sends Supabase's reset email
-     (/auth/v1/recover) with a redirect back to /adminpower.
-     The link's recovery token is captured in memory only
-     (adminCaptureAuthReturn, called from initAuth before the
-     main app can treat it as a main sign-in), the gate swaps to
-     a set-new-password form, and the new password is set with
-     PUT /auth/v1/user. The token is then discarded — the
-     visitor still logs in here with the new password; nothing
-     is signed into the main app and nothing is stored.
-   • Who is an admin is controlled ONLY from Supabase: add or
-     remove a row in public.admin_users (Table Editor / SQL).
-     There is deliberately NO add-admin / make-admin control in
-     LUTAS LED or on this page — the bootstrap claim above is
-     the single exception, and it closes itself the moment the
-     first admin exists.
+     public.admin_users, which holds the ONE admin email. A
+     match starts the single admin session for this page; no
+     match is Access denied and the token is discarded — no user
+     data is ever loaded or shown. That is what stops every
+     regular user (any of the 1000+ users, any plan) logging in
+     here, even with their correct regular password.
+   • The separation runs the other way too: the main app's
+     sign-in REJECTS the admin account (see authGuardNotAdmin,
+     applied in authSubmitForm and in every session-restore path
+     of initAuth). The admin account is not a regular user
+     account: it never gets a main session, never gets a
+     profiles upsert from the main flow, and no main sign-up,
+     Google return, recovery return or stored session can turn
+     it into one.
+   • Forgot password is for that one admin account only. It
+     sends Supabase's reset email (/auth/v1/recover) with a
+     redirect back to /adminpower. The link's recovery token is
+     captured in memory only (adminCaptureAuthReturn, called
+     from initAuth before the main app can treat it as a main
+     sign-in), the gate swaps to a set-new-password form, and
+     before the new password is set (PUT /auth/v1/user) the
+     recovery token is re-checked against the admin list — a
+     regular account's recovery token changes nothing here. The
+     token is then discarded: the admin still logs in here with
+     the new password; nothing is signed into the main app and
+     nothing is stored.
+   • Who the admin is is controlled ONLY from Supabase: the
+     owner sets the single row in public.admin_users (Table
+     Editor / SQL), and supabase-admin.sql enforces one row
+     only (a singleton guard) with is_admin() recognising only
+     that first, single admin. There is deliberately NO
+     add-admin / make-admin control in LUTAS LED or on this
+     page, and no way to turn a regular user into an admin or
+     the admin into a regular user from inside the app.
    • The admin session (adminSession) is its own token pair,
      held in memory for this page view only — never written to
      localStorage, never shared with the main app session
-     (authSession). Reloading /adminpower asks for the admin
-     login again. Every dashboard read / write goes through
-     Supabase REST with the ADMIN session's token
-     (adminAuthHeaders via adminApi), so row-level security is
-     the real enforcement (policies in supabase-admin.sql).
-     There is NO service key in this app, and the dashboard
-     never requests passwords, passkey hashes (shares are read
-     with an explicit safe column list that excludes
-     passkey_hash and payload) or card details.
+     (authSession). Logging out of one never logs out of the
+     other. Reloading /adminpower asks for the admin login
+     again. Every dashboard read / write goes through Supabase
+     REST with the ADMIN session's token (adminAuthHeaders via
+     adminApi), so row-level security is the real enforcement
+     (policies in supabase-admin.sql). There is NO service key
+     in this app, and the dashboard never requests passwords,
+     passkey hashes (shares are read with an explicit safe
+     column list that excludes passkey_hash and payload) or
+     card details.
    Deliberately absent, by design: login history, session revoke,
    suspend / ban — those need the Supabase Auth Admin API / a
    service key and cannot be done safely from a browser app; the
@@ -15138,25 +15146,21 @@ var adminIsAdmin=false;
    whatever the main app session is doing. */
 var adminSession=null;
 /* Set when an admin login passed Supabase Auth but the email is
-   NOT in public.admin_users: the gate shows Access denied for
-   that email instead of the plain login prompt. */
+   NOT the one admin in public.admin_users: the gate shows
+   Access denied for that email instead of the plain login
+   prompt. That is every regular user, however correct their
+   regular password was. */
 var adminDeniedEmail="";
-/* How the denied attempt arrived: "in" (log in) or "up" (sign
-   up) — the Access denied wording says whether an account was
-   just created. */
-var adminDeniedContext="in";
-/* The gate form's mode: "in" = Log in, "up" = Sign up. */
-var adminMode="in";
-/* A one-shot success / info line for the gate form (account
-   created, reset email sent, password updated, email confirmed),
-   rendered once by adminLoginShowInfo / adminSyncGate. */
+/* A one-shot success / info line for the gate form (reset email
+   sent, password updated), rendered once by adminLoginShowInfo /
+   adminSyncGate. */
 var adminGateInfo="";
 /* The password-reset (recovery) session captured from a Supabase
    reset email link landing on /adminpower: {access_token,
    refresh_token, email}. Held in memory for this page view ONLY
    — never stored, never turned into a main-app or admin session.
    While it is set, the gate shows the set-new-password form
-   instead of the log in / sign up forms. */
+   instead of the log in form. */
 var adminResetSession=null;
 /* Set when an admin session ends on its own (token expired /
    refused): the gate explains why the login is being asked for
@@ -15234,17 +15238,17 @@ function adminExpireSession(){
   adminClearSession("Your admin session expired — log in again to continue.");
 }
 function adminSignOut(){adminClearSession(""); toast("Admin session ended. The main LUTAS LED app sign-in is unchanged.")}
-/* The gate's own account flow: email + password → Supabase Auth
-   verifies (log in) or creates (sign up) the account → the email
-   must be listed in public.admin_users (or claim the one-time
-   first-admin bootstrap while that table is still empty). Only
-   then does an admin session exist. A token from an attempt
-   whose email is NOT in the admin list is discarded at once —
-   it never becomes a session and never loads any data. */
+/* The gate's own login: email + password → Supabase Auth
+   verifies the password → the email must be the ONE admin
+   listed in public.admin_users. Only then does an admin
+   session exist. A token from an attempt whose email is NOT
+   the admin is discarded at once — it never becomes a session
+   and never loads any data. There is no sign-up path here at
+   all: nothing on this page creates an account. */
 function adminLoginSetBusy(b){
   var btn=$("adminLoginBtn"); if(!btn)return;
   btn.disabled=!!b;
-  btn.textContent=b?"Checking…":(adminMode==="up"?"Sign up — create account":"Log in to Admin");
+  btn.textContent=b?"Checking…":"Log in to Admin";
 }
 function adminLoginShowErr(msg){
   var e=$("adminLoginErr"); if(!e)return;
@@ -15254,87 +15258,75 @@ function adminLoginShowInfo(msg){
   var e=$("adminLoginInfo"); if(!e)return;
   e.textContent=msg||""; e.hidden=!msg;
 }
-/* This page's own absolute URL — where Supabase Auth emails
-   (password reset, sign-up confirmation) must land back, so the
-   flow continues on /adminpower and nowhere else. */
+/* This page's own absolute URL — where the admin account's
+   Supabase password-reset email must land back, so the flow
+   continues on /adminpower and nowhere else. */
 function adminPowerAbsoluteUrl(){
   try{return window.location.origin+adminPageUrl()}catch(e){return sharePageBase()}
 }
-/* Log in / Sign up mode switch: the two modes share the email +
-   password fields; Sign up adds the confirm-password field and
-   the plain not-an-admin rule, Log in keeps Forgot password. */
-function adminSetMode(m){
-  adminMode=(m==="up")?"up":"in";
-  var tIn=$("adminModeIn"), tUp=$("adminModeUp");
-  if(tIn){tIn.classList.toggle("on",adminMode==="in"); tIn.setAttribute("aria-selected",adminMode==="in"?"true":"false")}
-  if(tUp){tUp.classList.toggle("on",adminMode==="up"); tUp.setAttribute("aria-selected",adminMode==="up"?"true":"false")}
-  var cf=$("adminConfirmField"); if(cf)cf.hidden=(adminMode!=="up");
-  var rule=$("adminSignupRule"); if(rule)rule.hidden=(adminMode!=="up");
-  var fg=$("adminForgotBtn"); if(fg)fg.hidden=(adminMode==="up");
-  var lab=$("adminPwLab"); if(lab)lab.textContent=(adminMode==="up")?"Choose a password":"Admin password";
-  var pw=$("adminLoginPassword"); if(pw){pw.setAttribute("autocomplete",adminMode==="up"?"new-password":"current-password"); pw.setAttribute("placeholder",adminMode==="up"?"Your own password (at least 6 characters)":"Admin account password")}
-  adminLoginShowErr(""); adminLoginShowInfo("");
-  if(!adminSession&&!adminResetSession)adminSyncGate();
-  adminLoginSetBusy(false);
-}
-/* The admin list check, with a just-issued token:
-   public.admin_users may only be read for one's OWN email
-   (its RLS), so this reveals nothing about other admins. */
-function adminCheckListed(headers,em){
-  var url=SUPABASE_URL+"/rest/v1/admin_users?select=email&email=eq."+encodeURIComponent(em.toLowerCase())+"&limit=1";
-  return supaFetch(url,{method:"GET",headers:headers},15000).then(function(res){
-    if(!res.ok)throw new Error("admin list check "+res.status);
-    return res.json();
-  }).then(function(rows){return !!(rows&&rows.length)});
-}
-/* The one-time first-admin bootstrap claim. It can succeed ONLY
-   while public.admin_users is still completely empty, and it
-   only ever inserts the caller's OWN email — both rules are
-   enforced inside Supabase, not here: first the security-definer
-   claim_first_admin() RPC, falling back to a direct insert that
-   the table's bootstrap insert policy guards the same way (see
-   supabase-admin.sql). When the table already has an admin —
-   or the bootstrap SQL has not been run — every attempt is
-   refused and this simply resolves false; the caller re-checks
-   the list either way, so a claim is never taken on trust. */
-function adminAttemptBootstrap(headers,em){
-  return supaFetch(SUPABASE_URL+"/rest/v1/rpc/claim_first_admin",{method:"POST",headers:headers,body:JSON.stringify({})},15000).then(function(res){
-    if(!res.ok)throw new Error("bootstrap rpc "+res.status);
-    return res.json().catch(function(){return null});
-  }).then(function(v){
-    return !!v;
-  },function(){
-    return supaFetch(SUPABASE_URL+"/rest/v1/admin_users",{method:"POST",headers:(function(h){var c={}; Object.keys(h).forEach(function(k){c[k]=h[k]}); c["Prefer"]="return=minimal"; return c})(headers),body:JSON.stringify({email:em.toLowerCase()})},15000).then(function(r){return !!r.ok},function(){return false});
+/* ── The ONE admin check, shared by both logins ───────────────
+   supaAdminListed(accessToken, email) resolves:
+     true  — this token's email IS the one admin: it is the
+             single row of public.admin_users. The is_admin()
+             RPC is asked first (supabase-admin.sql defines it to
+             recognise only that one, earliest admin row); if the
+             RPC is unavailable (older SQL still installed) the
+             fallback reads back the caller's OWN admin_users row
+             — its RLS allows nothing else, so this reveals
+             nothing about anyone else.
+     false — the email is verified NOT to be the admin.
+     null  — the check could not be completed (admin list not
+             set up yet, or the connection failed). Callers fail
+             closed on the admin page and never treat null as a
+             pass anywhere. */
+function supaAdminListed(token,em){
+  if(!token||!em)return Promise.resolve(null);
+  var headers={"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+token,"Content-Type":"application/json"};
+  return supaFetch(SUPABASE_URL+"/rest/v1/rpc/is_admin",{method:"POST",headers:headers,body:JSON.stringify({})},12000).then(function(res){
+    if(!res.ok)throw new Error("is_admin rpc "+res.status);
+    return res.json().then(function(v){return !!v},function(){return null});
+  }).catch(function(){
+    var url=SUPABASE_URL+"/rest/v1/admin_users?select=email&email=eq."+encodeURIComponent(String(em).toLowerCase())+"&limit=1";
+    return supaFetch(url,{method:"GET",headers:headers},12000).then(function(res){
+      if(!res.ok)throw new Error("admin list check "+res.status);
+      return res.json();
+    }).then(function(rows){return !!(rows&&rows.length)},function(){return null});
   });
 }
-/* Shared finish for Log in and for a Sign up that returned a
-   session: list check → (if unlisted) bootstrap claim → list
-   re-check. Listed: start the one in-memory admin session.
+/* The admin list check, with a just-issued token (kept for the
+   admin login flow): like supaAdminListed, but a check that
+   could not be completed THROWS, so the admin login fails
+   closed with the setup message instead of guessing. */
+function adminCheckListed(headers,em){
+  var auth=(headers&&headers.Authorization)||"";
+  var tok=auth.indexOf("Bearer ")===0?auth.slice(7):"";
+  return supaAdminListed(tok,em).then(function(v){
+    if(v===null)throw new Error("admin check incomplete");
+    return v;
+  });
+}
+/* Shared finish for the admin Log in: list check only. Listed
+   (the one admin): start the one in-memory admin session.
    Unlisted: Access denied, token discarded via a best-effort
-   Supabase logout, no session, no data. context is "in" or
-   "up" and only steers the denied wording. */
-function adminAuthFinish(d,em,context){
+   Supabase logout, no session, no data. There is no other way
+   in — no sign-up, no bootstrap, no claim. */
+function adminAuthFinish(d,em){
   var headers={"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+d.access_token,"Content-Type":"application/json"};
   return adminCheckListed(headers,em).then(function(listed){
-    if(listed)return {listed:true,bootstrapped:false};
-    return adminAttemptBootstrap(headers,em).then(function(){
-      return adminCheckListed(headers,em);
-    }).then(function(listed2){return {listed:listed2,bootstrapped:listed2}});
-  }).then(function(out){
     adminLoginSetBusy(false);
-    if(out.listed){
-      /* Confirmed admin: start the one admin session. */
+    if(listed){
+      /* Confirmed as the one admin: start the admin session. */
       adminSession={access_token:d.access_token,refresh_token:d.refresh_token||"",expires_at:d.expires_at||(d.expires_in?Math.floor(Date.now()/1000)+(+d.expires_in):0),user:{id:d.user.id||"",email:d.user.email||em}};
       var pwEl=$("adminLoginPassword"); if(pwEl)pwEl.value="";
-      var pw2El=$("adminLoginPassword2"); if(pw2El)pw2El.value="";
       adminLoginShowErr(""); adminLoginShowInfo("");
       adminSetIsAdmin(true); /* adminSyncGate swaps the gate for the dashboard and starts the data load */
-      if(out.bootstrapped)toast("First admin created — this email was added to public.admin_users as the bootstrap admin. Later admins can only be added in Supabase.");
     }else{
-      /* Valid Supabase account, but NOT an admin: deny, and
-         discard the token — it never becomes a session. */
+      /* Valid Supabase account, but NOT the admin — that is
+         every regular user, however correct their password was:
+         deny, and discard the token; it never becomes a
+         session and never loads any data. */
       try{supaFetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:headers},8000).then(function(){},function(){})}catch(e){}
-      adminDeniedEmail=em; adminDeniedContext=context||"in";
+      adminDeniedEmail=em;
       adminSyncGate();
     }
   }).catch(function(){
@@ -15345,7 +15337,6 @@ function adminAuthFinish(d,em,context){
 function adminLoginSubmit(ev){
   if(ev&&ev.preventDefault)ev.preventDefault();
   if(adminSession||adminResetSession)return;
-  if(adminMode==="up"){adminSignUpSubmit(); return}
   var em=($("adminLoginEmail")&&$("adminLoginEmail").value||"").trim();
   var pw=($("adminLoginPassword")&&$("adminLoginPassword").value)||"";
   adminLoginShowErr(""); adminLoginShowInfo("");
@@ -15362,66 +15353,22 @@ function adminLoginSubmit(ev){
       return d;
     });
   }).then(function(d){
-    return adminAuthFinish(d,em,"in");
+    return adminAuthFinish(d,em);
   }).catch(function(err){
     adminLoginSetBusy(false);
     if(err&&err.authErr){adminLoginShowErr(authErrorText(err.data,err.status)); return}
     adminLoginShowErr("Couldn't reach Supabase — check your connection and try again. No data was loaded.");
   });
 }
-/* Sign up — create the Supabase Auth account for the owner's OWN
-   email + password, on THIS page. Creating the account is all
-   sign up does by itself: admin access still comes only from
-   the adminAuthFinish list check (already listed, or the
-   still-empty-table bootstrap). With email confirmation on,
-   Supabase returns no session — the account exists, and the
-   visitor confirms via the emailed link, then logs in here;
-   the bootstrap claim, if the table is still empty, completes
-   at that first log in. */
-function adminSignUpSubmit(){
-  if(adminSession||adminResetSession)return;
-  var em=($("adminLoginEmail")&&$("adminLoginEmail").value||"").trim();
-  var pw=($("adminLoginPassword")&&$("adminLoginPassword").value)||"";
-  var pw2=($("adminLoginPassword2")&&$("adminLoginPassword2").value)||"";
-  adminLoginShowErr(""); adminLoginShowInfo("");
-  if(!em){adminLoginShowErr("Enter your email to create the admin account."); return}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){adminLoginShowErr("That email address doesn't look valid."); return}
-  if(!pw){adminLoginShowErr("Choose a password for the admin account."); return}
-  if(pw.length<6){adminLoginShowErr("Use at least 6 characters for the password."); return}
-  if(pw!==pw2){adminLoginShowErr("The two passwords don't match — type the same password twice."); return}
-  adminDeniedEmail=""; adminGateNotice="";
-  adminLoginSetBusy(true);
-  supaFetch(SUPABASE_URL+"/auth/v1/signup?redirect_to="+encodeURIComponent(adminPowerAbsoluteUrl()),{method:"POST",headers:supaHeaders(),body:JSON.stringify({email:em,password:pw})},20000).then(function(res){
-    return res.json().then(function(d){
-      if(!res.ok)throw {authErr:true,data:d,status:res.status};
-      return d;
-    });
-  }).then(function(d){
-    if(d.access_token&&d.user){
-      /* Session returned (email confirmation off): run the same
-         admin check as a log in. */
-      return adminAuthFinish(d,em,"up");
-    }
-    /* No session: email confirmation is on for this project (or
-       the email was already registered and Supabase will not say
-       so). The account step is done — admin access is decided
-       at log in, exactly as the rule under the form states. */
-    adminLoginSetBusy(false);
-    var pwEl=$("adminLoginPassword"); if(pwEl)pwEl.value="";
-    var pw2El=$("adminLoginPassword2"); if(pw2El)pw2El.value="";
-    adminSetMode("in");
-    adminLoginShowInfo("Account created for "+em+" — if Supabase asks you to confirm the email, follow the link it sends first, then log in here with your email and password. If public.admin_users is still empty, that first log in completes the first-admin bootstrap; if an admin already exists, you will get Access denied until your email is added to public.admin_users in Supabase.");
-  }).catch(function(err){
-    adminLoginSetBusy(false);
-    if(err&&err.authErr){adminLoginShowErr(authErrorText(err.data,err.status)); return}
-    adminLoginShowErr("Couldn't reach Supabase — check your connection and try again. No account was created.");
-  });
-}
-/* Forgot password — Supabase emails a reset link that lands back
-   on THIS page (redirect_to = /adminpower). Following it does
-   not log anyone in: adminCaptureAuthReturn holds the recovery
-   token in memory and the gate shows the set-new-password form;
-   after the password is set, the visitor logs in here with it. */
+/* Forgot password — for the ONE admin account only. Supabase
+   emails a reset link that lands back on THIS page
+   (redirect_to = /adminpower). Following it does not log anyone
+   in: adminCaptureAuthReturn holds the recovery token in memory
+   and the gate shows the set-new-password form; before any new
+   password is set, adminResetSubmit re-checks that token
+   against the admin list, so a regular account's reset link
+   changes nothing here. After the admin's password is set, the
+   admin logs in here with it. */
 function adminForgotPassword(){
   if(adminSession||adminResetSession)return;
   var em=($("adminLoginEmail")&&$("adminLoginEmail").value||"").trim();
@@ -15436,7 +15383,8 @@ function adminForgotPassword(){
   }).catch(function(){if(btn)btn.disabled=false; adminLoginShowErr("Couldn't reach Supabase — check your connection and try again.")});
 }
 /* Captures a Supabase Auth email-link return (password recovery
-   or sign-up confirmation) that landed on /adminpower. Called
+   for the admin account, or an email confirmation link) that
+   landed on /adminpower. Called
    from initAuth BEFORE the main app can store the token as a
    main sign-in — on this page the token belongs to the admin
    flow only. Returns true when the return was the admin page's
@@ -15484,12 +15432,18 @@ function adminResetShowErr(msg){
   var e=$("adminResetErr"); if(!e)return;
   e.textContent=msg||""; e.hidden=!msg;
 }
-/* Set the new password from the reset form: PUT /auth/v1/user
-   with the in-memory recovery token. On success the token is
-   discarded (best-effort logout) and the gate returns to Log in
-   with the email prefilled — the visitor then logs in with the
-   new password and passes the usual admin list check. Nothing
-   here creates an admin or main-app session. */
+/* Set the new password from the reset form — the admin account
+   ONLY. First the in-memory recovery token is re-checked
+   against the admin list (supaAdminListed): Forgot password on
+   this page is for the one admin, so a regular account's
+   recovery token is discarded here and changes nothing, and a
+   check that cannot be completed also fails closed. Only then
+   is the password set: PUT /auth/v1/user with the recovery
+   token. On success the token is discarded (best-effort
+   logout) and the gate returns to Log in with the email
+   prefilled — the admin then logs in with the new password and
+   passes the usual admin list check. Nothing here creates an
+   admin or main-app session. */
 function adminResetSubmit(ev){
   if(ev&&ev.preventDefault)ev.preventDefault();
   if(!adminResetSession)return;
@@ -15500,7 +15454,45 @@ function adminResetSubmit(ev){
   if(pw.length<6){adminResetShowErr("Use at least 6 characters for the new password."); return}
   if(pw!==pw2){adminResetShowErr("The two passwords don't match — type the same new password twice."); return}
   var sess=adminResetSession;
-  var btn=$("adminResetBtn"); if(btn){btn.disabled=true; btn.textContent="Setting…"}
+  var btn=$("adminResetBtn"); if(btn){btn.disabled=true; btn.textContent="Checking…"}
+  /* Which account is this reset for? (The email learned when
+     the link landed may not have arrived yet — fetch it now.) */
+  var emailReady=sess.email?Promise.resolve(sess.email):supaFetch(SUPABASE_URL+"/auth/v1/user",{method:"GET",headers:{"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+sess.access_token,"Content-Type":"application/json"}},12000).then(function(res){
+    return res.ok?res.json():null;
+  }).then(function(u){
+    if(u&&u.email)sess.email=u.email;
+    return sess.email||"";
+  }).catch(function(){return sess.email||""});
+  emailReady.then(function(em){
+    if(adminResetSession!==sess)return; /* cancelled meanwhile */
+    return supaAdminListed(sess.access_token,em).then(function(listed){
+      if(adminResetSession!==sess)return;
+      if(listed===null){
+        if(btn){btn.disabled=false; btn.textContent="Set new password"}
+        adminResetShowErr("Couldn't complete the admin check — the admin list table (public.admin_users) may not be set up in Supabase yet, or the connection failed. No password was changed.");
+        return;
+      }
+      if(!listed){
+        /* NOT the admin account: discard the token, change
+           nothing, and say so plainly. */
+        var tok=sess.access_token;
+        adminResetSession=null;
+        try{supaFetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+tok,"Content-Type":"application/json"}},8000).then(function(){},function(){})}catch(e){}
+        adminDeniedEmail=em||"";
+        adminGateNotice="";
+        if(btn){btn.disabled=false; btn.textContent="Set new password"}
+        adminSyncGate();
+        return;
+      }
+      if(btn)btn.textContent="Setting…";
+      return adminResetSetPassword(sess,pw,btn);
+    });
+  }).catch(function(){
+    if(btn){btn.disabled=false; btn.textContent="Set new password"}
+    adminResetShowErr("Couldn't reach Supabase — check your connection and try again.");
+  });
+}
+function adminResetSetPassword(sess,pw,btn){
   supaFetch(SUPABASE_URL+"/auth/v1/user",{method:"PUT",headers:{"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+sess.access_token,"Content-Type":"application/json"},body:JSON.stringify({password:pw})},20000).then(function(res){
     if(btn){btn.disabled=false; btn.textContent="Set new password"}
     if(!res.ok){
@@ -15520,7 +15512,7 @@ function adminResetSubmit(ev){
     var p1=$("adminResetPw"); if(p1)p1.value="";
     var p2=$("adminResetPw2"); if(p2)p2.value="";
     if(em){var emEl=$("adminLoginEmail"); if(emEl)emEl.value=em}
-    adminSetMode("in");
+    adminLoginShowErr(""); adminSyncGate();
     adminLoginShowInfo("Password updated"+(em?" for "+em:"")+" — log in below with your new password.");
     toast("Admin password updated — log in with the new password.");
   }).catch(function(){
@@ -15592,15 +15584,10 @@ function adminSyncGate(){
   if(fw)fw.hidden=false;
   if(adminDeniedEmail){
     if(t)t.textContent="Access denied";
-    if(msg)msg.textContent=(adminDeniedContext==="up"
-      ? "The Supabase account for "+adminDeniedEmail+" was created, but that email is not in the Supabase admin list (public.admin_users) and that list is not empty, so no admin access was granted and no user data is shown. Sign up alone does not make anyone an admin after the first admin exists — add the email to public.admin_users in Supabase (Table Editor / SQL), then log in here."
-      : adminDeniedEmail+" signed in successfully, but that email is not in the Supabase admin list (public.admin_users), so this page stays locked and no user data is shown. Admins are added only in Supabase — there is no way to grant access from inside the app.");
-  }else if(adminMode==="up"){
-    if(t)t.textContent="Admin sign up";
-    if(msg)msg.textContent="Create your admin account with your own email and password — this is Sign up first, then Log in with the same email and password. This page's account flow is separate from the main LUTAS LED app. Read the rule under the form before you sign up: sign up alone does not grant admin access."+(adminGateNotice?(" "+adminGateNotice):"");
+    if(msg)msg.textContent=adminDeniedEmail+" is a valid Supabase account, but it is not the one admin email in the Supabase admin list (public.admin_users), so this page stays locked and no user data is shown. Regular LUTAS LED users can never log in here, even with their correct password. The one admin is set only in Supabase — there is no sign-up here and no way to grant access from inside the app.";
   }else{
     if(t)t.textContent="Admin login";
-    if(msg)msg.textContent="This page has its own login, separate from the main LUTAS LED app. Signing in to the main app does not sign you in here — enter an admin email and password to continue. No user data is shown until an admin login is confirmed."+(adminGateNotice?(" "+adminGateNotice):"");
+    if(msg)msg.textContent="This page has its own login, separate from the main LUTAS LED app. Signing in to the main app does not sign you in here — enter the admin email and password to continue. No user data is shown until an admin login is confirmed."+(adminGateNotice?(" "+adminGateNotice):"");
   }
 }
 function adminShowPage(){
@@ -15872,17 +15859,14 @@ function initAdmin(){
   var no=$("adminConfirmNo"); if(no)no.addEventListener("click",function(){$("adminConfirmModal").classList.remove("open"); adminPending=null; adminRenderUsers()});
   var ys=$("adminConfirmYes"); if(ys)ys.addEventListener("click",adminDoPlanChange);
   var cm=$("adminConfirmModal"); if(cm)cm.addEventListener("click",function(ev){if(ev.target===this){this.classList.remove("open"); adminPending=null; adminRenderUsers()}});
-  /* The gate's own admin account flow — this page's separate
-     Sign up / Log in / Forgot password. It NEVER opens the main
-     app's sign-in dialog: the two account flows are separate in
-     both directions. */
+  /* The gate's own admin login — this page's separate Log in /
+     Forgot password ONLY. There is no sign-up here, and it NEVER
+     opens the main app's sign-in dialog: the two logins are
+     separate in both directions. */
   var lf=$("adminLoginForm"); if(lf)lf.addEventListener("submit",adminLoginSubmit);
-  var mi=$("adminModeIn"); if(mi)mi.addEventListener("click",function(){adminSetMode("in")});
-  var mu=$("adminModeUp"); if(mu)mu.addEventListener("click",function(){adminSetMode("up")});
   var fg=$("adminForgotBtn"); if(fg)fg.addEventListener("click",adminForgotPassword);
   var rsf=$("adminResetForm"); if(rsf)rsf.addEventListener("submit",adminResetSubmit);
   var rc=$("adminResetCancel"); if(rc)rc.addEventListener("click",adminResetCancel);
-  adminSetMode("in");
   var so=$("adminSignOut"); if(so)so.addEventListener("click",adminSignOut);
   var gh=$("adminGateHome"); if(gh){try{gh.setAttribute("href",adminEditorPath())}catch(e){}}
   window.addEventListener("popstate",adminRouteSync);
@@ -15954,6 +15938,44 @@ function setAuthMode(m){
   var fg=$("authForgot"); if(fg)fg.style.visibility=(m==="up")?"hidden":"";
   authShowErr("");
 }
+/* ── Login separation, main-app side ──────────────────────────
+   The ONE admin account must NEVER sign in here as a regular
+   user: the admin login lives only on /adminpower, and the two
+   logins are kept completely separate in both directions. Every
+   path that would start a main session — email sign-in AND
+   sign-up (authSubmitForm), a stored-session restore, a Google
+   / OAuth return, a password-recovery return (all in initAuth,
+   via authRestoreAccept) — first runs the shared admin check
+   (supaAdminListed, with the just-issued / restored token). If
+   the account IS the admin: the token is discarded (best-effort
+   Supabase logout), NO main session is stored, NO profile is
+   upserted (the admin never becomes a regular user row through
+   this flow), and the visitor is told to use /adminpower. If
+   the check cannot be completed (null — admin list not set up
+   yet, or offline), the regular sign-in proceeds as before:
+   with no admin list installed there is no admin account to
+   separate, and regular users must never be locked out by it. */
+var AUTH_ADMIN_MSG="This email is the LUTAS LED admin account — it can't sign in as a regular user here. The admin and regular logins are kept completely separate: please use the admin login at lutasled.com/adminpower instead.";
+function authDiscardToken(tok){
+  if(!tok)return;
+  try{supaFetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+tok,"Content-Type":"application/json"}},8000).then(function(){},function(){})}catch(e){}
+}
+/* Session-restore counterpart of the authSubmitForm guard: runs
+   accept() only when the restored user is NOT the admin. The
+   admin account instead loses the stored main session entirely
+   (authSignOutLocal also clears the device store) — on the
+   editor route the sign-in dialog explains why; on /adminpower
+   it happens silently, because that page's own gate is already
+   the prompt and the main session was never its business. */
+function authRestoreAccept(u,accept){
+  var tok=(typeof authSession!=="undefined"&&authSession&&authSession.access_token)||"";
+  return supaAdminListed(tok,u&&u.email).then(function(listed){
+    if(!listed){accept(); return}
+    authSignOutLocal();
+    authDiscardToken(tok);
+    if(!authOnAdminRoute()){openAuthDialog(); authShowErr(AUTH_ADMIN_MSG)}
+  }).catch(function(){accept()});
+}
 function authSubmitForm(){
   var email=($("authEmail").value||"").trim(), pw=$("authPassword").value||"";
   var isUp=authMode==="up", extra=null;
@@ -15986,8 +16008,25 @@ function authSubmitForm(){
       btn.disabled=false;
       if(!res.ok){authShowErr(authErrorText(d,res.status));return}
       if(d.access_token&&d.user){
-        if(extra&&d.user.id){extra.id=d.user.id; authStorePendingProfile(extra)}
-        authSignedInAs(d.user,d); closeAuthDialog(); toast("Signed in as "+(d.user.email||"")+"."); return}
+        /* Separation guard (see AUTH_ADMIN_MSG above): if this
+           account is the ONE admin, it does not become a regular
+           session here — in either mode. Sign-in is rejected
+           outright; a sign-up that somehow used the admin email
+           (the owner pre-listed it in Supabase) likewise starts
+           no session and writes no profile. The token is
+           discarded and the visitor is sent to /adminpower. */
+        return supaAdminListed(d.access_token,d.user.email||email).then(function(listed){
+          if(listed){
+            authDiscardToken(d.access_token);
+            if(extra)authStorePendingProfile(null);
+            var pwl=$("authPassword"); if(pwl)pwl.value="";
+            authShowErr(AUTH_ADMIN_MSG);
+            return;
+          }
+          if(extra&&d.user.id){extra.id=d.user.id; authStorePendingProfile(extra)}
+          authSignedInAs(d.user,d); closeAuthDialog(); toast("Signed in as "+(d.user.email||"")+".");
+        });
+      }
       if(d.user||isUp){
         /* Sign-up accepted but no session came back: email
            confirmation is on for this project. The profile details
@@ -16072,14 +16111,16 @@ function initAuth(){
   if(ret&&(ret.error||ret.access_token)){
     try{history.replaceState(null,"",sharePageBase())}catch(e){}
   }
-  /* Admin-page email links land on /adminpower (password reset,
-     sign-up confirmation from the admin gate's own flow): those
-     tokens belong to the ADMIN page's flow, never to a main-app
-     sign-in, so they are captured there (in memory) before any
-     of the main handling below can store them as a main session.
-     The gate still decides everything: a recovery token only
-     unlocks the set-new-password form, a confirmation token is
-     discarded with an invitation to log in on /adminpower. */
+  /* Admin-page email links land on /adminpower (the admin
+     account's password reset, or an email confirmation link):
+     those tokens belong to the ADMIN page's flow, never to a
+     main-app sign-in, so they are captured there (in memory)
+     before any of the main handling below can store them as a
+     main session. The gate still decides everything: a recovery
+     token only unlocks the set-new-password form (and is
+     re-checked against the admin list before anything is set),
+     a confirmation token is discarded with an invitation to log
+     in on /adminpower. */
   if(ret&&(ret.error||ret.access_token)&&authOnAdminRoute()&&typeof adminCaptureAuthReturn==="function"){
     if(adminCaptureAuthReturn(ret))return;
   }
@@ -16095,7 +16136,10 @@ function initAuth(){
   if(ret&&ret.access_token){
     authApplySession({access_token:ret.access_token,refresh_token:ret.refresh_token,expires_in:ret.expires_in});
     authFetchUser().then(function(u){
-      if(u){authSetUser(u); authUpsertProfile(u); toast("Signed in as "+(u.email||"")+".")}
+      /* OAuth / recovery returns pass the same separation guard
+         as an email sign-in: the admin account never becomes a
+         regular session this way either. */
+      if(u){authRestoreAccept(u,function(){authSetUser(u); authUpsertProfile(u); toast("Signed in as "+(u.email||"")+".")})}
       else{authSignOutLocal(); authAutoOpen()}
     }).catch(function(){authSignOutLocal(); authAutoOpen()});
     return;
@@ -16104,13 +16148,17 @@ function initAuth(){
   if(!stored||!stored.access_token){authSetUser(null); authAutoOpen(); return}
   authSession=stored;
   authFetchUser().then(function(u){
-    if(u){authSetUser(u); if(authLoadPendingProfile(u))authUpsertProfile(u)}
+    /* A stored session belonging to the admin account (left
+       over from before the two logins were separated) is never
+       restored as a regular session — authRestoreAccept drops
+       it and explains on the editor route. */
+    if(u){authRestoreAccept(u,function(){authSetUser(u); if(authLoadPendingProfile(u))authUpsertProfile(u)})}
     else{authSignOutLocal(); authAutoOpen()}
   }).catch(function(){
     /* Stored token likely expired — one refresh, then the login
        popup if the session cannot be restored. */
     authRefresh().then(function(){return authFetchUser()}).then(function(u){
-      if(u){authSetUser(u); if(authLoadPendingProfile(u))authUpsertProfile(u)}
+      if(u){authRestoreAccept(u,function(){authSetUser(u); if(authLoadPendingProfile(u))authUpsertProfile(u)})}
       else{authSignOutLocal(); authAutoOpen()}
     }).catch(function(){authSignOutLocal(); authAutoOpen()});
   });
