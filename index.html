@@ -1328,8 +1328,13 @@ body:not(.learning-on) .learn{display:none}
    sign-in never opens it — the password is verified by Supabase
    Auth and the email must then be listed in the Supabase admin
    list table (public.admin_users) before any user data shows.
-   Admins are added / removed ONLY in Supabase; there is no
-   add-admin control anywhere in the app. It never exists in
+   The ONE exception is first-time setup: while that table is
+   EMPTY the gate shows a Sign up form instead, so the first
+   admin can claim the single admin row (see the gate comment in
+   the markup and supabase-admin.sql); once a row exists the
+   gate is Log in only and no sign-up is offered to anyone.
+   After that, admins are changed / removed ONLY in Supabase;
+   there is no add-admin control anywhere in the app. It never exists in
    client view (initAdmin and openAdminPage both bail on a
    client-view request). All dashboard data goes through Supabase
    REST with the ADMIN session's own token (adminAuthHeaders) —
@@ -1372,6 +1377,15 @@ html.admin-boot #adminPage{display:block}
    stay readable on a phone; the error line reuses .admin-err. */
 #adminLoginForm{margin-top:12px;text-align:left;display:flex;flex-direction:column;gap:10px}
 #adminLoginForm .admin-err{margin:0}
+/* First-time admin Sign up form — same stacked layout as the log
+   in form. It is only ever unhidden while the Supabase admin
+   sheet (public.admin_users) is EMPTY; once an admin exists the
+   gate shows Log in only and this form stays hidden. */
+#adminSignupForm{margin-top:12px;text-align:left;display:flex;flex-direction:column;gap:10px}
+#adminSignupForm .admin-err{margin:0}
+#adminSignupForm .admin-ok{margin:0}
+#adminSignupForm .btn{width:100%}
+#adminGateChecking{margin-top:14px;font-size:13px;color:var(--muted);line-height:1.6}
 #adminGate .admin-err{color:#dc2626}
 #adminLoginForm .btn{width:100%}
 #adminGate .admin-badge{margin-bottom:10px}
@@ -2449,16 +2463,36 @@ html.admin-boot #adminPage{display:block}
     <span class="admin-badge role">Admin only</span>
     <span class="plan-billnote" id="adminWho"></span>
     <button class="btn small" type="button" id="adminSignOut" hidden>Admin log out</button>
-    <span class="admin-sub">Manage subscription plans and VVIP. Changes save straight to each user's profile in Supabase and take effect on their next plan check (and immediately in this list). VVIP is granted only here or from the backend — it is never sold in Plans &amp; Upgrade. Who can log in to this page is NOT managed here: there is only ONE admin, set only in Supabase, in the public.admin_users table — no sign-up and no add-admin control exists in the app.</span>
+    <span class="admin-sub">Manage subscription plans and VVIP. Changes save straight to each user's profile in Supabase and take effect on their next plan check (and immediately in this list). VVIP is granted only here or from the backend — it is never sold in Plans &amp; Upgrade. Who can log in to this page is NOT managed here: there is only ONE admin, recorded in Supabase in the public.admin_users table. While that table is empty the gate offers a one-time first-admin Sign up; once an admin exists the gate is Log in only, and after that the admin can be changed only in Supabase — no add-admin control exists in the app.</span>
   </div>
   <div class="admin-wrap">
     <!-- Access gate — what every visitor to /adminpower sees
-         until they pass THIS page's own separate admin login:
-         Log in ONLY, on a dedicated form that belongs to the
-         admin page alone, plus Forgot password for the admin
-         account. There is NO sign-up here — an earlier build's
-         admin Sign up created a regular Supabase Auth user and
-         mixed the two logins together; it has been removed.
+         until they pass THIS page's own separate admin login.
+         WHICH form the gate shows depends on the Supabase admin
+         sheet, public.admin_users, checked on load through the
+         boolean-only admin_users_is_empty() RPC (it reveals
+         nothing except whether any admin row exists):
+         • Sheet EMPTY (no admin row at all — first time): the
+           gate shows the Sign up form (#adminSignupForm), so the
+           first admin enters their own email + password and
+           signs up AS the admin. Sign up creates the admin's
+           Supabase Auth account and immediately claims the
+           single admin_users row for that same email through
+           the claim_first_admin() RPC (which only ever works
+           while the sheet is empty). It creates ONLY an admin
+           account: no main-app session, no public.profiles row,
+           nothing a regular user gets. If email confirmation is
+           on, the claim finishes on the first log in here after
+           confirming — the log in path attempts the same claim,
+           which the server still only allows while empty.
+         • Sheet HAS a row (an admin already exists): the gate
+           shows Log in ONLY (#adminLoginForm) — log in with that
+           existing admin's email + password. The Sign up form
+           stays hidden, there is no Sign up button and no way
+           for anyone else to sign up as admin.
+         • Check cannot be completed (setup SQL not run yet, or
+           offline): the gate fails closed to Log in only, with a
+           setup note — Sign up is never offered on a guess.
          It is NOT the main LUTAS LED sign-in: being signed in to
          the main app never opens this page, and this login never
          signs anyone into the main app. The two are separate in
@@ -2466,19 +2500,17 @@ html.admin-boot #adminPage{display:block}
          any plan) can NEVER log in here, even with their correct
          password, and the one admin account can NEVER log in as
          a regular user in the main app (the main sign-in rejects
-         it — see authSubmitForm / authGuardNotAdmin).
+         it — see authSubmitForm / authRestoreAccept).
          Log in's password is verified by Supabase Auth — it is
          the admin account's own Supabase Auth password, never
          stored in a table and never shown. Only after Supabase
          accepts it does the page check the email against the
          Supabase admin list (public.admin_users): there is only
-         ONE admin, and that single email is set ONLY in Supabase
-         by the owner. A match swaps this gate for #adminMain;
+         ONE admin. A match swaps this gate for #adminMain;
          anything else is Access denied with no user data shown.
-         There is no sign-up, no bootstrap and no add-admin
-         control anywhere in the app, and no way to turn a
-         regular user into an admin or the admin into a regular
-         user from inside the app.
+         After the first admin exists there is no add-admin
+         control anywhere in the app: changing the admin is done
+         only in Supabase (delete the row, add the new email).
          Forgot password is for that one admin account only: it
          emails a Supabase reset link that lands back on THIS
          page, the gate shows the set-new-password form
@@ -2490,6 +2522,7 @@ html.admin-boot #adminPage{display:block}
       <span class="admin-badge role">Separate admin login</span>
       <h3 id="adminGateTitle">Admin login</h3>
       <p id="adminGateMsg">This page has its own login, separate from the main LUTAS LED app. Signing in to the main app does not sign you in here — enter an admin email and password to continue. No user data is shown until an admin login is confirmed.</p>
+      <p id="adminGateChecking" hidden>Checking whether an admin has been set up yet…</p>
       <form id="adminResetForm" autocomplete="off" hidden>
         <div class="field"><span>New password</span><input type="password" id="adminResetPw" placeholder="New admin account password" autocomplete="new-password"></div>
         <div class="field"><span>Confirm new password</span><input type="password" id="adminResetPw2" placeholder="Type the new password again" autocomplete="new-password"></div>
@@ -2508,10 +2541,24 @@ html.admin-boot #adminPage{display:block}
           <button class="btn primary cta-big" type="submit" id="adminLoginBtn">Log in to Admin</button>
           <div class="admin-gate-links">
             <button class="admin-linkbtn" type="button" id="adminForgotBtn">Forgot password?</button>
+            <button class="admin-linkbtn" type="button" id="adminShowSignupBtn" hidden>← Back to admin Sign up</button>
           </div>
         </form>
       </div>
-      <p class="admin-gate-note">There is only <b>one admin</b>, and who it is is controlled only from Supabase: the single admin email sits in the <b>public.admin_users</b> table, set by the owner in the Supabase Table Editor / SQL editor. There is no sign-up on this page and no way in the app to add an admin or to turn a regular user into one. Regular LUTAS LED users — there can be more than 1000 of them — can never log in here. The admin password itself lives only in Supabase Auth, never in this table or this page: use <b>Forgot password</b> above and Supabase emails the admin a link that returns here to set a new one.</p>
+      <div id="adminSignupForms" hidden>
+        <form id="adminSignupForm" autocomplete="off">
+          <div class="field"><span>Admin email</span><input type="email" id="adminSignupEmail" placeholder="admin@example.com" autocomplete="username" required></div>
+          <div class="field"><span>Admin password</span><input type="password" id="adminSignupPassword" placeholder="Choose the admin password" autocomplete="new-password" required></div>
+          <div class="field"><span>Confirm password</span><input type="password" id="adminSignupPassword2" placeholder="Type the password again" autocomplete="new-password" required></div>
+          <p class="admin-err" id="adminSignupErr" hidden></p>
+          <p class="admin-ok" id="adminSignupInfo" hidden></p>
+          <button class="btn primary cta-big" type="submit" id="adminSignupBtn">Sign up as Admin</button>
+          <div class="admin-gate-links">
+            <button class="admin-linkbtn" type="button" id="adminShowLoginLink">Already created the admin account? Log in</button>
+          </div>
+        </form>
+      </div>
+      <p class="admin-gate-note" id="adminGateNote">There is only <b>one admin</b>. While the Supabase admin sheet (<b>public.admin_users</b>) is <b>empty</b>, this page shows Sign up so the first admin can set themselves up; once a row exists there, this page shows <b>Log in only</b> and sign-up is closed to everyone. Regular LUTAS LED users — there can be more than 1000 of them — can never log in here. The admin password itself lives only in Supabase Auth, never in this table or this page: use <b>Forgot password</b> on the Log in form and Supabase emails the admin a link that returns here to set a new one.</p>
       <div class="admin-gate-actions">
         <a class="btn" id="adminGateHome" href="/">← Back to LUTAS LED</a>
       </div>
@@ -15062,17 +15109,41 @@ function initPlans(){
    own path /adminpower. It has its OWN login, separate from the
    main LUTAS LED app in every way, in BOTH directions:
 
-   • The gate carries a dedicated admin email + password form
-     with Log in ONLY, plus Forgot password for the admin account
-     (adminLoginSubmit / adminForgotPassword). There is NO
-     sign-up on this page: an earlier build's admin Sign up
-     created a regular Supabase Auth user and mixed the two
-     logins together — it, and the first-admin bootstrap that
-     went with it, have been removed entirely. The main app's
-     sign-in dialog is never used here, and being signed in to
-     the main app — with ANY profile, plan or role — never opens
-     this page: opening /adminpower always asks for the admin
-     login first.
+   • The gate carries this page's own dedicated admin forms,
+     and WHICH one shows is decided by the Supabase admin sheet,
+     public.admin_users, checked on load (adminCheckSheet →
+     the boolean-only admin_users_is_empty() RPC, which reveals
+     nothing but whether any admin row exists):
+       – Sheet EMPTY (first time, no admin row at all): the
+         gate shows the Sign up form (adminSignupSubmit). The
+         first admin enters their own email + password; sign up
+         creates the admin's Supabase Auth account and claims
+         the single admin_users row for that same email through
+         claim_first_admin() — a SECURITY DEFINER RPC that only
+         ever works while the sheet is empty, and only for the
+         caller's own token email. It creates ONLY an admin
+         account: no main-app session is stored, no
+         public.profiles row is written, and the resulting
+         session is this page's in-memory admin session only.
+         If Supabase requires email confirmation, no session
+         comes back from sign up: the account is created, the
+         visitor confirms by email, and the claim completes on
+         their first log in here (the log in path attempts the
+         same claim, which the server still only allows while
+         the sheet is empty).
+       – Sheet HAS a row (an admin already exists): the gate
+         shows Log in ONLY (adminLoginSubmit), plus Forgot
+         password for the admin account (adminForgotPassword).
+         The Sign up form stays hidden — no Sign up button, no
+         sign-up form, no way for anyone else to sign up as
+         admin.
+       – The check cannot be completed (setup SQL not run, or
+         offline): the gate fails closed to Log in only, with a
+         setup note. Sign up is never offered on a guess.
+     The main app's sign-in dialog is never used here, and being
+     signed in to the main app — with ANY profile, plan or role —
+     never opens this page: opening /adminpower always asks for
+     this page's own admin flow first.
    • There is only ONE admin. Log in's password is verified by
      Supabase Auth itself (the /auth/v1/token password grant —
      the admin account's own Supabase Auth password). Passwords
@@ -15107,14 +15178,18 @@ function initPlans(){
      token is then discarded: the admin still logs in here with
      the new password; nothing is signed into the main app and
      nothing is stored.
-   • Who the admin is is controlled ONLY from Supabase: the
-     owner sets the single row in public.admin_users (Table
-     Editor / SQL), and supabase-admin.sql enforces one row
-     only (a singleton guard) with is_admin() recognising only
-     that first, single admin. There is deliberately NO
-     add-admin / make-admin control in LUTAS LED or on this
-     page, and no way to turn a regular user into an admin or
-     the admin into a regular user from inside the app.
+   • After the first admin exists, who the admin is is
+     controlled ONLY from Supabase: the single row in
+     public.admin_users (Table Editor / SQL), and
+     supabase-admin.sql enforces one row only (a singleton
+     guard) with is_admin() recognising only that first, single
+     admin. There is deliberately NO add-admin / make-admin
+     control in LUTAS LED or on this page once an admin exists,
+     and no way to turn a regular user into an admin or the
+     admin into a regular user from inside the app. (To skip the
+     first-time Sign up entirely, the owner can instead add the
+     row in Supabase first — the sheet is then non-empty and the
+     gate is Log in only from the start.)
    • The admin session (adminSession) is its own token pair,
      held in memory for this page view only — never written to
      localStorage, never shared with the main app session
@@ -15166,6 +15241,28 @@ var adminResetSession=null;
    refused): the gate explains why the login is being asked for
    again. */
 var adminGateNotice="";
+/* The admin-sheet state that decides WHICH form the gate shows:
+     "unknown"  — not checked yet (or a check is in flight)
+     "empty"    — public.admin_users has NO row: first time, the
+                  gate shows the admin Sign up form
+     "has-admin"— public.admin_users has a row: the gate shows
+                  Log in ONLY, no sign-up anywhere
+     "failed"   — the emptiness check could not be completed
+                  (admin_users_is_empty() not installed yet, or
+                  offline): the gate fails closed to Log in only.
+   Set only by adminCheckSheet (and directly after a successful
+   first-admin claim, which by definition fills the sheet). */
+var adminSheetState="unknown";
+var adminSheetCheckInFlight=false;
+/* While the sheet is EMPTY the Sign up form is the default view;
+   this records the visitor toggling to the Log in form instead
+   ("Already created the admin account? Log in" — e.g. after a
+   sign up that still needs email confirmation, or an account
+   the owner created in Supabase Auth directly), or back. It is
+   only ever consulted in the "empty" state: in every other
+   state the gate is Log in only (or the reset form), whatever
+   this says. */
+var adminGateView="";
 var adminUsers=[], adminSharesByOwner={}, adminDesignCounts=null, adminShareCounts=null, adminExpanded={}, adminPending=null, adminLoadedOnce=false;
 function adminAuthHeaders(extra){
   var tok=(adminSession&&adminSession.access_token)||SUPABASE_ANON_KEY;
@@ -15243,8 +15340,10 @@ function adminSignOut(){adminClearSession(""); toast("Admin session ended. The m
    listed in public.admin_users. Only then does an admin
    session exist. A token from an attempt whose email is NOT
    the admin is discarded at once — it never becomes a session
-   and never loads any data. There is no sign-up path here at
-   all: nothing on this page creates an account. */
+   and never loads any data. (Account creation lives in the
+   separate first-time Sign up, adminSignupSubmit, which the
+   gate only shows while the admin sheet is empty; this Log in
+   handler itself never creates an account.) */
 function adminLoginSetBusy(b){
   var btn=$("adminLoginBtn"); if(!btn)return;
   btn.disabled=!!b;
@@ -15256,6 +15355,19 @@ function adminLoginShowErr(msg){
 }
 function adminLoginShowInfo(msg){
   var e=$("adminLoginInfo"); if(!e)return;
+  e.textContent=msg||""; e.hidden=!msg;
+}
+function adminSignupSetBusy(b){
+  var btn=$("adminSignupBtn"); if(!btn)return;
+  btn.disabled=!!b;
+  btn.textContent=b?"Signing up…":"Sign up as Admin";
+}
+function adminSignupShowErr(msg){
+  var e=$("adminSignupErr"); if(!e)return;
+  e.textContent=msg||""; e.hidden=!msg;
+}
+function adminSignupShowInfo(msg){
+  var e=$("adminSignupInfo"); if(!e)return;
   e.textContent=msg||""; e.hidden=!msg;
 }
 /* This page's own absolute URL — where the admin account's
@@ -15305,22 +15417,106 @@ function adminCheckListed(headers,em){
     return v;
   });
 }
-/* Shared finish for the admin Log in: list check only. Listed
+/* ── The admin-sheet check: is there an admin at all yet? ─────
+   adminCheckSheet() asks the boolean-only SECURITY DEFINER RPC
+   admin_users_is_empty() (see supabase-admin.sql): it answers
+   ONLY true (no admin row — first time) or false (a row exists),
+   never an email, and it is callable with the public anon key
+   because the gate must make this decision BEFORE any login.
+   The result drives adminSyncGate: "empty" → Sign up form,
+   "has-admin" → Log in only. Any failure (RPC not installed
+   yet, offline) lands in "failed", which also shows Log in
+   only — Sign up is never offered on an unproven sheet. */
+function adminCheckSheet(){
+  if(adminSheetCheckInFlight)return;
+  adminSheetCheckInFlight=true;
+  supaFetch(SUPABASE_URL+"/rest/v1/rpc/admin_users_is_empty",{method:"POST",headers:supaHeaders(),body:JSON.stringify({})},12000).then(function(res){
+    if(!res.ok)throw new Error("sheet check "+res.status);
+    return res.json();
+  }).then(function(v){
+    adminSheetCheckInFlight=false;
+    adminSheetState=(v===true)?"empty":(v===false?"has-admin":"failed");
+    adminSyncGate();
+  }).catch(function(){
+    adminSheetCheckInFlight=false;
+    /* A session already knows an admin exists; never downgrade
+       that knowledge because a re-check failed. */
+    if(!adminSession)adminSheetState="failed";
+    adminSyncGate();
+  });
+}
+/* ── The first-admin claim ────────────────────────────────────
+   adminClaimFirst(token) calls claim_first_admin() with an
+   authenticated token. The RPC (SECURITY DEFINER, see
+   supabase-admin.sql) inserts the token's OWN email as the
+   single admin_users row, and ONLY while the sheet is empty.
+   Resolves:
+     true  — the caller now IS the one admin (just claimed, or
+             their row was already the single row)
+     false — the sheet already has a DIFFERENT admin: claim
+             refused, nothing changed
+     null  — the claim could not be completed (RPC not
+             installed yet, or the connection failed) */
+function adminClaimFirst(token){
+  if(!token)return Promise.resolve(null);
+  var headers={"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+token,"Content-Type":"application/json"};
+  return supaFetch(SUPABASE_URL+"/rest/v1/rpc/claim_first_admin",{method:"POST",headers:headers,body:JSON.stringify({})},12000).then(function(res){
+    if(!res.ok)throw new Error("claim "+res.status);
+    return res.json().then(function(v){return v===true?true:(v===false?false:null)},function(){return null});
+  }).catch(function(){return null});
+}
+/* Starts the one in-memory admin session from a verified
+   Supabase Auth response (d) — shared by the Log in finish and
+   the first-time Sign up claim. Nothing is stored anywhere:
+   the main app's stored session is never touched. */
+function adminStartSession(d,em){
+  adminSession={access_token:d.access_token,refresh_token:d.refresh_token||"",expires_at:d.expires_at||(d.expires_in?Math.floor(Date.now()/1000)+(+d.expires_in):0),user:{id:(d.user&&d.user.id)||"",email:(d.user&&d.user.email)||em}};
+  var pwEl=$("adminLoginPassword"); if(pwEl)pwEl.value="";
+  var pwS=$("adminSignupPassword"); if(pwS)pwS.value="";
+  var pwS2=$("adminSignupPassword2"); if(pwS2)pwS2.value="";
+  adminLoginShowErr(""); adminLoginShowInfo("");
+  adminSignupShowErr(""); adminSignupShowInfo("");
+  adminSetIsAdmin(true); /* adminSyncGate swaps the gate for the dashboard and starts the data load */
+}
+/* Shared finish for the admin Log in: list check first. Listed
    (the one admin): start the one in-memory admin session.
-   Unlisted: Access denied, token discarded via a best-effort
-   Supabase logout, no session, no data. There is no other way
-   in — no sign-up, no bootstrap, no claim. */
+   Unlisted: ONE more possibility remains — the sheet may still
+   be EMPTY (first time), e.g. a sign up whose email had to be
+   confirmed before any session existed. The finish then
+   attempts the first-admin claim for this token; the server
+   only allows it while the sheet is truly empty, so in the
+   has-admin state this changes nothing and the attempt is
+   simply denied like any other. Still unlisted after that:
+   Access denied, token discarded via a best-effort Supabase
+   logout, no session, no data. */
 function adminAuthFinish(d,em){
   var headers={"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+d.access_token,"Content-Type":"application/json"};
   return adminCheckListed(headers,em).then(function(listed){
-    adminLoginSetBusy(false);
     if(listed){
-      /* Confirmed as the one admin: start the admin session. */
-      adminSession={access_token:d.access_token,refresh_token:d.refresh_token||"",expires_at:d.expires_at||(d.expires_in?Math.floor(Date.now()/1000)+(+d.expires_in):0),user:{id:d.user.id||"",email:d.user.email||em}};
-      var pwEl=$("adminLoginPassword"); if(pwEl)pwEl.value="";
-      adminLoginShowErr(""); adminLoginShowInfo("");
-      adminSetIsAdmin(true); /* adminSyncGate swaps the gate for the dashboard and starts the data load */
-    }else{
+      adminLoginSetBusy(false);
+      adminStartSession(d,em);
+      return;
+    }
+    return adminClaimFirst(d.access_token).then(function(claimed){
+      adminLoginSetBusy(false);
+      if(claimed===true){
+        /* First admin claimed on this log in: the sheet is no
+           longer empty, so Sign up closes for everyone else. */
+        adminSheetState="has-admin";
+        adminStartSession(d,em);
+        toast("You are the admin — this email is now the one admin in Supabase (public.admin_users).");
+        return;
+      }
+      if(claimed===null&&adminSheetState==="empty"){
+        /* The sheet IS empty but the claim could not run —
+           the updated supabase-admin.sql has not been run yet.
+           Discard the token and say exactly that, instead of a
+           misleading Access denied. */
+        try{supaFetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:headers},8000).then(function(){},function(){})}catch(e){}
+        adminSyncGate();
+        adminLoginShowErr("This account isn't the admin yet, and the first-admin claim couldn't run — the updated supabase-admin.sql may not have been run in Supabase yet (it adds claim_first_admin()). Run it once, then log in here again and the claim completes. No data was loaded.");
+        return;
+      }
       /* Valid Supabase account, but NOT the admin — that is
          every regular user, however correct their password was:
          deny, and discard the token; it never becomes a
@@ -15328,7 +15524,7 @@ function adminAuthFinish(d,em){
       try{supaFetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:headers},8000).then(function(){},function(){})}catch(e){}
       adminDeniedEmail=em;
       adminSyncGate();
-    }
+    });
   }).catch(function(){
     adminLoginSetBusy(false);
     adminLoginShowErr("Couldn't complete the admin check — the admin list table (public.admin_users) may not be set up in Supabase yet, or the connection failed. No data was loaded.");
@@ -15359,6 +15555,124 @@ function adminLoginSubmit(ev){
     if(err&&err.authErr){adminLoginShowErr(authErrorText(err.data,err.status)); return}
     adminLoginShowErr("Couldn't reach Supabase — check your connection and try again. No data was loaded.");
   });
+}
+/* First-time admin Sign up — reachable ONLY while the sheet is
+   empty (adminSyncGate shows this form in no other state, and
+   this handler re-checks the sheet fresh before creating
+   anything). Steps:
+     1. Re-check the sheet: if an admin now exists, sign-up is
+        closed — switch to Log in only and say so.
+     2. Create the admin's Supabase Auth account
+        (POST /auth/v1/signup, confirmation link redirecting
+        back to /adminpower). This creates ONLY an admin
+        account: no public.profiles upsert, no stored main-app
+        session, nothing a regular user gets.
+     3a. Session returned (confirmation off): claim the single
+        admin_users row via claim_first_admin(). Claimed → the
+        in-memory admin session starts and the dashboard opens.
+        Refused (someone else claimed first) → token discarded,
+        gate switches to Log in only. Claim unavailable (SQL
+        not run yet) → token discarded, with the exact fix
+        named: run the updated supabase-admin.sql, then Log in.
+     3b. No session returned (email confirmation on): the
+        account exists but nothing is claimed yet — the gate
+        switches to Log in with instructions: confirm the email,
+        then log in here with the same email + password; that
+        first log in completes the claim (adminAuthFinish),
+        still only possible while the sheet is empty. */
+function adminSignupSubmit(ev){
+  if(ev&&ev.preventDefault)ev.preventDefault();
+  if(adminSession||adminResetSession)return;
+  if(adminSheetState!=="empty"){adminCheckSheet(); adminSignupShowErr("Sign up is only available while no admin exists yet — checking the admin sheet again…"); return}
+  var em=($("adminSignupEmail")&&$("adminSignupEmail").value||"").trim();
+  var pw=($("adminSignupPassword")&&$("adminSignupPassword").value)||"";
+  var pw2=($("adminSignupPassword2")&&$("adminSignupPassword2").value)||"";
+  adminSignupShowErr(""); adminSignupShowInfo("");
+  if(!em){adminSignupShowErr("Enter the admin email."); return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){adminSignupShowErr("That email address doesn't look valid."); return}
+  if(!pw){adminSignupShowErr("Choose a password for the admin account."); return}
+  if(pw.length<6){adminSignupShowErr("Use at least 6 characters for the admin password."); return}
+  if(pw!==pw2){adminSignupShowErr("The two passwords don't match — type the same password twice."); return}
+  adminDeniedEmail=""; adminGateNotice="";
+  adminSignupSetBusy(true);
+  /* Step 1 — fresh sheet check, so a sheet filled since this
+     page loaded closes sign-up before any account is made. */
+  supaFetch(SUPABASE_URL+"/rest/v1/rpc/admin_users_is_empty",{method:"POST",headers:supaHeaders(),body:JSON.stringify({})},12000).then(function(res){
+    if(!res.ok)throw new Error("sheet check "+res.status);
+    return res.json();
+  }).then(function(v){
+    if(v!==true){
+      adminSignupSetBusy(false);
+      adminSheetState=(v===false)?"has-admin":adminSheetState;
+      adminGateView="";
+      adminSyncGate();
+      adminLoginShowErr("An admin already exists, so Sign up is closed. Log in with the existing admin's email and password.");
+      return null;
+    }
+    /* Step 2 — create the admin Auth account (admin only: no
+       profile upsert, no stored session anywhere). */
+    return supaFetch(SUPABASE_URL+"/auth/v1/signup?redirect_to="+encodeURIComponent(adminPowerAbsoluteUrl()),{method:"POST",headers:supaHeaders(),body:JSON.stringify({email:em,password:pw})},20000).then(function(res){
+      return res.json().then(function(d){
+        if(!res.ok)throw {authErr:true,data:d,status:res.status};
+        return d;
+      });
+    }).then(function(d){
+      if(!d){return} /* sheet filled meanwhile — handled above */
+      if(d.access_token&&d.user){
+        /* Step 3a — claim the single admin row with this token. */
+        return adminClaimFirst(d.access_token).then(function(claimed){
+          adminSignupSetBusy(false);
+          var headers={"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+d.access_token,"Content-Type":"application/json"};
+          if(claimed===true){
+            adminSheetState="has-admin";
+            adminStartSession(d,em);
+            toast("Admin account created — you are the one admin. Sign up is now closed; this page is Log in only from now on.");
+            return;
+          }
+          try{supaFetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:headers},8000).then(function(){},function(){})}catch(e){}
+          if(claimed===false){
+            adminSheetState="has-admin";
+            adminGateView="";
+            adminSyncGate();
+            adminLoginShowErr("An admin was just claimed by someone else, so this sign-up did not become the admin. Log in with the admin's email and password.");
+            return;
+          }
+          adminSyncGate();
+          adminSignupShowErr("Your admin account was created, but the admin claim couldn't run — the updated supabase-admin.sql may not have been run in Supabase yet (it adds claim_first_admin()). Run it once, then use Log in here with this same email and password: the claim completes on that log in, while the sheet is still empty.");
+        });
+      }
+      /* Step 3b — account created, email confirmation still
+         outstanding: no session, nothing claimed yet. */
+      adminSignupSetBusy(false);
+      adminGateView="login";
+      var emEl=$("adminLoginEmail"); if(emEl)emEl.value=em;
+      var s1=$("adminSignupPassword"); if(s1)s1.value="";
+      var s2=$("adminSignupPassword2"); if(s2)s2.value="";
+      adminSyncGate();
+      adminLoginShowInfo("Admin account created for "+em+" — check that email and click the confirmation link, then log in here with the same email and password. That first log in claims the admin for this email (only possible while no admin exists yet), and Sign up then closes for everyone.");
+    });
+  }).catch(function(err){
+    adminSignupSetBusy(false);
+    if(err&&err.authErr){adminSignupShowErr(authErrorText(err.data,err.status)); return}
+    adminSignupShowErr("Couldn't reach Supabase — check your connection and try again. Nothing was created.");
+  });
+}
+/* Empty-sheet view toggles: Sign up ⇄ Log in. These only exist
+   as controls while the sheet is empty — in the has-admin state
+   adminSyncGate keeps the Sign up form and both toggles hidden,
+   so there is no path back to Sign up for anyone. */
+function adminShowLoginView(){
+  adminGateView="login";
+  adminSignupShowErr(""); adminSignupShowInfo("");
+  adminSyncGate();
+  var el=$("adminLoginEmail"); if(el){try{el.focus({preventScroll:true})}catch(e){}}
+}
+function adminShowSignupView(){
+  if(adminSheetState!=="empty")return;
+  adminGateView="signup";
+  adminLoginShowErr(""); adminLoginShowInfo("");
+  adminSyncGate();
+  var el=$("adminSignupEmail"); if(el){try{el.focus({preventScroll:true})}catch(e){}}
 }
 /* Forgot password — for the ONE admin account only. Supabase
    emails a reset link that lands back on THIS page
@@ -15423,7 +15737,11 @@ function adminCaptureAuthReturn(ret){
   }
   if(ret.type==="signup"){
     try{supaFetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+ret.access_token,"Content-Type":"application/json"}},8000).then(function(){},function(){})}catch(e){}
-    adminGateInfo="Email confirmed — now log in below with your admin email and password.";
+    /* Land on the Log in form even while the sheet is still
+       empty (first-admin sign up awaiting its first log in):
+       that log in is what completes the claim. */
+    adminGateView="login";
+    adminGateInfo="Email confirmed — now log in below with your admin email and password. If this was the first admin sign-up, that log in completes your admin claim.";
     return true;
   }
   return false;
@@ -15550,9 +15868,13 @@ function adminPageUrl(){return adminEditorPath()+"adminpower"}
    The dashboard (#adminMain) is shown ONLY while a separate admin
    session exists (adminSession, from this page's own login). The
    main app's sign-in state is never consulted here: a visitor
-   signed in to LUTAS LED still gets this login form, and after a
-   failed admin-list check they get Access denied — with no user
-   data either way. Called whenever the admin session moves. */
+   signed in to LUTAS LED still gets this page's own gate, and
+   after a failed admin-list check they get Access denied — with
+   no user data either way. WHICH gate form shows follows the
+   admin sheet (adminSheetState): empty → the first-admin Sign
+   up form; has-admin / check failed → Log in only; a captured
+   recovery token → the set-new-password form above both. Called
+   whenever the admin session or the sheet state moves. */
 function adminSyncGate(){
   var gate=$("adminGate"), main=$("adminMain"), pg=$("adminPage");
   if(!gate||!main)return;
@@ -15564,11 +15886,9 @@ function adminSyncGate(){
     return;
   }
   gate.hidden=false; main.hidden=true;
-  /* A one-shot info line captured elsewhere (reset link landed,
-     email confirmed) renders once, here. */
-  if(adminGateInfo){adminLoginShowInfo(adminGateInfo); adminGateInfo=""}
   var t=$("adminGateTitle"), msg=$("adminGateMsg");
-  var rf=$("adminResetForm"), fw=$("adminGateForms");
+  var rf=$("adminResetForm"), fw=$("adminGateForms"), sf=$("adminSignupForms"), ck=$("adminGateChecking");
+  var showSignupLink=$("adminShowSignupBtn");
   if(adminResetSession){
     /* Arrived from a password-reset email link: the ONLY thing
        this gate offers is setting a new password. No log in, no
@@ -15576,17 +15896,69 @@ function adminSyncGate(){
        session of any kind. */
     if(rf)rf.hidden=false;
     if(fw)fw.hidden=true;
+    if(sf)sf.hidden=true;
+    if(ck)ck.hidden=true;
     if(t)t.textContent="Set a new admin password";
     if(msg)msg.textContent="This page opened from your Supabase password-reset email link. Set a new password for the admin account below — then log in here with it. You are not logged in yet, and no user data is shown.";
+    adminGateInfo="";
     return;
   }
   if(rf)rf.hidden=true;
-  if(fw)fw.hidden=false;
+  /* A one-shot info line captured elsewhere (reset link landed,
+     email confirmed) renders once, here — into whichever form
+     this gate is about to show. */
+  var wantSignup=(adminSheetState==="empty"&&adminGateView!=="login"&&!adminDeniedEmail);
+  if(adminGateInfo){
+    if(wantSignup)adminSignupShowInfo(adminGateInfo); else adminLoginShowInfo(adminGateInfo);
+    adminGateInfo="";
+  }
   if(adminDeniedEmail){
+    /* Access denied always lands on the Log in form: an admin
+       exists (this account was checked against it and failed),
+       so Sign up is closed regardless of the last sheet check. */
+    if(fw)fw.hidden=false;
+    if(sf)sf.hidden=true;
+    if(ck)ck.hidden=true;
+    if(showSignupLink)showSignupLink.hidden=true;
     if(t)t.textContent="Access denied";
-    if(msg)msg.textContent=adminDeniedEmail+" is a valid Supabase account, but it is not the one admin email in the Supabase admin list (public.admin_users), so this page stays locked and no user data is shown. Regular LUTAS LED users can never log in here, even with their correct password. The one admin is set only in Supabase — there is no sign-up here and no way to grant access from inside the app.";
-  }else{
+    if(msg)msg.textContent=adminDeniedEmail+" is a valid Supabase account, but it is not the one admin email in the Supabase admin list (public.admin_users), so this page stays locked and no user data is shown. Regular LUTAS LED users can never log in here, even with their correct password. An admin already exists, so Sign up on this page is closed — the one admin can only be changed in Supabase.";
+    return;
+  }
+  if(adminSheetState==="empty"&&adminGateView!=="login"){
+    /* FIRST TIME — the Supabase admin sheet is EMPTY: Sign up
+       as the admin. The Log in form is hidden (its toggle link
+       inside the Sign up form covers the confirm-then-log-in
+       and already-created-account cases). */
+    if(fw)fw.hidden=true;
+    if(sf)sf.hidden=false;
+    if(ck)ck.hidden=true;
+    if(t)t.textContent="Set up the admin account";
+    if(msg)msg.textContent="No admin exists yet — the Supabase admin sheet (public.admin_users) is empty, so this page shows Sign up for the first admin. Enter your own email and password to sign up as the admin: that creates the admin account and claims the single admin row for that email in Supabase. It creates ONLY an admin account — not a regular LUTAS LED user account — and this page's logins stay completely separate from the main app. Whoever completes this first sign-up becomes the one admin; afterwards this page shows Log in only and sign-up closes for everyone."+(adminGateNotice?(" "+adminGateNotice):"");
+    return;
+  }
+  /* Every other state is Log in only: "has-admin", the manual
+     Log in view inside the empty state, and the "failed" check
+     state (fail closed — with a setup note, since Sign up may
+     be waiting on the updated supabase-admin.sql). */
+  if(fw)fw.hidden=false;
+  if(sf)sf.hidden=true;
+  if(showSignupLink)showSignupLink.hidden=(adminSheetState!=="empty");
+  if(adminSheetState==="unknown"){
+    /* Still checking the sheet: show neither form yet, so the
+       gate never flashes the wrong one. */
+    if(fw)fw.hidden=true;
+    if(ck)ck.hidden=false;
     if(t)t.textContent="Admin login";
+    if(msg)msg.textContent="This page has its own login, separate from the main LUTAS LED app. Checking whether an admin has been set up yet…";
+    return;
+  }
+  if(ck)ck.hidden=true;
+  if(t)t.textContent="Admin login";
+  if(adminSheetState==="empty"){
+    if(msg)msg.textContent="No admin has been claimed yet — if you just signed up as the admin, log in here with that same email and password and the claim completes on this log in. No user data is shown until an admin login is confirmed."+(adminGateNotice?(" "+adminGateNotice):"");
+  }else if(adminSheetState==="failed"){
+    if(msg)msg.textContent="This page has its own login, separate from the main LUTAS LED app. Signing in to the main app does not sign you in here — enter the admin email and password to continue. No user data is shown until an admin login is confirmed. (The first-time Sign up check couldn't be completed — if no admin exists yet and Sign up should be showing, run the updated supabase-admin.sql once in Supabase, then reload this page.)"+(adminGateNotice?(" "+adminGateNotice):"");
+  }else{
     if(msg)msg.textContent="This page has its own login, separate from the main LUTAS LED app. Signing in to the main app does not sign you in here — enter the admin email and password to continue. No user data is shown until an admin login is confirmed."+(adminGateNotice?(" "+adminGateNotice):"");
   }
 }
@@ -15594,6 +15966,7 @@ function adminShowPage(){
   document.documentElement.classList.remove("admin-boot");
   var pg=$("adminPage"); if(!pg)return;
   pg.classList.add("open"); pg.scrollTop=0;
+  if(adminSheetState==="unknown"&&!adminSession)adminCheckSheet();
   var who=$("adminWho"); if(who)who.textContent=adminSession?("Admin session: "+(adminSession.user.email||"")):"";
   adminSyncGate();
   if(adminIsAdmin&&adminSession)adminLoadData();
@@ -15619,6 +15992,10 @@ function openAdminPage(){
      toggle — so the page is shareable / reloadable as a URL and
      Back returns to the editor. */
   try{if(!isAdminPath())history.pushState({lutasAdmin:true},"",adminPageUrl())}catch(e){}
+  /* Make sure the gate knows the sheet state (Sign up vs Log in
+     only) — checked on load for direct /adminpower visits; an
+     in-app entry starts it here if it hasn't resolved yet. */
+  if(adminSheetState==="unknown"||adminSheetState==="failed")adminCheckSheet();
   adminShowPage();
 }
 function closeAdminPage(){
@@ -15859,12 +16236,17 @@ function initAdmin(){
   var no=$("adminConfirmNo"); if(no)no.addEventListener("click",function(){$("adminConfirmModal").classList.remove("open"); adminPending=null; adminRenderUsers()});
   var ys=$("adminConfirmYes"); if(ys)ys.addEventListener("click",adminDoPlanChange);
   var cm=$("adminConfirmModal"); if(cm)cm.addEventListener("click",function(ev){if(ev.target===this){this.classList.remove("open"); adminPending=null; adminRenderUsers()}});
-  /* The gate's own admin login — this page's separate Log in /
-     Forgot password ONLY. There is no sign-up here, and it NEVER
-     opens the main app's sign-in dialog: the two logins are
-     separate in both directions. */
+  /* The gate's own admin forms — this page's separate Log in /
+     Forgot password, plus the first-time Sign up that
+     adminSyncGate only ever shows while the Supabase admin
+     sheet is empty. None of them EVER opens the main app's
+     sign-in dialog: the two logins are separate in both
+     directions. */
   var lf=$("adminLoginForm"); if(lf)lf.addEventListener("submit",adminLoginSubmit);
   var fg=$("adminForgotBtn"); if(fg)fg.addEventListener("click",adminForgotPassword);
+  var suf=$("adminSignupForm"); if(suf)suf.addEventListener("submit",adminSignupSubmit);
+  var sl=$("adminShowLoginLink"); if(sl)sl.addEventListener("click",adminShowLoginView);
+  var ss=$("adminShowSignupBtn"); if(ss)ss.addEventListener("click",adminShowSignupView);
   var rsf=$("adminResetForm"); if(rsf)rsf.addEventListener("submit",adminResetSubmit);
   var rc=$("adminResetCancel"); if(rc)rc.addEventListener("click",adminResetCancel);
   var so=$("adminSignOut"); if(so)so.addEventListener("click",adminSignOut);
@@ -15873,8 +16255,10 @@ function initAdmin(){
   adminSetIsAdmin(false);
   /* Direct load at /adminpower: open the dashboard page itself —
      the gate shows until the admin check resolves, then either
-     the dashboard (admin) or the denied / sign-in state. */
-  if(isAdminPath()||window.__LUTAS_ADMIN_ROUTE__)adminRouteSync();
+     the dashboard (admin) or the denied / sign-in state. The
+     sheet check starts here too, so the gate can pick Sign up
+     (empty sheet) vs Log in only (admin exists) on load. */
+  if(isAdminPath()||window.__LUTAS_ADMIN_ROUTE__){adminCheckSheet(); adminRouteSync()}
 }
 function isClientViewRequest(){
   if(clientMode)return true;
