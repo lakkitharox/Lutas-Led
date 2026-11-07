@@ -463,14 +463,14 @@ select option,select optgroup{color:#11151c;background-color:#fff}
 /* About window — professional dark card: hero with a pixel-dot
    field and radial glow, cyan LED accent and info rows.
    Scoped .about-* so no other modal changes. */
-.modal.about-card{width:min(560px,100%);padding:0;background:#101721;border:1px solid #26394c;border-radius:16px;box-shadow:0 24px 90px rgba(0,0,0,.67);color:#edf7ff;font-family:Inter,"Segoe UI",sans-serif}
+.modal.about-card{width:min(680px,100%);padding:0;background:#101721;border:1px solid #26394c;border-radius:16px;box-shadow:0 24px 90px rgba(0,0,0,.67);color:#edf7ff;font-family:Inter,"Segoe UI",sans-serif;display:flex;flex-direction:column;overflow:hidden}
 .about-hero{position:relative;padding:35px 24px 28px;text-align:center;overflow:hidden;border-radius:15px 15px 0 0;background:radial-gradient(ellipse at 50% 30%,#07394d 0%,#101c2b 44%,#0b111b 100%)}
 .about-pixels{position:absolute;inset:0;opacity:.5;background-image:radial-gradient(#41dfff 1px,transparent 1.5px);background-size:13px 13px;-webkit-mask-image:linear-gradient(to bottom,black,transparent 90%);mask-image:linear-gradient(to bottom,black,transparent 90%);pointer-events:none}
 .about-hero h1{margin:0;line-height:0}
 .about-logo{display:block;position:relative;margin:0 auto;width:min(320px,88%);height:auto}
 .about-subtitle{position:relative;margin-top:10px;font-size:10px;letter-spacing:3px;color:#74dfff}
 .about-tagline{position:relative;color:#a7b8c9;font-size:13px;margin:18px 0 0}
-.about-content{padding:24px}
+.about-content{padding:24px;flex:1;min-height:0;overflow-y:auto}
 .about-desc{color:#b8c7d7;font-size:13px;line-height:1.8;margin:0;text-align:center}
 .about-desc+.about-desc{margin-top:12px}
 .about-info{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #253140;font-size:12px}
@@ -488,6 +488,37 @@ select option,select optgroup{color:#11151c;background-color:#fff}
 .about-coffee-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:0;padding:11px 22px;border-radius:999px;background:#ffdd00;color:#11151c;font-weight:800;font-size:13px;text-decoration:none;border:1px solid #ffdd00;box-shadow:0 6px 18px rgba(255,221,0,.18)}
 .about-coffee-btn:hover{background:#ffe84d;border-color:#ffe84d}
 .about-coffee-btn:focus-visible{outline:2px solid #74dfff;outline-offset:3px}
+/* About menu + windows — About in the top bar is a dropdown menu,
+   exactly like the File menu (same .menu-wrap / .menu pattern):
+   "About us" opens the About popup below, and each policy opens
+   its OWN separate popup window (.policy-card). There are no tabs
+   anywhere in About. The foot bar (copyright + Close) closes the
+   About popup; each policy popup carries its own head + Close. */
+.about-hero{flex:none}
+#wrapAbout .menu{min-width:220px}
+.about-footbar{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px;border-top:1px solid #253140;background:#0d141f;border-radius:0 0 15px 15px;color:#75879a;font-size:10px}
+.modal.policy-card{width:min(680px,100%);padding:0;background:#101721;border:1px solid #26394c;border-radius:16px;box-shadow:0 24px 90px rgba(0,0,0,.67);color:#edf7ff;font-family:Inter,"Segoe UI",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+.policy-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px 12px;border-bottom:1px solid #253140;background:#0d141f}
+.policy-head h2{font-family:Archivo,sans-serif;font-size:18px;margin:0;color:#edf7ff;letter-spacing:-.01em}
+.policy-body{flex:1;min-height:0;overflow-y:auto;padding:20px 24px 24px}
+.policy-footbar{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px;border-top:1px solid #253140;background:#0d141f;border-radius:0 0 15px 15px;color:#75879a;font-size:10px}
+.policy{text-align:left;color:#b8c7d7;font-size:13px;line-height:1.7}
+.policy h3{font-family:Archivo,sans-serif;font-size:17px;color:#edf7ff;margin:2px 0 4px;letter-spacing:-.01em}
+.policy .policy-date{font-size:11.5px;color:#75879a;margin:0 0 6px}
+.policy h4{font-size:13.5px;color:#edf7ff;margin:18px 0 6px}
+.policy p{margin:0 0 10px}
+.policy ul{margin:0 0 12px;padding-left:18px}
+.policy li{margin:4px 0}
+.policy a{color:#74dfff}
+.policy table{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:12.5px;line-height:1.5}
+.policy th,.policy td{border:1px solid #253140;padding:8px 10px;text-align:left;vertical-align:top}
+.policy th{color:#edf7ff;background:rgba(255,255,255,.03);font-weight:600}
+.policy td .pp-sub{display:block;color:#899bad;font-size:11.5px}
+.policy-draft{border:1px solid #8a6d1f;background:rgba(255,221,0,.07);border-radius:10px;padding:12px 14px;margin:12px 0 14px}
+.policy-draft b{color:#ffd94d}
+.policy-draft p{margin:6px 0 0}
+.policy-draft p:first-of-type{margin-top:6px}
+.policy-draft ul{margin-bottom:2px}
 .modal.add-modal{width:min(620px,100%)}
 /* Preferences window — Photoshop-style: a category list down the
    LEFT (General, Learning, Keyboard shortcuts, Activation) and the
@@ -877,6 +908,9 @@ html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:fle
 .plan-card .btn{margin-top:auto;justify-content:center}
 .plan-checkout{margin-top:14px;border:1px solid var(--accent);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;background:var(--panel2)}
 .plan-checkout b{color:var(--text)}
+.plan-policies{margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.7;text-align:center}
+.plan-policies button{background:none;border:0;padding:0;font:inherit;font-size:12.5px;font-weight:600;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.plan-policies button:hover{filter:brightness(1.15)}
 .plan-lock{border:1px solid var(--accent);border-radius:12px;padding:12px 14px;background:var(--panel2);margin-bottom:12px}
 .plan-lock b{font-size:13.5px;display:block;margin-bottom:3px}
 .plan-lock p{margin:0 0 10px;font-size:12.5px;color:var(--muted);line-height:1.55}
@@ -1547,8 +1581,15 @@ html.admin-boot #adminPage{display:block}
         <button data-panel="layers"><span class="chk">✓</span>Layers panel</button>
       </div>
     </div>
-    <div class="menu-wrap">
-      <button class="menu-btn" id="mAbout">About</button>
+    <div class="menu-wrap" id="wrapAbout">
+      <button class="menu-btn" data-menu="wrapAbout">About</button>
+      <div class="menu" id="aboutMenu">
+        <button id="mAboutUs">About us</button>
+        <button id="mAboutPayment">Payment Policy</button>
+        <button id="mAboutRefund">Refund Policy</button>
+        <button id="mAboutTerms">Terms of Service</button>
+        <button id="mAboutPrivacy">Privacy Policy</button>
+      </div>
     </div>
   </nav>
   <button class="btn small" id="btnProjects" title="Projects — new project and your recent projects saved to your account">Projects</button>
@@ -2439,6 +2480,7 @@ html.admin-boot #adminPage{display:block}
         <button class="btn primary cta-big" type="button" id="planBtnVip">Upgrade to VIP</button>
       </div>
     </div>
+    <p class="plan-policies">Before you upgrade, please read our <button type="button" data-policy-link="payment">Payment Policy</button> · <button type="button" data-policy-link="refund">Refund Policy</button> · <button type="button" data-policy-link="terms">Terms of Service</button> · <button type="button" data-policy-link="privacy">Privacy Policy</button></p>
     <div class="plan-checkout" id="planCheckoutNote" hidden></div>
     <div class="mrow">
       <button class="btn" type="button" id="planClose">Close</button>
@@ -2764,7 +2806,11 @@ html.admin-boot #adminPage{display:block}
      subtitle, tagline and info rows — all existing content below the
      logo is unchanged. The Close button keeps its aboutClose id, so
      the existing open / close wiring (About menu entry, Close
-     button, backdrop click) is unchanged. -->
+     button, backdrop click) is unchanged. Opened from the About
+     dropdown menu in the top bar (About → About us) — the SAME
+     dropdown pattern as the File menu; the four policies in that
+     menu each open their own separate popup window below, NOT a
+     tab inside this window. -->
 <div class="modal-bg" id="aboutModal">
   <section class="modal about-card" role="dialog" aria-modal="true" aria-labelledby="app-title">
     <header class="about-hero">
@@ -2785,11 +2831,175 @@ html.admin-boot #adminPage{display:block}
       <section class="about-donate" aria-label="Support the developers">
         <a class="about-coffee-btn" href="https://buymeacoffee.com/lutasled" target="_blank" rel="noopener">Buy Me a Coffee — Donate</a>
       </section>
-      <div class="about-footer">
-        <span>© 2026 LUTAS LED | Developed by Team LUTAS</span>
-        <button class="about-close-btn" id="aboutClose" type="button">Close</button>
-      </div>
     </main>
+    <div class="about-footbar">
+      <span>© 2026 LUTAS LED | Developed by Team LUTAS</span>
+      <button class="about-close-btn" id="aboutClose" type="button">Close</button>
+    </div>
+  </section>
+</div>
+
+<!-- PAYMENT POLICY POPUP — its own separate popup window, opened
+     from About → Payment Policy in the top-bar dropdown menu and
+     from the Payment Policy link in Plans & Upgrade. Not a tab
+     inside About, not a new browser tab; when opened from Plans &
+     Upgrade, that dialog stays open underneath. -->
+<div class="modal-bg" id="paymentModal">
+  <section class="modal policy-card" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
+    <div class="policy-head"><h2 id="paymentTitle">Payment Policy</h2></div>
+    <div class="policy-body">
+      <div class="policy">
+        <h3>Payment Policy</h3>
+        <p class="policy-date">Last updated: 7 November 2026</p>
+        <p>This policy explains how paying for a paid LUTAS LED plan (Advance or VIP) works — how you pay, what it costs, and how billing repeats.</p>
+        <h4>Plans and prices</h4>
+        <table>
+          <tr><th>Plan</th><th>Monthly</th><th>Yearly</th></tr>
+          <tr><td>Starter</td><td>Free</td><td>Free</td></tr>
+          <tr><td>Advance</td><td>LKR 4,999.99<span class="pp-sub">USD 15</span></td><td>LKR 59,999.88<span class="pp-sub">USD 180</span></td></tr>
+          <tr><td>VIP</td><td>LKR 10,699.99<span class="pp-sub">USD 30</span></td><td>LKR 128,399.88<span class="pp-sub">USD 360</span></td></tr>
+        </table>
+        <p>Yearly billing is exactly the monthly price × 12 — there is no yearly discount.</p>
+        <h4>How you pay</h4>
+        <p>If you subscribe in Sri Lankan Rupees (LKR), payment is handled by <b>PayHere</b>. If you subscribe in US Dollars (USD), payment is handled by <b>Paddle</b>. You enter your card details on the payment processor's own secure checkout — not inside LUTAS LED.</p>
+        <h4>Your card details</h4>
+        <p>Your card details go directly to PayHere or Paddle. They are <b>never stored in LUTAS LED</b>, and we never see your full card number. The processor confirms to us only whether a payment succeeded, so we can switch your plan on.</p>
+        <h4>Billing and renewal</h4>
+        <ul>
+          <li>You can bill <b>monthly</b> or <b>yearly</b>.</li>
+          <li>Your subscription <b>renews automatically</b> at the end of each paid period, at the price for that period, until you cancel.</li>
+          <li>You can cancel at any time — see the Refund Policy for what happens when you cancel.</li>
+        </ul>
+        <h4>Checkout status</h4>
+        <p><b>Checkout is not yet connected, so no payment can be taken yet.</b> The Upgrade buttons in Plans &amp; Upgrade show the plan and price and tell you checkout isn't connected — nothing is charged. This policy is published now so the payment terms are clear before checkout opens.</p>
+        <h4>Questions about a payment</h4>
+        <p>Email us at <a href="mailto:hello@lutas.digital">hello@lutas.digital</a> with your account email and the date of the payment.</p>
+      </div>
+    </div>
+    <div class="policy-footbar">
+      <span>© 2026 LUTAS LED | Developed by Team LUTAS</span>
+      <button class="about-close-btn" id="paymentClose" type="button">Close</button>
+    </div>
+  </section>
+</div>
+
+<!-- REFUND POLICY POPUP — its own separate popup window, opened
+     from About → Refund Policy in the top-bar dropdown menu and
+     from the Refund Policy link in Plans & Upgrade. -->
+<div class="modal-bg" id="refundModal">
+  <section class="modal policy-card" role="dialog" aria-modal="true" aria-labelledby="refundTitle">
+    <div class="policy-head"><h2 id="refundTitle">Refund Policy</h2></div>
+    <div class="policy-body">
+      <div class="policy">
+        <h3>Refund Policy</h3>
+        <p class="policy-date">Last updated: 7 November 2026</p>
+        <h4>Cancel at any time</h4>
+        <p>You can cancel a paid plan (Advance or VIP) at any time. Cancelling stops the next renewal — you are not charged again.</p>
+        <h4>What happens after you cancel</h4>
+        <ul>
+          <li>Your paid access continues until the <b>end of the period you have already paid for</b>.</li>
+          <li>When that period ends, your plan drops back to <b>Starter (free)</b>.</li>
+          <li><b>Your designs are kept</b> — nothing you created is deleted. The paid tools simply lock again until you upgrade.</li>
+        </ul>
+        <div class="policy-draft">
+          <b>7-day refund rule — default draft</b>
+          <p>This refund window is the current <b>default draft</b> and can be changed by the owner of LUTAS LED. The version published here is the one that applies to your payment:</p>
+          <ul>
+            <li>You can get a refund <b>within 7 days of payment</b>, if the paid features have <b>not been used</b>.</li>
+            <li>There is <b>no refund after 7 days</b>, and <b>no refund once the paid features have been used</b> — even inside the 7 days.</li>
+          </ul>
+          <p>The same rule applies to monthly and yearly payments. Approved refunds are returned through the original payment processor (PayHere for LKR, Paddle for USD) to the payment method you paid with.</p>
+        </div>
+        <h4>How to ask for a refund</h4>
+        <p>Email <a href="mailto:hello@lutas.digital">hello@lutas.digital</a> within the 7 days, from or naming your account email, with the date of the payment. We will confirm whether the paid features were used and reply about your refund.</p>
+      </div>
+    </div>
+    <div class="policy-footbar">
+      <span>© 2026 LUTAS LED | Developed by Team LUTAS</span>
+      <button class="about-close-btn" id="refundClose" type="button">Close</button>
+    </div>
+  </section>
+</div>
+
+<!-- TERMS OF SERVICE POPUP — its own separate popup window, opened
+     from About → Terms of Service in the top-bar dropdown menu and
+     from the Terms of Service link in Plans & Upgrade. -->
+<div class="modal-bg" id="termsModal">
+  <section class="modal policy-card" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+    <div class="policy-head"><h2 id="termsTitle">Terms of Service</h2></div>
+    <div class="policy-body">
+      <div class="policy">
+        <h3>Terms of Service</h3>
+        <p class="policy-date">Last updated: 7 November 2026</p>
+        <h4>What LUTAS LED is</h4>
+        <p>LUTAS LED is a web-based tool for designing, planning and previewing LED stage designs: 2D layout and cabling, a 3D preview of the stage, exports, and client sharing links. Previews and simulations are planning aids — always check real measurements, weights and equipment specifications on site before building.</p>
+        <h4>Who can use it</h4>
+        <p>Anyone can open LUTAS LED and use it as a guest. Some features need an account, and some need a paid plan. If you use LUTAS LED for a company or a client, you are responsible for having their permission to share designs with them through the app.</p>
+        <h4>Your account</h4>
+        <ul>
+          <li>Give accurate details when you sign up, and keep your password private.</li>
+          <li>You are responsible for what happens under your account.</li>
+          <li>Tell us at <a href="mailto:hello@lutas.digital">hello@lutas.digital</a> if you think someone else has used your account.</li>
+        </ul>
+        <h4>Plans and payment</h4>
+        <p>Starter is free. Advance and VIP are paid plans, billed monthly or yearly — the Payment Policy and Refund Policy explain prices, billing, cancellation and refunds. Which tools are unlocked depends on your plan.</p>
+        <h4>Fair use</h4>
+        <ul>
+          <li>Do not use LUTAS LED to break the law, or to infringe anyone else's rights.</li>
+          <li>Do not try to break into accounts or systems, bypass plan locks, or interfere with how the service runs.</li>
+          <li>Do not overload the service, and do not upload content you have no right to use.</li>
+        </ul>
+        <h4>Your designs belong to you</h4>
+        <p>The designs and content you create in LUTAS LED are yours. We claim no ownership of them. We only store and process them so the service works — saving your projects, showing your previews, and running the client shares you choose to create.</p>
+        <h4>Service availability</h4>
+        <p>We work to keep LUTAS LED available, but we do not guarantee it will never be interrupted. Features may change, improve, or be removed as the platform develops. The service is provided as-is; a preview is a visualisation, not a guarantee of a real-world result.</p>
+        <h4>Ending use</h4>
+        <p>You can stop using LUTAS LED at any time. We may suspend an account that breaks these terms.</p>
+        <h4>Contact</h4>
+        <p>Questions about these terms: <a href="mailto:hello@lutas.digital">hello@lutas.digital</a>.</p>
+      </div>
+    </div>
+    <div class="policy-footbar">
+      <span>© 2026 LUTAS LED | Developed by Team LUTAS</span>
+      <button class="about-close-btn" id="termsClose" type="button">Close</button>
+    </div>
+  </section>
+</div>
+
+<!-- PRIVACY POLICY POPUP — its own separate popup window, opened
+     from About → Privacy Policy in the top-bar dropdown menu and
+     from the Privacy Policy link in Plans & Upgrade. -->
+<div class="modal-bg" id="privacyModal">
+  <section class="modal policy-card" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
+    <div class="policy-head"><h2 id="privacyTitle">Privacy Policy</h2></div>
+    <div class="policy-body">
+      <div class="policy">
+        <h3>Privacy Policy</h3>
+        <p class="policy-date">Last updated: 7 November 2026</p>
+        <h4>What we collect</h4>
+        <ul>
+          <li><b>Account details</b> — your name, email address, and the profile details you choose to give when you sign up.</li>
+          <li><b>Your designs</b> — the layouts and projects you save to your account, and their titles.</li>
+          <li><b>Shares</b> — client links you create, their settings, and comments or reviews left on them. Names on comments are typed by the person posting and are not verified.</li>
+          <li><b>Anonymous visit counts</b> — when the app opens, a visit is counted with a hashed identifier, the visitor's country, the device type, which view was opened, and how long the page stayed open. These counts appear in the admin Visitors section. <b>No raw IP address is stored</b> — the IP is hashed on the server and discarded.</li>
+          <li><b>Card details — never.</b> Payments are handled by PayHere (LKR) or Paddle (USD); card details go to them and are never stored in LUTAS LED.</li>
+        </ul>
+        <h4>How we use it</h4>
+        <p>We use this data to run the service: signing you in, saving and loading your designs, operating your client shares, managing your plan, answering your messages, and counting anonymous visits so we can understand how the app is used. We do not sell your personal data.</p>
+        <h4>Where it is stored</h4>
+        <p>Account details, designs, shares and visit records are stored in <b>Supabase</b>, the database service LUTAS LED runs on. Payment details are held by PayHere or Paddle under their own privacy policies, not by us.</p>
+        <h4>Visits and your account</h4>
+        <p>A visit stays anonymous unless you sign in during it — then that visit is linked to your account, so the Visitors section can tell a signed-in visit from a guest visit. Guests are never identified by name or email.</p>
+        <h4>Asking for your data to be deleted</h4>
+        <p>You can ask what data we hold about you, ask for it to be corrected, or ask for it to be deleted, at any time. Email <a href="mailto:hello@lutas.digital">hello@lutas.digital</a> from your account email and we will delete your account data as requested.</p>
+        <h4>Contact</h4>
+        <p>Privacy questions: <a href="mailto:hello@lutas.digital">hello@lutas.digital</a>.</p>
+      </div>
+    </div>
+    <div class="policy-footbar">
+      <span>© 2026 LUTAS LED | Developed by Team LUTAS</span>
+      <button class="about-close-btn" id="privacyClose" type="button">Close</button>
+    </div>
   </section>
 </div>
 
@@ -5661,9 +5871,42 @@ $("mNew").addEventListener("click",function(){
   closeMenus();
   projNewProject();
 });
-$("mAbout").addEventListener("click",function(){$("aboutModal").classList.add("open")});
+/* About menu — the top-bar About entry is a dropdown menu, exactly
+   like the File menu (the generic .menu-btn[data-menu] wiring above
+   opens / closes #wrapAbout). Its items are a simple vertical list:
+   "About us" opens the About popup window (the existing one, with
+   no tabs), and each policy item opens that policy as its OWN
+   separate popup window — full, readable and scrollable. The
+   policy links in Plans & Upgrade (data-policy-link) open the same
+   separate policy popups; the Plans dialog stays open underneath.
+   Nothing navigates away and nothing opens a new browser tab. */
+function openAbout(){
+  $("aboutModal").classList.add("open");
+}
+var POLICY_MODALS={payment:"paymentModal",refund:"refundModal",terms:"termsModal",privacy:"privacyModal"};
+function openPolicy(name){
+  var id=POLICY_MODALS[name]; if(!id)return;
+  var m=$(id); if(!m)return;
+  var body=m.querySelector(".policy-body"); if(body)body.scrollTop=0;
+  m.classList.add("open");
+}
+function closePolicyModal(id){
+  var m=$(id); if(m)m.classList.remove("open");
+}
+$("mAboutUs").addEventListener("click",function(){closeMenus(); openAbout()});
+$("mAboutPayment").addEventListener("click",function(){closeMenus(); openPolicy("payment")});
+$("mAboutRefund").addEventListener("click",function(){closeMenus(); openPolicy("refund")});
+$("mAboutTerms").addEventListener("click",function(){closeMenus(); openPolicy("terms")});
+$("mAboutPrivacy").addEventListener("click",function(){closeMenus(); openPolicy("privacy")});
+document.querySelectorAll("[data-policy-link]").forEach(function(b){
+  b.addEventListener("click",function(){openPolicy(b.getAttribute("data-policy-link"))});
+});
 $("aboutClose").addEventListener("click",function(){$("aboutModal").classList.remove("open")});
 $("aboutModal").addEventListener("click",function(ev){if(ev.target===this)this.classList.remove("open")});
+[["paymentClose","paymentModal"],["refundClose","refundModal"],["termsClose","termsModal"],["privacyClose","privacyModal"]].forEach(function(pair){
+  var btn=$(pair[0]); if(btn)btn.addEventListener("click",function(){closePolicyModal(pair[1])});
+  var m=$(pair[1]); if(m)m.addEventListener("click",function(ev){if(ev.target===this)this.classList.remove("open")});
+});
 /* ---------- Window menu popups — Signal Panel & Data & Stats ----------
    Both live in the Window menu now (the Signal panel used to be a
    settings tab; Data & Stats used to sit in the Edit menu). They are
