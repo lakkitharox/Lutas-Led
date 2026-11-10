@@ -514,11 +514,6 @@ select option,select optgroup{color:#11151c;background-color:#fff}
 .policy th,.policy td{border:1px solid #253140;padding:8px 10px;text-align:left;vertical-align:top}
 .policy th{color:#edf7ff;background:rgba(255,255,255,.03);font-weight:600}
 .policy td .pp-sub{display:block;color:#899bad;font-size:11.5px}
-.policy-draft{border:1px solid #8a6d1f;background:rgba(255,221,0,.07);border-radius:10px;padding:12px 14px;margin:12px 0 14px}
-.policy-draft b{color:#ffd94d}
-.policy-draft p{margin:6px 0 0}
-.policy-draft p:first-of-type{margin-top:6px}
-.policy-draft ul{margin-bottom:2px}
 .modal.add-modal{width:min(620px,100%)}
 /* Preferences window — Photoshop-style: a category list down the
    LEFT (General, Learning, Keyboard shortcuts, Activation) and the
@@ -829,6 +824,8 @@ html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:fle
 .auth-err.show{display:block}
 @media(prefers-color-scheme:dark){.auth-err{color:#f87171}}
 .auth-note{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+.auth-policies{text-align:center}
+.auth-policies a{color:var(--accent2)}
 .auth-or{display:flex;align-items:center;gap:10px;margin:14px 0 4px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em}
 .auth-or:before,.auth-or:after{content:"";flex:1;border-top:1px solid var(--line)}
 .auth-banner{margin:-18px -18px 14px;width:calc(100% + 36px);aspect-ratio:3/1;overflow:hidden;border-radius:16px 16px 0 0;border-bottom:1px solid var(--line);background:#071426;flex:none}
@@ -911,6 +908,7 @@ html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:fle
 .plan-policies{margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.7;text-align:center}
 .plan-policies button{background:none;border:0;padding:0;font:inherit;font-size:12.5px;font-weight:600;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .plan-policies button:hover{filter:brightness(1.15)}
+.plan-policies a{color:var(--accent);font-weight:600}
 .plan-lock{border:1px solid var(--accent);border-radius:12px;padding:12px 14px;background:var(--panel2);margin-bottom:12px}
 .plan-lock b{font-size:13.5px;display:block;margin-bottom:3px}
 .plan-lock p{margin:0 0 10px;font-size:12.5px;color:var(--muted);line-height:1.55}
@@ -2401,6 +2399,7 @@ html.admin-boot #adminPage{display:block}
       <p class="auth-note">You can also continue as a guest — the app works locally without an account; signing in only adds saving designs to your account.</p>
       <p class="sub" style="margin:10px 0 0">Guest plan: <b>Starter — Free</b></p>
       <button class="btn block cta-big" type="button" id="authPlanBtnGuest" style="margin-top:10px">Pricing — Plans &amp; Upgrade…</button>
+      <p class="auth-note auth-policies">Policies — no sign-in needed: <a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy-policy" target="_blank" rel="noopener">Privacy</a> · <a href="/refund-policy" target="_blank" rel="noopener">Refund</a> · <a href="/payment-policy" target="_blank" rel="noopener">Payment</a></p>
     </div>
     <div id="authSignedIn" hidden>
       <p class="sub" style="margin:0">Signed in as <b id="authWho"></b></p>
@@ -2408,6 +2407,7 @@ html.admin-boot #adminPage{display:block}
       <button class="btn block cta-big" type="button" id="authPlanBtn" style="margin-top:12px">Pricing — Plans &amp; Upgrade…</button>
       <button class="btn block" type="button" id="authProjectsBtn" style="margin-top:14px">My designs — open Projects…</button>
       <p class="auth-note">Your saved designs live in the Projects window: recent projects with Open, Duplicate, Rename and Delete.</p>
+      <p class="auth-note auth-policies">Policies — no sign-in needed: <a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy-policy" target="_blank" rel="noopener">Privacy</a> · <a href="/refund-policy" target="_blank" rel="noopener">Refund</a> · <a href="/payment-policy" target="_blank" rel="noopener">Payment</a></p>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
         <button class="btn" type="button" id="authClose2">Close</button>
         <button class="btn primary" type="button" id="authSignOut">Sign out</button>
@@ -2481,6 +2481,7 @@ html.admin-boot #adminPage{display:block}
       </div>
     </div>
     <p class="plan-policies">Before you upgrade, please read our <button type="button" data-policy-link="payment">Payment Policy</button> · <button type="button" data-policy-link="refund">Refund Policy</button> · <button type="button" data-policy-link="terms">Terms of Service</button> · <button type="button" data-policy-link="privacy">Privacy Policy</button></p>
+    <p class="plan-policies">Public versions of these policies — no sign-in needed: <a href="/terms" target="_blank" rel="noopener">Terms of Service</a> · <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a> · <a href="/refund-policy" target="_blank" rel="noopener">Refund Policy</a> · <a href="/payment-policy" target="_blank" rel="noopener">Payment Policy</a></p>
     <div class="plan-checkout" id="planCheckoutNote" hidden></div>
     <div class="mrow">
       <button class="btn" type="button" id="planClose">Close</button>
@@ -2901,17 +2902,15 @@ html.admin-boot #adminPage{display:block}
           <li>When that period ends, your plan drops back to <b>Starter (free)</b>.</li>
           <li><b>Your designs are kept</b> — nothing you created is deleted. The paid tools simply lock again until you upgrade.</li>
         </ul>
-        <div class="policy-draft">
-          <b>7-day refund rule — default draft</b>
-          <p>This refund window is the current <b>default draft</b> and can be changed by the owner of LUTAS LED. The version published here is the one that applies to your payment:</p>
-          <ul>
-            <li>You can get a refund <b>within 7 days of payment</b>, if the paid features have <b>not been used</b>.</li>
-            <li>There is <b>no refund after 7 days</b>, and <b>no refund once the paid features have been used</b> — even inside the 7 days.</li>
-          </ul>
-          <p>The same rule applies to monthly and yearly payments. Approved refunds are returned through the original payment processor (PayHere for LKR, Paddle for USD) to the payment method you paid with.</p>
-        </div>
+        <h4>14-day refund rule</h4>
+        <p>The refund rule below is the one that applies to your payment:</p>
+        <ul>
+          <li>You can get a refund <b>within 14 days of payment</b>, if the paid features have <b>not been used</b>.</li>
+          <li>There is <b>no refund after 14 days</b>, and <b>no refund once the paid features have been used</b> — even inside the 14 days.</li>
+        </ul>
+        <p>The same rule applies to monthly and yearly payments. Approved refunds are returned through the original payment processor (PayHere for LKR, Paddle for USD) to the payment method you paid with.</p>
         <h4>How to ask for a refund</h4>
-        <p>Email <a href="mailto:hello@lutas.digital">hello@lutas.digital</a> within the 7 days, from or naming your account email, with the date of the payment. We will confirm whether the paid features were used and reply about your refund.</p>
+        <p>Email <a href="mailto:hello@lutas.digital">hello@lutas.digital</a> within the 14 days, from or naming your account email, with the date of the payment. We will confirm whether the paid features were used and reply about your refund.</p>
       </div>
     </div>
     <div class="policy-footbar">
@@ -7124,8 +7123,13 @@ function buildMeasurements3D(){
     seg(new THREE.Vector3(D.x-0.09,D.y,D.z),new THREE.Vector3(D.x+0.09,D.y,D.z));
     label(fmtMeasure(effHm3(d)),(C.x+D.x)/2+0.15,(C.y+D.y)/2,(C.z+D.z)/2);
   });
-  /* Stage deck — width (front), depth (right), height (front-right) */
-  if(state.stage3d.show&&+state.stage3d.deck>0.01){
+  /* Stage deck — width (front), depth (right), height (front-right).
+     Only the AUTO deck is measured here: while a Stage Settings design
+     is active the auto deck is not built at all (the designed pieces
+     ARE the stage), so these lines would measure a phantom deck sized
+     from the screens — the pieces carry their own per-piece dimension
+     lines instead (buildStagePieceMeasures3D, inside buildStageGroup). */
+  if(state.stage3d.show&&+state.stage3d.deck>0.01&&!stageDesignActive()){
     var bb=sceneBBox3D(), mg=+state.stage3d.margin||0, dh=+state.stage3d.deck;
     var x0=bb.minX-mg, x1=bb.maxX+mg, z0=bb.minZ-mg, z1=bb.maxZ+mg, cx=(x0+x1)/2, cz=(z0+z1)/2;
     seg(new THREE.Vector3(x0,dh+0.05,z1),new THREE.Vector3(x1,dh+0.05,z1));
@@ -7135,9 +7139,13 @@ function buildMeasurements3D(){
     seg(new THREE.Vector3(x1,0,z1),new THREE.Vector3(x1,dh,z1));
     label(fmtMeasure(dh),x1+0.15,dh/2,z1);
   }
-  /* Modifiers — real extent box + W × H × D label */
+  /* Modifiers — real extent box + W × H × D label. Stage Settings is
+     skipped here: its pieces each carry their own per-piece dimension
+     lines inside buildStageGroup — one merged box around every piece
+     together hid each piece's own width / depth / height, which is
+     exactly what is needed while a piece is being created. */
   state.modifiers.forEach(function(m){
-    if(!m.enabled||m.type==="haze")return;
+    if(!m.enabled||m.type==="haze"||m.type==="stage")return;
     var mg3=T3.modGroups?T3.modGroups[m.id]:null; if(!mg3)return;
     var box=measureGroupBox(mg3); if(!box)return;
     var helper=new THREE.Box3Helper(box,0xfbbf24); helper.userData.ownGeo=true; helper.userData.measureSkip=true; grp.add(helper);
@@ -24649,6 +24657,60 @@ function buildPropsGroup(m,bb){
    = everything). Stage pieces exist ONLY here — nothing in the 2D
    view, the exports or the screen tables reads them. */
 var stageTopMat=null, stageSideMat=null;
+/* ── Live measurements for ONE stage piece ─────────────────────────
+   Amber dimension lines + labels on a single stage piece, in the
+   piece's own rotated frame: width along its front edge, depth along
+   its right edge, height up its front-right corner — for a round
+   platform the width line reads as its diameter (Ø). Values are in
+   the Preferences measurement unit (fmtMeasure). The lines are built
+   INSIDE the stage modifier's own group (the truss edit measurements
+   pattern), so every rebuildModGroup during a drag / scale gesture
+   refreshes them live, mid-gesture — the global Measurements overlay
+   (buildMeasurements3D) is only rebuilt by build3DScene, i.e. after
+   the gesture ends, which is why stage pieces used to show no
+   measurements at all while they were being created, placed or
+   dragged. View-only: never exported, never saved. Labels are
+   sprites — hidden in the Render view like every other tag. */
+function buildStagePieceMeasures3D(g,el){
+  if(!measureLineMat)measureLineMat=new THREE.LineBasicMaterial({color:0xfbbf24,transparent:true,opacity:0.95,depthTest:false});
+  var w=Math.max(0.05,+el.w||1), d=Math.max(0.05,+el.d||1), h=Math.max(0.02,+el.h||0.1);
+  var cx=+el.x||0, by=+el.y||0, cz=+el.z||0, top=by+h;
+  var ryR=(+el.ry||0)*Math.PI/180, cs=Math.cos(ryR), sn=Math.sin(ryR);
+  /* local (lx, lz) in the piece's frame → world (THREE rotation.y) */
+  function Wp(lx,y,lz){return [cx+lx*cs+lz*sn, y, cz-lx*sn+lz*cs]}
+  var pts=[];
+  function ln(a,b){pts.push(a[0],a[1],a[2],b[0],b[1],b[2])}
+  function tickV(p){ln([p[0],p[1]-0.09,p[2]],[p[0],p[1]+0.09,p[2]])}
+  function lab(text,p,yOff){var sp=makeLabelSprite3D(text,0.30); if(!sp)return; sp.position.set(p[0],p[1]+(yOff||0),p[2]); sp.userData.measureSkip=true; g.add(sp)}
+  function mid(a,b){return [(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2]}
+  var round=el.shape==="round";
+  /* width — along the front edge, floated clear in front of the piece */
+  var fz=d/2+0.32, A=Wp(-w/2,by,fz), B=Wp(w/2,by,fz);
+  ln(Wp(-w/2,by,d/2),A); ln(Wp(w/2,by,d/2),B);
+  ln(A,B); tickV(A); tickV(B);
+  lab((el.name?el.name+" · ":"")+(round?("Ø "+fmtMeasure(w)):fmtMeasure(w)),mid(A,B),0.30);
+  /* depth — along the right edge (a round platform's depth is its
+     diameter, already read on the width line) */
+  if(!round){
+    var fx=w/2+0.32, C=Wp(fx,by,-d/2), D=Wp(fx,by,d/2);
+    ln(Wp(w/2,by,-d/2),C); ln(Wp(w/2,by,d/2),D);
+    ln(C,D); tickV(C); tickV(D);
+    lab(fmtMeasure(d),mid(C,D),0.30);
+  }
+  /* height — vertical at the front-right corner */
+  var E=Wp(w/2+0.32,by,d/2+0.32), F=Wp(w/2+0.32,top,d/2+0.32);
+  ln(E,F);
+  ln([E[0]-0.09,E[1],E[2]],[E[0]+0.09,E[1],E[2]]);
+  ln([F[0]-0.09,F[1],F[2]],[F[0]+0.09,F[1],F[2]]);
+  lab(fmtMeasure(h),mid(E,F),0);
+  if(pts.length){
+    var geo=new THREE.BufferGeometry();
+    geo.setAttribute("position",new THREE.Float32BufferAttribute(pts,3));
+    var lines=new THREE.LineSegments(geo,measureLineMat);
+    lines.renderOrder=997; lines.userData.ownGeo=true; lines.userData.measureSkip=true;
+    g.add(lines);
+  }
+}
 function buildStageGroup(m,bb){
   ensureModMats();
   if(!stageTopMat){
@@ -24679,6 +24741,13 @@ function buildStageGroup(m,bb){
       bm.position.y=h/2; bm.castShadow=true; bm.receiveShadow=true; bm.userData.ownGeo=true; pivot.add(bm);
     }
     g.add(pivot);
+    /* This piece's live measurements (buildStagePieceMeasures3D):
+       with the Measurements ruler ON, every visible piece carries its
+       own width / depth / height lines; while Stage editing is ON the
+       SELECTED piece carries them even with the ruler off, so the
+       piece being created / placed / dragged always shows its size.
+       Built in this group, so drag rebuilds keep them live. */
+    if(state.show.measure||(editHandles&&i===modSelStageEl))buildStagePieceMeasures3D(g,el);
     if(editHandles){
       var hw=Math.max(0.3,w), hh=Math.max(0.15,h), hd=Math.max(0.3,d);
       var cyS=(+el.y||0)+hh/2;

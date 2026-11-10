@@ -1,6 +1,1 @@
-{
-  "rewrites": [
-    { "source": "/adminpower", "destination": "/index.html" },
-    { "source": "/adminpower/", "destination": "/index.html" }
-  ]
-}
+{"rewrites":[{"destination":"/index.html","source":"/adminpower"},{"destination":"/index.html","source":"/adminpower/"},{"destination":"/terms.html","source":"/terms"},{"destination":"/terms.html","source":"/terms/"},{"destination":"/privacy-policy.html","source":"/privacy-policy"},{"destination":"/privacy-policy.html","source":"/privacy-policy/"},{"destination":"/refund-policy.html","source":"/refund-policy"},{"destination":"/refund-policy.html","source":"/refund-policy/"},{"destination":"/payment-policy.html","source":"/payment-policy"},{"destination":"/payment-policy.html","source":"/payment-policy/"}]}
