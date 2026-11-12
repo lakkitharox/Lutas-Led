@@ -8720,6 +8720,7 @@ function loop3D(){
      recreates them visible) happens while it is open. */
   if(T3.suggestPreview)T3.suggestPreview.visible=!renderMode; /* the Suggest truss ghost is an editing-view preview — never in the Render view */
   if(T3.lightPreview)T3.lightPreview.visible=!renderMode; /* the Suggest lights ghost, same rule */
+  if(T3.scaffoldPreview)T3.scaffoldPreview.visible=!renderMode; /* the Suggest scaffolding ghost, same rule */
   if(renderMode){if(T3.selBox)T3.selBox.visible=false; if(T3.measure)T3.measure.visible=false; if(T3.gizmo)T3.gizmo.visible=false; (T3.nameTags||[]).forEach(function(s){s.visible=false})}
   /* The selected light's yellow selection box is an EDITOR aid:
      hidden in Render mode (and never built in client view), visible
@@ -21058,6 +21059,59 @@ function suggestTrussSystem(m){
   }
   return {mid:m.id,sig:trussLayoutSig(),screens:state.displays.length,cabs:wm.cabs,weight:wm.cabWeight,width:wm.width,top:wm.top,span:span,total:total,method:method,trussType:trussType,section:section,hoists:hoists,hoistWll:hoistWll,height:height,supports:supports,reasons:reasons};
 }
+/* ── Suggest scaffolding ─────────────────────────────────────────
+   The truss flow, for scaffolding. Suggest reads the CURRENT LED
+   layout and works out a Layher Allround working platform BEHIND
+   the wall — bays of 2.07 m along the wall's width, one bay deep,
+   lifts of 2.0 m until the top deck reaches the wall top — with
+   the reasons. The suggestion is kept here (never saved into the
+   layout), ghosted in the 3D view by buildScaffoldPreviewGroup and
+   rendered under the Suggest button by syncScaffoldPanel; Apply
+   writes it into the modifier's params. Adding a Scaffolding
+   modifier seeds this same suggestion as its starter build, so a
+   new scaffolding is VISIBLE in the 3D view straight away instead
+   of starting as an empty zero-bay container. */
+var scaffoldSuggestion=null;
+/* The scaffold twin of trussPreviewOn: while a suggestion waits
+   and this is on, the suggested build previews as an amber ghost. */
+var scaffoldPreviewOn=false;
+function scaffoldSuggestedParams(sg){
+  return {system:"layher",bayL:sg.bayL,bayW:sg.bayW,baysX:sg.baysX,baysZ:sg.baysZ,lifts:sg.lifts,liftH:sg.liftH,
+    decks:sg.decks.slice(),guardrail:true,bracing:true,access:sg.access,loadClass:3,x:sg.x,y:0,z:sg.z,ry:0,us:1};
+}
+function suggestScaffoldSystem(m){
+  var wm=wallMetrics(), bb=sceneBBox3D();
+  var bayL=2.07, bayW=2.07, liftH=2;
+  var baysX=clamp(Math.ceil(Math.max(1,wm.width)/bayL),1,12);
+  var baysZ=1;
+  var lifts=clamp(Math.ceil(Math.max(1,wm.top)/liftH),1,5);
+  var H=lifts*liftH, L=baysX*bayL, W=baysZ*bayW;
+  var cx=Math.round(((bb.minX+bb.maxX)/2)*100)/100;
+  var z=Math.round((wm.backZ-0.5-W/2)*100)/100;
+  var decks=[]; for(var di=0;di<lifts;di++)decks.push(true);
+  var access=lifts>=2?"stair":"ladder";
+  var reasons=[];
+  reasons.push("A working platform BEHIND the wall: "+baysX+" bays of "+fmtMeasure(bayL)+" cover the "+fmtMeasure(wm.width)+" wall width, one bay ("+fmtMeasure(bayW)+") deep, standing "+fmtMeasure(0.5)+" clear of the wall's back face — the crew's side for hanging, cabling and servicing the cabinets.");
+  reasons.push(lifts+" lift"+(lifts===1?"":"s")+" of "+fmtMeasure(liftH)+" bring the top deck to "+fmtMeasure(H)+" — at or above the "+fmtMeasure(wm.top)+" wall top, so the top row of cabinets can be reached from the deck. Steel decks on every lift, guardrails + toeboards on, diagonal bracing on.");
+  reasons.push(access==="stair"?"A stair flight per lift — carrying cabinets up stairs is safer than up a ladder.":"One lift only, so a ladder is enough for access.");
+  var sg={mid:m.id,sig:trussLayoutSig(),screens:state.displays.length,cabs:wm.cabs,weight:wm.cabWeight,width:wm.width,top:wm.top,
+    bayL:bayL,bayW:bayW,baysX:baysX,baysZ:baysZ,lifts:lifts,liftH:liftH,H:H,L:L,W:W,decks:decks,access:access,x:cx,z:z,reasons:reasons};
+  sg.parts=scaffoldCalc({params:scaffoldSuggestedParams(sg)});
+  return sg;
+}
+/* APPLY A SCAFFOLD SUGGESTION — the suggested build becomes the
+   modifier's own params (bays, lifts, decks, access and its place
+   behind the wall); the suggestion is consumed and the ghost goes
+   away, exactly like Apply on the truss. */
+function applyScaffoldSuggestion(m){
+  var sg=scaffoldSuggestion;
+  if(!sg||sg.mid!==m.id)return null;
+  var np=scaffoldSuggestedParams(sg);
+  for(var k in np)m.params[k]=np[k];
+  scaffoldPreviewOn=false; /* built — the ghost preview goes away; the real scaffold now IS the suggestion */
+  scaffoldSuggestion=null; /* consumed */
+  return sg;
+}
 /* ── Suggest lights ─────────────────────────────────────────────────
    The truss flow, for lights: nothing is placed until the user asks.
    Suggest reads the CURRENT LED layout — wall width and top, the
@@ -21242,10 +21296,23 @@ function addModifier(type){
       h:(+state.stage3d.deck>0.01)?+state.stage3d.deck:0.6, steps:4, group:null, on:true}];
     modSelStageEl=0;
   }
+  /* A new Scaffolding starts VISIBLE in the 3D view: the suggested
+     build for the current layout (the same read Suggest scaffolding
+     makes) is seeded as its starter build — a working platform
+     behind the wall — instead of an empty zero-bay container the
+     user then has to discover and fill in before anything shows.
+     From there the bays / lifts in its panel build their own, and
+     Suggest scaffolding + Apply re-reads the layout at any time. */
+  var scafAddNote="";
+  if(type==="scaffold"){
+    var sgSd=suggestScaffoldSystem(m), spSd=scaffoldSuggestedParams(sgSd);
+    for(var skSd in spSd)m.params[skSd]=spSd[skSd];
+    scafAddNote=sgSd.baysX+" × "+sgSd.baysZ+" bays · "+sgSd.lifts+" lift"+(sgSd.lifts===1?"":"s")+" · "+fmtMeasure(sgSd.H)+" high";
+  }
   state.modifiers.push(m); selModId=m.id;
   render();
   toast(type==="scaffold"
-    ? name+" added — an empty scaffolding container: zero bays, nothing is built yet. Set the bays along length / width in its panel below to build the Layher Allround scaffold in the 3D view."
+    ? name+" added — a suggested Layher Allround build for this layout is already placed behind the wall ("+scafAddNote+"), so it shows in the 3D view now. Build your own with the bays / lifts in its panel, press Suggest scaffolding for a fresh read of the layout, or press Edit to move it."
     : type==="truss"
     ? name+" added — an empty truss container: no truss system is placed yet. Add one with Suggest truss, Add segment or Draw path in its panel below."
     : type==="stage"
@@ -21414,6 +21481,9 @@ function buildModParams(m){
       +'<p class="mod-note" data-scafedit-status>'+(scfOn
         ? "Scaffolding editing is ON — screens are locked."
         : "Scaffolding editing is OFF — the scaffolding is locked.")+'</p>'
+      +mRoll(m,"suggestSc","Suggest scaffolding — for this layout",
+        '<button type="button" class="btn primary block" data-modbtn="suggestScaffold">Suggest scaffolding for this layout</button>'
+        +'<div id="scaffoldSuggest"></div>')
       +mRoll(m,"system","System — Layher Allround",
         '<div class="field"><span>System</span><input type="text" value="Layher Allround" disabled></div>'
         +'<p class="mod-note">Datasheet: tube 48.3 mm OD × 3.2 mm wall · yield stress 320 N/mm² · DIN EN 10219-1 · rosettes every 500 mm on the standard, up to 8 connections per rosette · bay lengths 0.73 / 1.09 / 1.40 / 1.57 / 2.07 / 2.57 / 3.07 m, max bay 4.144 m · guardrail 99 cm · toeboard 15 cm · Layher event podiums on the same kit: permissible load up to 7.5 kN/m², height up to 10 m.</p>')
@@ -21422,6 +21492,9 @@ function buildModParams(m){
         +'<div class="grid2" style="margin-top:8px">'+mNum("baysX","Bays along length",0,12,1)+mNum("baysZ","Bays along width",0,12,1)+'</div>'
         +'<div style="margin-top:8px">'+mLab("Lift height · m")+mSeg("liftH",[["0.5","0.5 m"],["1","1.0 m"],["1.5","1.5 m"],["2","2.0 m"]])+'</div>'
         +'<div style="margin-top:8px">'+mNum("lifts","Number of lifts",1,6,1)+'</div>'
+        +'<div class="grid2" style="margin-top:8px"><button type="button" class="btn" data-modbtn="addBayX">+ Bay along length</button><button type="button" class="btn" data-modbtn="addBayZ">+ Bay along width</button></div>'
+        +'<div class="grid2" style="margin-top:8px"><button type="button" class="btn" data-modbtn="addLiftScaf">+ Lift</button><button type="button" class="btn" data-modbtn="clearScafBays">Clear all bays</button></div>'
+        +'<p class="mod-note">Build your own piece by piece — add bays and lifts here, or type the counts above. A unit with zero bays shows nothing in the 3D view.</p>'
         +'<p class="mod-note" data-scafsize>'+escapeHtml(scaffoldSizeText(m))+'</p>')
       +mRoll(m,"deck","Decks, guardrails & access",
         deckTogS
@@ -21587,6 +21660,7 @@ function syncModParamValues(m){
   if(m.type==="stage")syncStageLists(m);
   if(m.type==="truss")syncTrussPanel(m);
   if(m.type==="light")syncLightPanel(m);
+  if(m.type==="scaffold")syncScaffoldPanel(m);
 }
 /* The segment / fixture lists inside the Layers / Custom rollouts. Rebuilt only
    when their signature changes (positions rounded to the cm, counts,
@@ -22122,6 +22196,32 @@ function syncTrussPanel(m){
     }
   }
 }
+function syncScaffoldPanel(m){
+  /* The Suggest scaffolding readout — the truss readout's twin:
+     recomputed on every render, so it always shows the suggestion
+     worked out from the layout as it stood, and flags itself stale
+     when the layout has moved on since. */
+  var sgBox=$("scaffoldSuggest");
+  if(sgBox){
+    var sgS=(scaffoldSuggestion&&scaffoldSuggestion.mid===m.id)?scaffoldSuggestion:null;
+    if(!sgS)sgBox.innerHTML='';
+    else{
+      var pc=sgS.parts;
+      var sh='<div class="rig-rows" style="margin-top:8px">'
+        +rigRow("Your layout",sgS.screens+" screen"+(sgS.screens===1?"":"s")+" · "+sgS.cabs+" cabinets · "+Math.round(sgS.weight)+" kg")
+        +rigRow("Wall size",fmtMeasure(sgS.width)+" wide · top "+fmtMeasure(sgS.top))
+        +rigRow("Suggested scaffold","Layher Allround · "+sgS.baysX+" × "+sgS.baysZ+" bays · "+sgS.lifts+" lift"+(sgS.lifts===1?"":"s")+" × "+fmtMeasure(sgS.liftH))
+        +rigRow("Footprint",fmtMeasure(sgS.L)+" × "+fmtMeasure(sgS.W)+" · "+fmtMeasure(sgS.H)+" high · behind the wall")
+        +rigRow("Parts (Calculated)",pc.standards+" standards · "+pc.ledgers+" ledgers · "+pc.transoms+" transoms · "+pc.braces+" braces · "+pc.decks+" decks · "+pc.baseJacks+" base jacks")
+        +'</div>';
+      sgS.reasons.forEach(function(r){sh+='<p class="mod-note">'+escapeHtml(r)+'</p>'});
+      if(sgS.sig!==trussLayoutSig())sh+='<p class="rig-flag warn">The layout has changed since this suggestion — press Suggest scaffolding again for a fresh read.</p>';
+      sh+='<button type="button" class="btn block" data-modbtn="toggleScaffoldPreview" style="margin-top:8px">'+(scaffoldPreviewOn?"Hide 3D preview":"Preview in 3D view")+'</button>'
+        +'<button type="button" class="btn primary block" data-modbtn="applyScaffoldSuggest" style="margin-top:8px">Apply suggestion</button>';
+      sgBox.innerHTML=sh;
+    }
+  }
+}
 function syncModifierPanel(){
   if(!$("modStack"))return;
   /* Truss editing belongs to the selected Truss: selecting another
@@ -22422,6 +22522,47 @@ function modBtnAction(m,act){
       setVMode("edit");
       render();
       toast("Scaffolding editing ON — only the scaffolding can be moved / rotated / scaled in the 3D view; the screens and other modifiers are locked. It uses the normal Position / Rotate / Scale gizmo buttons. Press Edit again to go back to editing screens.");
+      return;
+    }
+    if(act==="suggestScaffold"){
+      /* SUGGEST SCAFFOLDING — reads the current LED layout (wall
+         width and top) and works out the Layher Allround working
+         platform that suits it, behind the wall. The suggestion is
+         shown under the button (syncScaffoldPanel renders it) and
+         ghosted in the 3D view; nothing is applied until Apply
+         suggestion is pressed. */
+      scaffoldSuggestion=suggestScaffoldSystem(m);
+      scaffoldPreviewOn=true;
+      render();
+      toast("Suggested for this layout: Layher Allround "+scaffoldSuggestion.baysX+" × "+scaffoldSuggestion.baysZ+" bays · "+scaffoldSuggestion.lifts+" lift"+(scaffoldSuggestion.lifts===1?"":"s")+" · "+fmtMeasure(scaffoldSuggestion.H)+" high, behind the wall — it is previewing in the 3D view now. Press Apply suggestion to use it.");
+      return;
+    }
+    if(act==="toggleScaffoldPreview"){
+      if(!scaffoldSuggestion||scaffoldSuggestion.mid!==m.id){toast("No suggestion yet — press Suggest scaffolding first."); return}
+      scaffoldPreviewOn=!scaffoldPreviewOn;
+      render();
+      toast(scaffoldPreviewOn?"Suggestion preview ON — the suggested scaffolding shows in the 3D view, ghosted in amber. Nothing is applied until you press Apply suggestion.":"Suggestion preview hidden — the suggestion is still waiting under Suggest scaffolding; press Apply suggestion to use it.");
+      return;
+    }
+    if(act==="applyScaffoldSuggest"){
+      var sgAS=applyScaffoldSuggestion(m);
+      if(!sgAS){toast("No suggestion yet — press Suggest scaffolding first, and it will work one out from the current layout."); return}
+      render();
+      toast("Suggestion applied — the Layher Allround scaffold is now "+sgAS.baysX+" × "+sgAS.baysZ+" bays · "+sgAS.lifts+" lift"+(sgAS.lifts===1?"":"s")+" · "+fmtMeasure(sgAS.H)+" high, behind the wall. Change the bays / lifts in its panel to make it your own, or press Edit to move it in the 3D view.");
+      return;
+    }
+    if(act==="addBayX"||act==="addBayZ"||act==="addLiftScaf"||act==="clearScafBays"){
+      /* Build your own, piece by piece: each press adds ONE bay or
+         ONE lift to the unit (the counts in Bays & lifts do the
+         same in bulk; Clear empties the unit). Panel builds, like
+         the deck switches — not gated on Edit mode. */
+      if(act==="addBayX")m.params.baysX=clamp(Math.round(+m.params.baysX||0)+1,0,12);
+      if(act==="addBayZ")m.params.baysZ=clamp(Math.round(+m.params.baysZ||0)+1,0,12);
+      if(act==="addLiftScaf"){m.params.lifts=clamp(Math.round(+m.params.lifts||1)+1,1,6); var dkA=Array.isArray(m.params.decks)?m.params.decks:[]; while(dkA.length<m.params.lifts)dkA.push(true); m.params.decks=dkA}
+      if(act==="clearScafBays"){m.params.baysX=0; m.params.baysZ=0}
+      render();
+      var ccA=scaffoldCalc(m);
+      toast(ccA.empty?m.name+" cleared — zero bays: nothing shows in the 3D view until you add a bay back (the + Bay buttons or the counts in Bays & lifts).":m.name+" — now "+ccA.nx+" × "+ccA.nz+" bays · "+ccA.lifts+" lift"+(ccA.lifts===1?"":"s")+" · "+fmtMeasure(ccA.H)+" high. Open the 3D view to see it.");
       return;
     }
   }
@@ -25848,6 +25989,28 @@ function buildLightsPreviewGroup(m,bb){
   T3.lightPreview=g;
   return g;
 }
+/* The Suggest scaffolding PREVIEW — the truss ghost's twin: while a
+   scaffold suggestion is waiting (Suggest pressed, Apply not yet
+   pressed) and the preview is on, the suggested build is drawn from
+   the SUGGESTION's params — never from the modifier's own — and
+   ghosted in the same translucent amber, so the user sees the
+   suggested platform behind the wall before applying it. View
+   helper only: it writes nothing into the modifier, and
+   T3._ghostBuild keeps buildScaffoldGroup from registering hit
+   boxes or a gizmo for it, so the ghost can never be picked. */
+function buildScaffoldPreviewGroup(m,bb){
+  if(!scaffoldPreviewOn||!scaffoldSuggestion||scaffoldSuggestion.mid!==m.id)return null;
+  var pm={id:m.id,type:"scaffold",name:m.name,enabled:true,params:scaffoldSuggestedParams(scaffoldSuggestion)};
+  var g=null;
+  T3._ghostBuild=true;
+  try{g=buildScaffoldGroup(pm,bb)}catch(e){g=null}
+  T3._ghostBuild=false;
+  if(!g)return null;
+  if(!trussPreviewMat)trussPreviewMat=new THREE.MeshBasicMaterial({color:0xf59e0b,transparent:true,opacity:0.26,depthWrite:false});
+  g.traverse(function(o){if(o.isMesh){o.material=trussPreviewMat; o.renderOrder=996; o.castShadow=false; o.receiveShadow=false}});
+  T3.scaffoldPreview=g;
+  return g;
+}
 /* ── Scaffolding ─────────────────────────────────────────────────
    A Layher Allround unit built from REAL parts in the stage frame:
    base jacks (plate + stem), vertical standards with a rosette
@@ -25943,7 +26106,7 @@ function buildScaffoldGroup(m,bb){
   /* Edit handles — only while Scaffolding editing is ON for this
      modifier: an invisible hit box over the whole unit, and the
      scaffold gizmo on the stage-piece construction. */
-  var editHandles=T3&&state.vmode==="edit"&&selModId===m.id&&scaffoldToolArmed===m.id;
+  var editHandles=T3&&!T3._ghostBuild&&state.vmode==="edit"&&selModId===m.id&&scaffoldToolArmed===m.id;
   if(editHandles){
     var hw=Math.max(0.3,c.L*us), hh=Math.max(0.15,c.H*us), hd=Math.max(0.3,c.W*us);
     var cyC=(+p.y||0)+hh/2, ryR=(+p.ry||0)*Math.PI/180;
@@ -26006,7 +26169,7 @@ function buildOneModGroup(m,bb){
 }
 function buildModifiers3D(){
   if(T3.modGroup){T3.scene.remove(T3.modGroup); disposeModGroup(T3.modGroup); T3.modGroup=null}
-  T3.crowds=[]; T3.lightAnims=[]; T3.goboDiscs=[]; T3.glowAnims=[]; T3.laserAnims=[]; T3.modHit=[]; T3.lightSelBoxes=[]; T3.modGroups={}; T3.suggestPreview=null; T3.lightPreview=null;
+  T3.crowds=[]; T3.lightAnims=[]; T3.goboDiscs=[]; T3.glowAnims=[]; T3.laserAnims=[]; T3.modHit=[]; T3.lightSelBoxes=[]; T3.modGroups={}; T3.suggestPreview=null; T3.lightPreview=null; T3.scaffoldPreview=null;
   T3.beamMatsR=[]; T3.beamPools=[]; T3.beamSpots=[]; T3.beamFlares=[]; T3._spotCount=0;
   var bb=sceneBBox3D();
   var g=new THREE.Group();
@@ -26018,6 +26181,8 @@ function buildModifiers3D(){
     if(m.type==="truss"){var pv=buildTrussPreviewGroup(m,bb); if(pv)g.add(pv)}
     /* The pending Suggest lights preview rides alongside its lights. */
     if(m.type==="light"){var lpv=buildLightsPreviewGroup(m,bb); if(lpv)g.add(lpv)}
+    /* The pending Suggest scaffolding preview rides alongside it. */
+    if(m.type==="scaffold"){var spv=buildScaffoldPreviewGroup(m,bb); if(spv)g.add(spv)}
   });
   T3.scene.add(g); T3.modGroup=g;
   if(renderMode)applyRenderBeamFx();
