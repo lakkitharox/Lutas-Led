@@ -9105,13 +9105,23 @@ function attach3DPointer(el){
       if(mmU&&mmU.type==="scaffold"){
         /* Scaffold gates: the unit's own gizmo / body handles
            (scel / scgizmo) answer while Scaffolding editing is ON
-           for it — armed by its Edit button or by clicking the
-           unit (below). The always-on SELECTION box (scsel) is how
-           that click lands: it answers whenever no OTHER section's
-           edit mode is on and no other scaffolding is armed, and
-           the pointer handler turns the grab into select + arm +
-           drag in one gesture, exactly like grabbing a screen. */
+           for it — armed by its Edit button. The SELECTION box
+           (scsel) is how a click lands on a layer while the mode
+           is armed: it answers ONLY while Scaffolding editing is
+           ON (for any scaffolding — the pointer handler moves the
+           selection and the arm to the unit clicked, so layers are
+           picked by clicking them in the 3D view), and the pointer
+           handler turns the grab into select + drag in one
+           gesture, exactly like grabbing a screen. While
+           Scaffolding editing is OFF the box does not answer at
+           all — the same rule as truss / lights / props / stage /
+           crowd, whose handles exist only while their editing is
+           armed — so exiting Scaffolding Edit fully releases the
+           unit: a click on it (or on a screen behind it) goes to
+           the screens / orbit again instead of re-selecting the
+           scaffolding and re-arming its edit mode. */
         if(meU.kind==="scsel"){
+          if(!scaffoldEditOn())return null; /* edit mode exited — the scaffolding stays deselected, like every other element */
           if(trussEditOn()||lightEditOn()||propEditOn()||stageEditOn()||crowdEditOn())return null;
           /* Scaffolding editing armed on ANOTHER unit does NOT
              block this pick: with Edit on, clicking a different
@@ -9367,15 +9377,18 @@ function attach3DPointer(el){
         var mmP=modById(miP.mid);
         if(mmP){
           if(miP.kind==="scsel"){
-            /* DIRECT SELECT — clicking a scaffolding unit in the
-               3D view selects it, like clicking a screen: the
-               modifier becomes the selected one, Scaffolding
-               editing arms for it (every other section's edit mode
-               ends, as with its Edit button), and THIS grab
-               continues as a normal body drag of the now-selected
-               unit, so click-and-drag moves it in one gesture. A
-               plain click (no drag) just selects + arms, leaving
-               the Move / Rotate / Scale gizmo on it. */
+            /* DIRECT SELECT — while Scaffolding editing is armed
+               (pickMod lets scsel answer only then), clicking a
+               scaffolding unit in the 3D view selects the layer
+               it lands on: the modifier becomes the selected one,
+               the Scaffolding editing arm moves to it (every other
+               section's edit mode ends, as with its Edit button),
+               and THIS grab continues as a normal body drag of the
+               now-selected unit, so click-and-drag moves it in one
+               gesture. A plain click (no drag) just selects the
+               layer, leaving the Move / Rotate / Scale gizmo on
+               it. With Scaffolding editing OFF this branch is
+               never reached — the click belongs to the screens. */
             var prevScArm=scaffoldToolArmed;
             var scClickIdx=miP.idx||0;
             selModId=mmP.id;
@@ -22240,7 +22253,7 @@ function addModifier(type){
   state.modifiers.push(m); selModId=m.id;
   render();
   toast(type==="scaffold"
-    ? name+" added — a suggested build for this layout is already placed "+(scafStepped?"in its own free spot beside the scaffolding already on stage":"behind the wall")+" ("+scafAddNote+"), so it shows in the 3D view now. Click it in the 3D view to select it and use the Move / Rotate / Scale gizmo, build your own with the bays / lifts in its panel, or press Suggest scaffolding for a fresh read of the layout."
+    ? name+" added — a suggested build for this layout is already placed "+(scafStepped?"in its own free spot beside the scaffolding already on stage":"behind the wall")+" ("+scafAddNote+"), so it shows in the 3D view now. Press Edit in its panel, then click it in the 3D view to select its layer and use the Move / Rotate / Scale gizmo, build your own with the bays / lifts in its panel, or press Suggest scaffolding for a fresh read of the layout."
     : type==="truss"
     ? name+" added — an empty truss container: no truss system is placed yet. Add one with Suggest truss, Add segment or Draw path in its panel below."
     : type==="stage"
@@ -22591,7 +22604,7 @@ function syncModParamValues(m){
     var es7=box.querySelector("[data-scafedit-status]");
     if(es7)es7.textContent=scfOn2
       ? "Scaffolding editing is ON — screens are locked."
-      : "Scaffolding editing is OFF — press Edit, or click the scaffolding in the 3D view, to move / rotate / scale it.";
+      : "Scaffolding editing is OFF — press Edit to move / rotate / scale it in the 3D view.";
     var ss7=box.querySelector("[data-scafstatus]"); if(ss7)ss7.textContent=scaffoldStatusText(m);
     var sz7=box.querySelector("[data-scafsize]"); if(sz7)sz7.textContent=scaffoldSizeText(m);
     box.querySelectorAll("[data-scafdeck]").forEach(function(tb){
@@ -27134,13 +27147,18 @@ function buildScaffoldPreviewGroup(m,bb){
    the pivot below — the same single scale the Object tab field
    and the 3D Scale gizmo both drive, so at ×1.00 the unit stands at
    true datasheet size, the 48.3 mm OD tube included.
-   SELECTION, like a screen: the unit ALWAYS carries a selection
-   hit box (kind "scsel") in the 3D view — clicking it selects the
-   modifier and arms Scaffolding editing, so the unit gets the
-   same Move / Rotate / Scale gizmo a screen uses (kinds "scel" /
-   "scgizmo", on the stage-piece construction). The panel Edit
-   button arms the same mode. 3D only — nothing here is read by
-   the 2D layout, ports, cabling or PNG export. */
+   SELECTION, like a screen: the unit carries a selection hit
+   box (kind "scsel") in View mode — clicking it selects the
+   modifier, like clicking a screen — and in Edit mode only
+   while Scaffolding editing is armed (by the panel Edit
+   button), where clicking a unit selects its layer and the
+   armed unit gets the same Move / Rotate / Scale gizmo a screen
+   uses (kinds "scel" / "scgizmo", on the stage-piece
+   construction). With Scaffolding editing OFF in Edit mode the
+   unit carries no hit box and cannot be re-selected by a click
+   — the truss / light / prop / stage / crowd rule. 3D only —
+   nothing here is read by the 2D layout, ports, cabling or PNG
+   export. */
 var scafDeckMat=null, scafToeMat=null;
 function buildScaffoldGroup(m,bb){
   ensureModMats();
@@ -27254,9 +27272,10 @@ function buildScaffoldGroup(m,bb){
     }
   }
   /* Edit handles — while Scaffolding editing is ON for this
-     modifier (armed by its Edit button OR by clicking the unit in
-     the 3D view): an invisible hit box over the whole unit, and
-     the scaffold gizmo on the stage-piece construction. */
+     modifier (armed by its Edit button; clicking a unit while
+     the mode is armed selects its layer): an invisible hit box
+     over the whole unit, and the scaffold gizmo on the
+     stage-piece construction. */
   var editHandles=T3&&!T3._ghostBuild&&state.vmode==="edit"&&selModId===m.id&&scaffoldToolArmed===m.id&&scUi===scSelB;
   if(editHandles){
     var hw=Math.max(0.3,c.L), hh=Math.max(0.15,c.H), hd=Math.max(0.3,c.W);
@@ -27309,14 +27328,21 @@ function buildScaffoldGroup(m,bb){
     }
     g.add(sgg);
   }
-  /* Selection hit box — ALWAYS present in the 3D view (View and
-     Edit modes, never in Render and never on the Suggest ghost),
-     so the unit can be clicked to select it exactly like a screen:
-     the click selects this modifier and arms Scaffolding editing
-     (see the pointer handlers), which builds the gizmo handles
-     above. When this unit is the selected one its outline shows,
-     so the selection reads in View mode too. */
-  if(T3&&!T3._ghostBuild&&!editHandles&&typeof renderMode!=="undefined"&&!renderMode){
+  /* Selection hit box — present in View mode (never in Render
+     and never on the Suggest ghost), so the unit can be clicked
+     to select it exactly like a screen, and in Edit mode ONLY
+     while Scaffolding editing is armed, where the click selects
+     the layer it lands on (see the pointer handlers). In Edit
+     mode with Scaffolding editing OFF no hit box is built at
+     all — the same rule as truss / lights / props / stage /
+     crowd, whose handles are built only while their editing is
+     armed — so exiting Scaffolding Edit fully releases the
+     unit: its outline goes away and clicks pass through to the
+     screens again, instead of the unit's full-size invisible
+     box keeping the scaffolding selected after the mode ended.
+     When this unit is the selected one its outline shows, so
+     the selection reads in View mode too. */
+  if(T3&&!T3._ghostBuild&&!editHandles&&typeof renderMode!=="undefined"&&!renderMode&&(state.vmode!=="edit"||scaffoldEditOn())){
     var hw2=Math.max(0.3,c.L), hh2=Math.max(0.15,c.H), hd2=Math.max(0.3,c.W);
     var cyS=(+p.y||0)+hh2/2, ryS=(+p.ry||0)*Math.PI/180;
     var sb=new THREE.Mesh(new THREE.BoxGeometry(hw2,hh2,hd2),modHitMat);
