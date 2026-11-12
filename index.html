@@ -944,9 +944,9 @@ html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:fle
 /* ── Render Settings panel — Render view only ───────────────────────
    A floating panel on the LEFT of the cinematic frame (the Simulator
    panel owns the right), holding the Graphics tier (Low / Medium /
-   High / Ultra + Auto), the Render light rig
-   and the colour grade (Render is always night — no environment or
-   time-of-day controls). Dark-glass styling matches the Simulator
+   High / Ultra + Auto), the HDRI environment
+   (Day / Night, preset, intensity, backdrop), the fill / ambient
+   levels and the colour grade. Dark-glass styling matches the Simulator
    panel; every control is session-only and Render-only — entering
    Render applies it, leaving Render restores the editing look. */
 .rs-panel{position:absolute;top:64px;left:10px;width:292px;max-width:calc(100% - 20px);max-height:calc(100% - 208px);z-index:6;display:none;overflow-y:auto;background:rgba(10,14,20,.93);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:13px 14px;color:#e2e8f0;pointer-events:auto;box-shadow:0 16px 40px rgba(0,0,0,.45)}
@@ -1724,20 +1724,19 @@ html.admin-boot #adminPage{display:block}
         <div class="render-bar">
           <div class="v3d-group"><span class="cap">Camera</span><button data-cam="front" class="iconly" title="Front — orthographic elevation, no perspective" aria-label="Front camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="4,8.5 16,8.5 16,20.5 4,20.5" fill="currentColor" stroke="none"/><path d="M4 8.5 7 4h12v12l-3 4.5H4Z"/><path d="M4 8.5h12M16 8.5 19 4M16 8.5v12"/></svg></button><button data-cam="top" class="iconly" title="Top — orthographic plan view" aria-label="Top camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,2.8 20.5,7.4 12,12 3.5,7.4" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="left" class="iconly" title="Left — orthographic, from stage left" aria-label="Left camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3.5,7.4 12,12 12,21.2 3.5,16.6" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="right" class="iconly" title="Right — orthographic, from stage right" aria-label="Right camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,12 20.5,7.4 20.5,16.6 12,21.2" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="iso" class="iconly" title="Isometric — perspective three-quarter view" aria-label="Isometric camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="free" class="iconly" title="Free camera — full Blender-style control: orbit, tilt all the way over, pan in the screen plane, dolly" aria-label="Free camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6.5" width="13" height="11" rx="2"/><path d="m15.5 10.8 6-3.3v9l-6-3.3"/></svg></button></div>
           <div class="v3d-group"><span class="cap">Graphics</span><select class="render-q" id="renderQuality" aria-label="Render graphics — Low, Medium, High, Ultra or Cinematic; Auto steps down by itself if the frame rate drops"><option value="auto" selected>Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="ultra">Ultra</option><option value="cinematic">Cinematic</option></select></div>
-          <div class="v3d-group"><button id="btnRenderSettings" aria-pressed="true" title="Show or hide the Render settings panel — Graphics, Lights and Colours for this Render view. Render is always night: there is no day / time-of-day option">Render settings</button></div>
+          <div class="v3d-group"><button id="btnRenderSettings" aria-pressed="true" title="Show or hide the Render settings panel — Graphics, Environment (HDRI day / night), Lights and Colours for this Render view">Render settings</button></div>
           <div class="v3d-group"><button id="btnRenderSim" class="on" aria-pressed="true" title="Show or hide the LED Simulator panel in this Render view — play VJ visuals, a shared Resolume window or uploaded media across the virtual wall">LED Simulator</button></div>
-          <div class="v3d-group" style="margin-left:auto"><button id="btnRenderSaveSettings" title="Save settings — freeze the current Render settings (the fixed night look, colours and the light rig, glow included) as the saved look. Share / Client view links carry this saved look, so the client sees exactly the visuals and light settings you saved"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save settings</button><button id="btnRenderSave" title="Capture — save a PNG of this cinematic frame at twice the canvas size, from exactly this camera">Capture</button><button id="btnShareClient" class="share-btn" title="Share / Client view — opens the share dialog: copy a link carrying this exact stage design, Public (opens straight away) or Private (the client enters their name + your passkey first). The client sees only the 3D render and can move the camera — no panels, no tools, no editing, no save / load"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Share / Client view</button></div>
+          <div class="v3d-group" style="margin-left:auto"><button id="btnRenderSaveSettings" title="Save settings — freeze the current Render settings (the HDRI day / night environment, colours and the fill / ambient levels, glow included) as the saved look. Share / Client view links carry this saved look, so the client sees exactly the visuals and light settings you saved"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save settings</button><button id="btnRenderSave" title="Capture — save a PNG of this cinematic frame at twice the canvas size, from exactly this camera">Capture</button><button id="btnShareClient" class="share-btn" title="Share / Client view — opens the share dialog: copy a link carrying this exact stage design, Public (opens straight away) or Private (the client enters their name + your passkey first). The client sees only the 3D render and can move the camera — no panels, no tools, no editing, no save / load"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Share / Client view</button></div>
         </div>
         <!-- RENDER SETTINGS — Render view only: Graphics tier for
-             optimized PCs, the Render light rig and the colour grade.
-             Render is ALWAYS NIGHT — there is no day / time-of-day
-             option: the sky and stage stay dark so the beams, pools,
-             colours and screen content are the brightest thing in the
-             frame. Session-only: leaving Render restores the editing
-             look exactly. -->
+             optimized PCs, the HDRI environment (Day / Night — the
+             light comes from the environment itself; there is no
+             Key or Rim light effect), the fill / ambient levels and
+             the colour grade. Session-only: leaving Render restores
+             the editing look exactly. -->
         <div class="rs-panel" id="renderSettingsPanel">
-          <div class="rs-head"><b>Render settings</b><span>Render only · always night</span></div>
-          <p class="hint" style="margin:2px 0 8px">Night only — dark sky, dark stage. The beams, light pools, colours and screen content are the brightest thing in the frame. There is no day / time-of-day option.</p>
+          <div class="rs-head"><b>Render settings</b><span>Render only · HDRI day / night</span></div>
+          <p class="hint" style="margin:2px 0 8px">The light in Render comes from the HDRI environment — pick Day for bright daylight or Night for the dark night environment, then the beams, light pools, colours and screen content read against it.</p>
           <div class="rs-sec open" data-rssec>
             <button type="button" class="rs-sec-head" aria-expanded="true">Graphics <span class="rs-chev">▾</span></button>
             <div class="rs-sec-body">
@@ -1758,16 +1757,36 @@ html.admin-boot #adminPage{display:block}
             </div>
           </div>
           <div class="rs-sec open" data-rssec>
+            <button type="button" class="rs-sec-head" aria-expanded="true">Environment — HDRI <span class="rs-chev">▾</span></button>
+            <div class="rs-sec-body">
+              <div class="seg c2" role="group" aria-label="Day or night — the light condition of the HDRI environment">
+                <button type="button" data-rdaynight="day">Day</button>
+                <button type="button" data-rdaynight="night" class="on">Night</button>
+              </div>
+              <div class="field" style="margin-top:8px"><span>HDRI environment</span>
+                <select id="rsHdri" aria-label="HDRI environment preset — the image-based light the stage is lit by at night">
+                  <option value="night" selected>Night — dark night</option>
+                  <option value="studio">Stage studio</option>
+                  <option value="concert">Concert</option>
+                  <option value="warm">Warm hall</option>
+                  <option value="cool">Cool arena</option>
+                  <option value="mono">Mono</option>
+                  <option value="off">Off — no environment</option>
+                </select>
+              </div>
+              <div class="rs-slider" style="margin-top:8px"><div class="rs-row"><span class="rs-lab">Environment intensity</span><output id="rsHdriIOut">100%</output></div><input type="range" id="rsHdriI" min="0" max="200" step="5" value="100" aria-label="Environment intensity — strength of the HDRI image-based light"></div>
+              <div class="rs-col"><span class="rs-lab">Backdrop</span><input type="color" id="rsBackdrop" value="#05070a" aria-label="Backdrop colour behind the stage"></div>
+            </div>
+          </div>
+          <div class="rs-sec open" data-rssec>
             <button type="button" class="rs-sec-head" aria-expanded="true">Lights <span class="rs-chev">▾</span></button>
             <div class="rs-sec-body">
-              <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Key light</span><output id="rsKeyOut">45%</output></div><input type="range" id="rsKey" min="0" max="250" step="5" value="45" aria-label="Key light intensity"></div>
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Fill light</span><output id="rsFillOut">25%</output></div><input type="range" id="rsFill" min="0" max="150" step="5" value="25" aria-label="Fill light intensity"></div>
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Ambient / hemisphere</span><output id="rsAmbOut">50%</output></div><input type="range" id="rsAmb" min="0" max="150" step="5" value="50" aria-label="Ambient hemisphere intensity"></div>
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Glow level</span><output id="rsGlowOut">100%</output></div><input type="range" id="rsGlow" min="0" max="200" step="5" value="100" aria-label="Glow level — bloom / glow intensity of the render lights and LED faces"></div>
-              <div class="rs-col"><span class="rs-lab">Key colour</span><input type="color" id="rsKeyCol" value="#ffffff" aria-label="Key light colour"></div>
               <div class="rs-col"><span class="rs-lab">Fill colour</span><input type="color" id="rsFillCol" value="#88aaff" aria-label="Fill light colour"></div>
               <button type="button" class="btn small block" id="rsLightsReset">Reset lights</button>
-              
+
             </div>
           </div>
           <div class="rs-sec open" data-rssec>
@@ -1777,7 +1796,7 @@ html.admin-boot #adminPage{display:block}
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Beam impact — pool on stage</span><output id="rsImpactOut">100%</output></div><input type="range" id="rsImpact" min="0" max="200" step="5" value="100" aria-label="Beam impact — brightness of the light pool and the real spotlight where each beam lands"></div>
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Lens flare</span><output id="rsFlareOut">100%</output></div><input type="range" id="rsFlare" min="0" max="200" step="5" value="100" aria-label="Lens flare — glow at each fixture lens"></div>
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Beam shaft in clear air</span><output id="rsClearBeamOut">12%</output></div><input type="range" id="rsClearBeam" min="0" max="60" step="2" value="12" aria-label="Beam shaft in clear air — how much of the beam shaft stays visible when there is no haze"></div>
-              <p class="hint">Beams need haze to read in the air: with no Haze modifier the shafts fade, and only the bright pool where each beam lands and the flare at the lens stay — like a real clear room. Beam spots are capped for performance and cast no shadow; the key light does.</p>
+              <p class="hint">Beams need haze to read in the air: with no Haze modifier the shafts fade, and only the bright pool where each beam lands and the flare at the lens stay — like a real clear room. Beam spots are capped for performance and cast no shadow.</p>
               <button type="button" class="btn small block" id="rsBeamReset">Reset stage lights</button>
             </div>
           </div>
@@ -2845,7 +2864,7 @@ html.admin-boot #adminPage{display:block}
       <p class="about-desc">We'd love to hear your thoughts, suggestions, and feedback as we continue developing the platform.</p>
       <p class="about-desc">Share your feedback: hello@lutas.digital</p>
       <p class="about-desc">Privacy: visits to LUTAS LED are counted anonymously — a hashed identifier, the country, the device type and how long the page was open. Guests are never identified by name or email, and no IP address is stored. A visit is linked to an account only when that visitor signs in during the visit.</p>
-      <div class="about-info"><span>Version</span><strong>V1.0.0.0.2</strong></div>
+      <div class="about-info"><span>Version</span><strong>V1.0.0.0.3</strong></div>
       <div class="about-info"><span>Developed by</span><strong>Team LUTAS</strong></div>
       <div class="about-info"><span>Created on</span><strong>October 22, 2026</strong></div>
       <section class="about-donate" aria-label="Support the developers">
@@ -7498,15 +7517,31 @@ var renderMats=[], renderPostState=null, fxFps={n:0,t:0};
    snapshot of this state (savedRenderLook) — share links carry that
    snapshot, so a client view opens with exactly the saved look. */
 function defaultRenderSettings(){
-  return {keyI:0.45,fillI:0.25,ambI:0.5,keyCol:"#ffffff",fillCol:"#88aaff",glow:1.0,
+  return {fillI:0.25,ambI:0.5,fillCol:"#88aaff",glow:1.0,
     beamFx:true,beamImpact:1.0,flare:1.0,clearBeam:0.12,
-    /* Render is ALWAYS NIGHT: the environment is the fixed "night"
-       preset and the backdrop the fixed near-black below — there is
-       no day / time-of-day setting, no environment picker and no
-       backdrop colour picker anywhere in Render. */
-    hdri:"night",hdriI:1.0,
+    /* The light in Render comes from the HDRI ENVIRONMENT itself:
+       Day / Night (dayNight) picks the light condition — Day is
+       the bright daylight HDRI, Night is the chosen HDRI preset
+       (the dark "night" preset by default) over the near-black
+       backdrop. There is NO Key light and NO Rim light effect in
+       Render — the old key/rim rig is removed; Fill and Ambient
+       remain as gentle environment support, and the HDRI preset,
+       its intensity and the backdrop colour are all pickable. */
+    dayNight:"night",hdri:"night",hdriI:1.0,
     exposure:1.12,temp:0,sat:1.0,contrast:1.0,vig:0.34,backdrop:"#05070a"};
 }
+/* The HDRI preset that actually lights the stage: Day is always
+   the daylight environment; at Night the picked preset applies
+   ("off" = no environment light at all). */
+function renderEnvPreset(rs){
+  if(rs.dayNight==="day")return "day";
+  var h=rs.hdri;
+  return (h==="off"||HDRI_PRESETS[h])?h:"night";
+}
+/* The backdrop a Day / Night switch lands on: near-black at
+   night, a daylight sky by day. The Backdrop picker can override
+   it afterwards; switching Day / Night sets it again. */
+function renderBackdropFor(dayNight){return dayNight==="day"?"#8fb4d8":"#05070a"}
 var renderSettings=defaultRenderSettings();
 var renderFx={shadows:true,bloom:true};
 /* The saved Render look: a deep snapshot of the settings, the effect
@@ -7531,9 +7566,12 @@ function setRenderLook(look){
   if(look.settings&&typeof look.settings==="object"){
     var merged=defaultRenderSettings();
     Object.keys(merged).forEach(function(k){if(look.settings[k]!==undefined)merged[k]=look.settings[k]});
-    /* Night-only rule: a look saved before it (with an environment
-       preset or a backdrop colour) still opens at night. */
-    merged.hdri="night"; merged.backdrop="#05070a";
+    /* A look saved by an older build (with key/rim values, or an
+       environment name that no longer exists) still opens: unknown
+       keys are dropped by the defaults merge above, and the
+       environment / day-night values are validated here. */
+    if(merged.dayNight!=="day")merged.dayNight="night";
+    if(merged.hdri!=="off"&&!HDRI_PRESETS[merged.hdri])merged.hdri="night";
     renderSettings=merged;
   }
   if(look.fx){renderFx.shadows=look.fx.shadows!==false; renderFx.bloom=look.fx.bloom!==false}
@@ -7593,12 +7631,15 @@ function ensureRenderPost(){
    with bright soft panels; the panel colours ARE the environment's
    light, so switching preset relights every PBR reflection. */
 var HDRI_PRESETS={
-  /* The ONE environment Render ever uses: a near-black night room
-     with very faint cool panels — just enough for PBR reflections to
-     read, never enough to lift the stage out of the dark. The older
-     presets below are kept only so a saved look from before the
-     night-only rule still parses; applyRenderSettings never selects
-     them — Render is always night. */
+  /* Day: a bright daylight environment — a pale sky room with a
+     very bright overhead sun panel and bright sky walls, so the
+     stage is lit like an outdoor daytime stage. Night: a
+     near-black night room with very faint cool panels — just
+     enough for PBR reflections to read, never enough to lift the
+     stage out of the dark. The studio / concert / warm / cool /
+     mono stage environments are the night-side presets the HDRI
+     picker offers alongside Night and Off. */
+  day:{room:[0.32,0.42,0.58],panels:[[17,7,[26,27,29],0,16.5,0,0,Math.PI/2],[11,5,[10,13,19],-15,8,4,Math.PI/2.4,0],[11,5,[13,15,18],15,8,-2,-Math.PI/2.4,0],[19,2.2,[16,17,19],0,6,-17,0,0],[19,1.4,[7,8,10],0,3,17,Math.PI,0]]},
   night:{room:[0.004,0.005,0.01],panels:[[17,7,[0.55,0.65,1.0],0,16.5,0,0,Math.PI/2],[11,5,[0.22,0.3,0.55],-15,8,4,Math.PI/2.4,0],[11,5,[0.45,0.32,0.18],15,8,-2,-Math.PI/2.4,0],[19,2.2,[0.3,0.32,0.38],0,6,-17,0,0],[19,1.4,[0.12,0.13,0.18],0,3,17,Math.PI,0]]},
   studio:{room:[0.03,0.03,0.045],panels:[[17,7,[9,9,9],0,16.5,0,0,Math.PI/2],[11,5,[3.0,4.2,6.2],-15,8,4,Math.PI/2.4,0],[11,5,[6.2,3.6,1.6],15,8,-2,-Math.PI/2.4,0],[19,2.2,[5,5,5.4],0,6,-17,0,0],[19,1.4,[2.2,2.2,2.4],0,3,17,Math.PI,0]]},
   concert:{room:[0.012,0.008,0.03],panels:[[17,7,[5,2.2,7.5],0,16.5,0,0,Math.PI/2],[11,5,[2.0,2.6,9],-15,8,4,Math.PI/2.4,0],[11,5,[9,2.8,1.4],15,8,-2,-Math.PI/2.4,0],[19,2.2,[8,7,9],0,6,-17,0,0],[19,1.4,[1.2,0.8,2.4],0,3,17,Math.PI,0]]},
@@ -7663,17 +7704,25 @@ function applyRenderSettings(){
   if(!T3||!renderMode)return;
   var rs=renderSettings;
   if(T3.hemi)T3.hemi.intensity=rs.ambI;
-  if(T3.sun){T3.sun.intensity=rs.keyI; try{T3.sun.color.set(rs.keyCol)}catch(e){}}
+  /* NO Key light and NO Rim light in Render: the editor's sun is
+     switched OFF for the whole Render session (its editing
+     intensity / colour are restored by exitRender), so the light
+     on the stage comes from the HDRI environment below plus the
+     Fill / Ambient support — never from an artificial key/rim
+     rig. (The sun's shadow flag is still the tier's shadow
+     switch; with no key light it simply casts nothing.) */
+  if(T3.sun)T3.sun.intensity=0;
   if(T3.fill){T3.fill.intensity=rs.fillI; try{T3.fill.color.set(rs.fillCol)}catch(e){}}
-  /* Night only: the environment is ALWAYS the fixed night preset
-     and the backdrop ALWAYS the fixed near-black — whatever an older
-     saved look carries, Render never shows a day / bright scene. */
-  var rtN=getEnvRT("night"); if(rtN)T3.scene.environment=rtN.texture; else T3.scene.environment=null;
+  /* The HDRI environment IS the light: Day = the bright daylight
+     environment, Night = the picked preset, Off = none. */
+  var ep=renderEnvPreset(rs);
+  if(ep==="off")T3.scene.environment=null;
+  else{var rtN=getEnvRT(ep); T3.scene.environment=rtN?rtN.texture:null}
   renderMats.forEach(function(rec){rec.m.envMapIntensity=rec.re*rs.hdriI});
   applyRenderGlow();
   applyRenderBeamFx();
   T3.renderer.toneMappingExposure=rs.exposure;
-  try{var bg=new THREE.Color("#05070a"); if(T3.scene.background&&T3.scene.background.setHex)T3.scene.background.setHex(bg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(bg.getHex())}catch(e){}
+  try{var bg=new THREE.Color(rs.backdrop||"#05070a"); if(T3.scene.background&&T3.scene.background.setHex)T3.scene.background.setHex(bg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(bg.getHex())}catch(e){}
 }
 /* The effect toggles + shadow flag a tier (or the user) chose. The
    grade pass itself stays live on every tier, so the Colours keep
@@ -7841,7 +7890,7 @@ function enterRender(){
   var r=T3.renderer;
   if(typeof THREE!=="undefined"&&THREE.ACESFilmicToneMapping!==undefined)r.toneMapping=THREE.ACESFilmicToneMapping;
   r.toneMappingExposure=renderSettings.exposure;
-  try{var rbg=new THREE.Color("#05070a"); if(T3.scene.background)T3.scene.background.setHex(rbg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(rbg.getHex())}catch(e){ if(T3.scene.background)T3.scene.background.setHex(0x05070a); if(T3.scene.fog)T3.scene.fog.color.setHex(0x05070a) }
+  try{var rbg=new THREE.Color(renderSettings.backdrop||"#05070a"); if(T3.scene.background)T3.scene.background.setHex(rbg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(rbg.getHex())}catch(e){ if(T3.scene.background)T3.scene.background.setHex(0x05070a); if(T3.scene.fog)T3.scene.fog.color.setHex(0x05070a) }
   if(T3.grid)T3.grid.visible=false;
   document.body.classList.add("rendering");
   $("view3d").classList.add("render-on");
@@ -8823,7 +8872,22 @@ function attach3DPointer(el){
        nearest one, prefer an end ball, then a truss-gizmo part, so the
        grab always lands on the handle the user sees. */
     var d0=hits[0].distance, pick=hits[0];
-    for(var hi=0;hi<hits.length;hi++){
+    /* The armed scaffolding's gizmo wins over its own body across
+       ALL hits, not just the 0.5 m window below: the unit's
+       invisible body box covers the whole scaffold, so its front
+       face is usually metres nearer the camera than the gizmo
+       arrows at the unit's centre — with the window, a click on an
+       arrow grabbed the BODY instead (a free floor drag), and the
+       axis never moved along its line. The gizmo parts are the
+       visible handles, so when the ray reaches one of them, that
+       handle is the grab. */
+    var scGizmoHit=null;
+    for(var hs=0;hs<hits.length;hs++){
+      var hkG=hits[hs].object.userData.modEdit;
+      if(hkG&&hkG.kind==="scgizmo"&&hkG.mid===scaffoldToolArmed){scGizmoHit=hits[hs]; break}
+    }
+    if(scGizmoHit)pick=scGizmoHit;
+    else for(var hi=0;hi<hits.length;hi++){
       var hk=hits[hi].object.userData.modEdit;
       if(hits[hi].distance>d0+0.5)break;
       if(hk&&(hk.kind==="end"||hk.kind==="tgizmo"||hk.kind==="fgizmo"||hk.kind==="ggizmo"||hk.kind==="pgizmo"||hk.kind==="sgizmo"||hk.kind==="stgizmo"||hk.kind==="cgizmo"||hk.kind==="scgizmo")){pick=hits[hi]; break}
@@ -8856,7 +8920,11 @@ function attach3DPointer(el){
            drag in one gesture, exactly like grabbing a screen. */
         if(meU.kind==="scsel"){
           if(trussEditOn()||lightEditOn()||propEditOn()||stageEditOn()||crowdEditOn())return null;
-          if(scaffoldToolArmed&&scaffoldToolArmed!==mmU.id)return null;
+          /* Scaffolding editing armed on ANOTHER unit does NOT
+             block this pick: with Edit on, clicking a different
+             scaffolding unit selects THAT layer — the pointer
+             handler moves the selection and the Edit arm to it, so
+             layers are picked by clicking them in the 3D view. */
           /* Occlusion: a screen IN FRONT of the unit owns the
              click — the selection box only answers when nothing
              display-shaped is nearer the camera on this ray, so
@@ -8886,7 +8954,7 @@ function attach3DPointer(el){
       var hk2=hits[hi2].object.userData.modEdit;
       if(hk2&&(hk2.kind==="scsel"||hk2.kind==="scel")){
         if(hits[hi2].distance>dDispV+0.05)return null; /* a screen is in front — the click selects the screen */
-        return hk2.mid;
+        return {mid:hk2.mid,idx:hk2.idx||0};
       }
     }
     return null;
@@ -9115,12 +9183,26 @@ function attach3DPointer(el){
                unit, so click-and-drag moves it in one gesture. A
                plain click (no drag) just selects + arms, leaving
                the Move / Rotate / Scale gizmo on it. */
+            var prevScArm=scaffoldToolArmed;
+            var scClickIdx=miP.idx||0;
             selModId=mmP.id;
             trussToolArmed=null; trussDraw=null; lightToolArmed=null; propToolArmed=null; stageToolArmed=null; crowdToolArmed=null;
             scaffoldToolArmed=mmP.id;
-            miP={kind:"scel",mid:mmP.id,idx:0};
+            /* The click selects the LAYER it landed on (its index
+               rides on the hit box): that layer becomes the
+               modifier's selected layer, so the panel settings and
+               the gizmo now belong to the clicked layer. */
+            scaffoldSelectUnit(mmP,scClickIdx);
+            miP={kind:"scel",mid:mmP.id,idx:scClickIdx};
             syncModifierPanel();
-            if(T3&&view3dOpen)rebuildModGroup(mmP);
+            if(T3&&view3dOpen){
+              /* Switching layers: the previously armed unit's group
+                 still carries its edit handles — rebuild it too, so
+                 its gizmo goes away and only the clicked layer
+                 keeps the gizmo. */
+              if(prevScArm&&prevScArm!==mmP.id){var pmPrev=modById(prevScArm); if(pmPrev&&pmPrev.type==="scaffold")rebuildModGroup(pmPrev)}
+              rebuildModGroup(mmP);
+            }
             updateV3Readout("Scaffolding selected — "+escapeHtml(mmP.name)+" ("+escapeHtml(scaffoldCalc(mmP).typeLabel)+"). Drag to move it, or use the Move / Rotate / Scale gizmo buttons; its panel and the Object tab now edit this unit.");
           }
           var planeP=null, okP=true;
@@ -9582,8 +9664,8 @@ function attach3DPointer(el){
                 :miP.sub==="scale"
                 ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo scale cube: drag away from the centre to grow the whole unit, towards it to shrink it — one exact ratio about its base, live as you drag, the same Scale gizmo a screen has."
                 :miP.sub==="axis"
-                ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo "+miP.axis.toUpperCase()+" arrow: dragging moves the unit along the "+miP.axis.toUpperCase()+" axis only"+(miP.axis==="y"?" (raise / lower its base)":"")+"."
-                :"Scaffolding — "+escapeHtml(mmP.name)+": gizmo centre ball: dragging moves the unit freely across the floor plane. Its base height stays — move it up / down with the green Y arrow.")
+                ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo "+miP.axis.toUpperCase()+" arrow: dragging moves the unit along the "+miP.axis.toUpperCase()+" line only — it never leaves that line, and it never moves up."
+                :"Scaffolding — "+escapeHtml(mmP.name)+": gizmo centre ball: dragging moves the unit freely across the floor plane, in any direction — its base height stays; there is no up move. Set Base Y in its panel to raise it.")
               :miP.kind==="cgizmo"?(miP.sub==="rot"
                 ?"Crowd pack — "+escapeHtml(crowdPacks(mmP)[miP.idx].name)+": gizmo rotate ring: dragging turns the pack about the Y axis around its centre (magnet snaps "+rotStepDeg()+"°). Its head count is "+Math.round(+crowdPacks(mmP)[miP.idx].count||0)+" people."
                 :miP.sub==="scale"
@@ -10300,13 +10382,17 @@ function attach3DPointer(el){
           updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": scale ×"+cSC4.scale.toFixed(2)+" — bays "+cSC4.bayL.toFixed(2)+" × "+cSC4.bayW.toFixed(2)+" m · overall "+escapeHtml(scaffoldOverallText(mm2))+". Release to keep it.");
         }else if(md.info.kind==="scgizmo"&&md.info.sub==="axis"){
           /* Scaffold gizmo axis arrow: the unit travels along that
-             one world axis from its drag-start position. */
+             arrow's line only — the pointer's travel is projected
+             onto the one axis, so it cannot drift off the line —
+             and the move gizmo has no Y (top) axis at all, so the
+             base height is pinned at its drag-start value: a move
+             never raises or lowers the unit. */
           var axSC5=md.info.axis, ppQ5=mm2.params, stSC5=md.scafStart;
           var axVSC=AX3[axSC5];
           var tSC5=(ptM.x-md.p0.x)*axVSC.x+(ptM.y-md.p0.y)*axVSC.y+(ptM.z-md.p0.z)*axVSC.z;
           if(snapM){var gmSC=gridM(); tSC5=Math.round(tSC5/gmSC)*gmSC}
           ppQ5.x=Math.round(clamp((+stSC5.x||0)+axVSC.x*tSC5,-60,60)*100)/100;
-          ppQ5.y=Math.round(clamp((+stSC5.y||0)+axVSC.y*tSC5,0,15)*100)/100;
+          ppQ5.y=+stSC5.y||0;
           ppQ5.z=Math.round(clamp((+stSC5.z||0)+axVSC.z*tSC5,-60,60)*100)/100;
           rebuildModGroup(mm2);
           updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": moving along the "+axSC5.toUpperCase()+" axis ("+fmtMeasureSigned(tSC5)+") to ("+measureNum(ppQ5.x)+", "+measureNum(ppQ5.y)+", "+measureNum(ppQ5.z)+") "+measureUnit()+".");
@@ -10889,9 +10975,10 @@ function attach3DPointer(el){
          a screen selects as before. */
       var scmV=pickScaffoldSel(ev);
       if(scmV){
-        if(scmV!==selModId){selModId=scmV; render()}
-        var mmV=modById(scmV);
-        if(mmV)updateV3Readout("Scaffolding selected — "+escapeHtml(mmV.name)+" ("+escapeHtml(scaffoldCalc(mmV).typeLabel)+", "+escapeHtml(scaffoldOverallText(mmV))+"). Switch to Edit mode to move / rotate / scale it with the gizmo.");
+        var mmV0=modById(scmV.mid);
+        if(mmV0){scaffoldSelectUnit(mmV0,scmV.idx); if(scmV.mid!==selModId)selModId=scmV.mid; render()}
+        var mmV=modById(scmV.mid);
+        if(mmV)updateV3Readout("Scaffolding layer selected — "+escapeHtml((scaffoldUnits(mmV)[scaffoldSelIdx(mmV)]||{}).name||mmV.name)+" ("+escapeHtml(scaffoldCalc(mmV).typeLabel)+", "+escapeHtml(scaffoldOverallText(mmV))+"). Switch to Edit mode to move / rotate / scale it with the gizmo.");
       }else{
         var id=pickDisp(ev);
         if(id&&id!==state.selId){state.selId=id; state.selCab=null; render()}
@@ -10997,7 +11084,10 @@ function syncRenderSettingsUI(){
   var rs=renderSettings;
   function set(id,v){var el=$(id); if(el)el.value=v}
   function out(id,txt){var el=$(id); if(el)el.textContent=txt}
-  set("rsKey",Math.round(rs.keyI*100)); out("rsKeyOut",Math.round(rs.keyI*100)+"%");
+  set("rsHdri",rs.hdri);
+  set("rsHdriI",Math.round(rs.hdriI*100)); out("rsHdriIOut",Math.round(rs.hdriI*100)+"%");
+  set("rsBackdrop",rs.backdrop||"#05070a");
+  document.querySelectorAll("[data-rdaynight]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-rdaynight")===rs.dayNight)});
   set("rsFill",Math.round(rs.fillI*100)); out("rsFillOut",Math.round(rs.fillI*100)+"%");
   set("rsAmb",Math.round(rs.ambI*100)); out("rsAmbOut",Math.round(rs.ambI*100)+"%");
   set("rsGlow",Math.round(rs.glow*100)); out("rsGlowOut",Math.round(rs.glow*100)+"%");
@@ -11005,7 +11095,7 @@ function syncRenderSettingsUI(){
   set("rsFlare",Math.round((rs.flare==null?1:rs.flare)*100)); out("rsFlareOut",Math.round((rs.flare==null?1:rs.flare)*100)+"%");
   set("rsClearBeam",Math.round((rs.clearBeam==null?0.12:rs.clearBeam)*100)); out("rsClearBeamOut",Math.round((rs.clearBeam==null?0.12:rs.clearBeam)*100)+"%");
   syncBeamFxBtn();
-  set("rsKeyCol",rs.keyCol); set("rsFillCol",rs.fillCol);
+  set("rsFillCol",rs.fillCol);
   set("rsExp",Math.round(rs.exposure*100)); out("rsExpOut",Math.round(rs.exposure*100)+"%");
   set("rsTemp",Math.round(rs.temp*100)); out("rsTempOut",(rs.temp>0?"+":"")+Math.round(rs.temp*100));
   set("rsSat",Math.round(rs.sat*100)); out("rsSatOut",Math.round(rs.sat*100)+"%");
@@ -11052,8 +11142,21 @@ document.querySelectorAll("[data-rfx]").forEach(function(btn){
   });
 });
 function rsBind(id,fn){var el=$(id); if(el)el.addEventListener("input",function(){fn(+this.value,this.value)})}
-rsBind("rsKey",function(v){renderSettings.keyI=v/100; $("rsKeyOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
 rsBind("rsFill",function(v){renderSettings.fillI=v/100; $("rsFillOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
+rsBind("rsHdriI",function(v){renderSettings.hdriI=v/100; $("rsHdriIOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
+(function(){var elH=$("rsHdri"); if(elH)elH.addEventListener("change",function(){renderSettings.hdri=this.value; if(renderMode)applyRenderSettings()})})();
+(function(){var elB=$("rsBackdrop"); if(elB)elB.addEventListener("input",function(){renderSettings.backdrop=this.value; if(renderMode)applyRenderSettings()})})();
+document.querySelectorAll("[data-rdaynight]").forEach(function(b){
+  b.addEventListener("click",function(){
+    var dn=b.getAttribute("data-rdaynight");
+    if(renderSettings.dayNight===dn)return;
+    renderSettings.dayNight=dn;
+    renderSettings.backdrop=renderBackdropFor(dn); /* the condition's own backdrop: near-black at night, daylight sky by day */
+    syncRenderSettingsUI();
+    if(renderMode)applyRenderSettings();
+    toast(dn==="day"?"Render — Day: the stage is lit by the bright daylight HDRI environment.":"Render — Night: the stage is lit by the dark HDRI environment over the near-black backdrop.");
+  });
+});
 rsBind("rsAmb",function(v){renderSettings.ambI=v/100; $("rsAmbOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
 rsBind("rsExp",function(v){renderSettings.exposure=v/100; $("rsExpOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
 rsBind("rsTemp",function(v){renderSettings.temp=v/100; $("rsTempOut").textContent=(v>0?"+":"")+v});
@@ -11067,13 +11170,12 @@ rsBind("rsFlare",function(v){renderSettings.flare=v/100; $("rsFlareOut").textCon
 rsBind("rsClearBeam",function(v){renderSettings.clearBeam=v/100; $("rsClearBeamOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
 (function(){var b=$("rsBeamFxBtn"); if(b)b.addEventListener("click",function(){renderSettings.beamFx=renderSettings.beamFx===false?true:false; syncBeamFxBtn(); if(renderMode)applyRenderBeamFx()})})();
 (function(){var b=$("rsBeamReset"); if(b)b.addEventListener("click",function(){renderSettings.beamFx=true; renderSettings.beamImpact=1.0; renderSettings.flare=1.0; renderSettings.clearBeam=0.12; syncRenderSettingsUI(); if(renderMode)applyRenderBeamFx(); toast("Stage lights reset — realistic beams on, beam impact 100%, lens flare 100%, clear-air shaft 12%.")})})();
-$("rsKeyCol").addEventListener("input",function(){renderSettings.keyCol=this.value; if(renderMode)applyRenderSettings()});
 $("rsFillCol").addEventListener("input",function(){renderSettings.fillCol=this.value; if(renderMode)applyRenderSettings()});
 $("rsLightsReset").addEventListener("click",function(){
-  renderSettings.keyI=0.45; renderSettings.fillI=0.25; renderSettings.ambI=0.5; renderSettings.glow=1.0;
-  renderSettings.keyCol="#ffffff"; renderSettings.fillCol="#88aaff";
+  renderSettings.fillI=0.25; renderSettings.ambI=0.5; renderSettings.glow=1.0;
+  renderSettings.fillCol="#88aaff";
   syncRenderSettingsUI(); if(renderMode)applyRenderSettings();
-  toast("Render lights reset — key 45%, fill 25%, ambient 50%, glow 100%.");
+  toast("Render lights reset — fill 25%, ambient 50%, glow 100%. The light itself comes from the HDRI environment (Day / Night).");
 });
 var RS_COL_PRESETS={
   neutral:{exposure:1.12,temp:0,sat:1.0,contrast:1.0,vig:0.34},
@@ -11094,7 +11196,7 @@ $("rsColReset").addEventListener("click",function(){
   var p=RS_COL_PRESETS.neutral;
   renderSettings.exposure=p.exposure; renderSettings.temp=p.temp; renderSettings.sat=p.sat;
   renderSettings.contrast=p.contrast; renderSettings.vig=p.vig;
-  renderSettings.backdrop="#05070a";
+  renderSettings.backdrop=renderBackdropFor(renderSettings.dayNight);
   syncRenderSettingsUI(); if(renderMode)applyRenderSettings();
   toast("Render colours reset to Neutral.");
 });
@@ -11102,7 +11204,7 @@ $("rsResetAll").addEventListener("click",function(){
   renderSettings=defaultRenderSettings();
   syncRenderSettingsUI(); setRenderGraphics("auto");
   if(renderMode)applyRenderSettings();
-  toast("All Render settings reset — Graphics Auto, night look, neutral colours, key 45% / fill 25% / ambient 50%, glow 100%.");
+  toast("All Render settings reset — Graphics Auto, Night HDRI environment, neutral colours, fill 25% / ambient 50%, glow 100%.");
 });
 syncRenderSettingsUI();
 /* ── Settings panel resize — Photoshop-style ─────────────────────────
@@ -12148,7 +12250,7 @@ function objScreenSel(){var d=selOpt(); return d?{kind:"screen",disp:d}:null}
 function objTrussSel(){var m=modById(selModId); if(!m||m.type!=="truss"||!m.enabled)return null; var segs=m.params.segs||[]; if(!segs.length)return null; var i=(modSelSeg>=0&&modSelSeg<segs.length)?modSelSeg:0; return {kind:"truss",mod:m,seg:segs[i],idx:i}}
 function objLightSel(){var m=modById(selModId); if(!m||m.type!=="light"||!m.enabled)return null; var fx=m.params.fixtures||[]; if(!fx.length)return null; var i=(modSelFix>=0&&modSelFix<fx.length)?modSelFix:0; return {kind:"light",mod:m,fix:fx[i],idx:i}}
 function objPropSel(){var m=modById(selModId); if(!m||m.type!=="props"||!m.enabled)return null; var it=m.params.items||[]; if(!it.length)return null; var i=(modSelProp>=0&&modSelProp<it.length)?modSelProp:0; return {kind:"prop",mod:m,item:it[i],idx:i}}
-function objScaffoldSel(){var m=modById(selModId); if(!m||m.type!=="scaffold"||!m.enabled)return null; return {kind:"scaffold",mod:m,idx:0}}
+function objScaffoldSel(){var m=modById(selModId); if(!m||m.type!=="scaffold"||!m.enabled)return null; return {kind:"scaffold",mod:m,idx:scaffoldSelIdx(m)}}
 function objSelOf(kind){return kind==="truss"?objTrussSel():kind==="light"?objLightSel():kind==="prop"?objPropSel():kind==="scaffold"?objScaffoldSel():objScreenSel()}
 function currentObject(){
   var o=objSelOf(objFocusKind); if(o)return o;
@@ -12208,7 +12310,7 @@ function objView(o){
     var sm=o.mod, sp=sm.params, scf=scaffoldCalc(sm);
     return {badge:"Scaffolding", name:sm.name,
       info:scf.typeLabel+" · "+(scf.empty?"empty — zero bays":(scf.nx+" × "+scf.nz+" bays · overall "+scaffoldOverallText(sm))),
-      note:""+measureUnit()+" — X across, Y the height of the unit's base, Z depth. Rotation is in degrees: Y is the unit's facing; X / Z are locked at 0° — a scaffolding unit never tilts. Scale is the unit's exact ratio, the same on all three axes: the whole unit grows / shrinks uniformly from its "+scf.typeLabel+" datasheet build, so the overall size is that build × the ratio (at ×1.00 every size is the true datasheet size, tube "+scf.type.tubeOD.toFixed(1)+" mm). The same Scale control, with the live overall size, is in the Scaffolding panel — and the 3D Scale gizmo drags it too.",
+      note:""+measureUnit()+" — X across, Y the height of the unit's base, Z depth. Rotation is in degrees: Y is the unit's facing; X / Z are locked at 0° — a scaffolding unit never tilts. Scale is the unit's exact ratio, the same on all three axes: the whole unit grows / shrinks uniformly from its "+scf.typeLabel+" datasheet build, so the overall size is that build × the ratio (at ×1.00 every size is the true datasheet size, tube "+scf.type.tubeOD.toFixed(1)+" mm). The Scale fields above always show the unit's current scale — drag the 3D Scale gizmo to change it, or type the ratio here.",
       t:{px:r2(sp.x), py:r2(sp.y), pz:r2(sp.z), rx:0, ry:Math.round(+sp.ry||0), rz:0, sx:scf.scale, sy:scf.scale, sz:scf.scale},
       lock:{rx:1, rz:1}, slab:["Scale X · size ×","Scale Y · size ×","Scale Z · size ×"]};
   }
@@ -12305,7 +12407,7 @@ function applyObjField(o,key,v){
     else if(key==="py")spp.y=r2(clamp(v,0,15));
     else if(key==="pz")spp.z=r2(clamp(v,-60,60));
     else if(key==="ry")spp.ry=Math.round(normDeg180(v));
-    else if(key==="sx"||key==="sy"||key==="sz")scaffoldSetScale(o.mod,v); /* exact ratio — the whole unit scales uniformly, same as the panel and the gizmo */
+    else if(key==="sx"||key==="sy"||key==="sz")scaffoldSetScale(o.mod,v); /* exact ratio — the whole unit scales uniformly, same as the 3D Scale gizmo */
     return;
   }
   var it2=o.item;
@@ -13797,12 +13899,15 @@ function downloadBriefPDF(){
   subHead("Scaffolding — "+bomScaf.length+" system(s)"+(bomScaf.length?(" · "+bomScaf.map(function(m){return scaffoldCalc(m).typeLabel}).filter(function(v,i,a){return a.indexOf(v)===i}).join(" · ")):""));
   if(!bomScaf.length)noteLine("No scaffolding in this layout.");
   bomScaf.forEach(function(m){
-    var p=m.params, c=scaffoldCalc(m);
+    /* Every layer of the modifier is a system in the BOM — the
+       loop runs once per layer, on that layer's view. */
+    scaffoldUnits(m).forEach(function(uB,uiB){
+    var mvB=scaffoldView(m,uiB), p=mvB.params, c=scaffoldCalc(mvB);
     bsStd+=c.standards; bsLed+=c.ledgers; bsTra+=c.transoms; bsBra+=c.braces; bsDeck+=c.decks; bsJack+=c.baseJacks; bsGuard+=c.guardrails; bsToe+=c.toeboards; bsKg+=c.tubeKg; bsArea+=c.deckArea;
     detailsTable([
-      ["System:", m.name+" — "+c.typeLabel, "Status:", m.enabled?"On stage":"Hidden"],
+      ["System:", (uB.name||m.name)+" — "+c.typeLabel, "Status:", m.enabled?"On stage":"Hidden"],
       ["Tube (Datasheet):", c.type.tubeText+" · "+c.type.steelText, "Connection (Datasheet):", c.type.connection],
-      ["Build:", c.empty?"Empty — zero bays":(c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)), "Overall (W × D × H):", c.empty?"—":scaffoldOverallText(m)],
+      ["Build:", c.empty?"Empty — zero bays":(c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)), "Overall (W × D × H):", c.empty?"—":scaffoldOverallText(mvB)],
       ["Scale:", "×"+c.scale.toFixed(2)+" — exact ratio, bays / lifts snapped to the "+c.typeLabel+" datasheet sizes; tube stays "+c.type.tubeOD.toFixed(1)+" mm", "Footprint:", c.empty?"—":(fmtMeasure(c.L)+" × "+fmtMeasure(c.W))],
       ["Lifts:", c.lifts+" × "+fmtMeasure(c.liftH), "Total Height:", fmtMetres(c.H)],
       ["Access:", p.access==="stair"?("Stair — "+c.stairs+" flight(s)"):p.access==="ladder"?"Ladder":"None", "Load Class:", "Class "+(+p.loadClass||3)+" — "+c.classLoad.toFixed(1)+" kN/m² (EN 12811-1, Datasheet)"],
@@ -13813,6 +13918,7 @@ function downloadBriefPDF(){
       ["Permissible Load (Datasheet):", !c.type.stdLoad?("Not listed for "+c.typeLabel):(c.stdLoad!==null?(c.stdLoad+" kN per standard at "+c.liftH+" m lift"):"Not listed at "+c.liftH+" m lift"), "Steel Deck Load (Datasheet):", !c.type.deckLoad?("Not listed for "+c.typeLabel):(c.deckLoad!==null?(c.deckLoad.toFixed(1)+" kN/m² at "+c.bayL+" m bay"):"Not listed at "+c.bayL+" m bay")],
       ["Tube Steel Weight (Calculated):", fmt(Math.round(c.tubeKg*10)/10)+" kg — tube only", "Deck Area (Calculated):", fmtAreaM2(c.deckArea)]
     ]);
+    });
   });
   if(bomScaf.length){
     detailsTable([
@@ -20470,8 +20576,8 @@ function sanitizeModifier(o){
      switches, guardrail / bracing / access / load class, the
      exact-ratio scale state, and the unit's place on the stage.
      The scale is ONE exact-ratio factor applied uniformly to the
-     whole unit (the panel field and the 3D Scale gizmo both drive
-     it — scaffoldSetScale); the bays / lifts themselves always
+     whole unit (the Object tab field and the 3D Scale gizmo both
+     drive it — scaffoldSetScale); the bays / lifts themselves always
      stay on the type's datasheet lists. A layout saved by an old
      build may carry a free unit scale (us): it folds into that
      same factor here, and us is retired to 1 (kept in the file
@@ -20511,6 +20617,44 @@ function sanitizeModifier(o){
     p.y=isFinite(+p.y)?clamp(+p.y,0,15):0;
     p.z=isFinite(+p.z)?clamp(+p.z,-60,60):0;
     p.ry=isFinite(+p.ry)?Math.round(normDeg180(+p.ry)):0;
+    /* Layers (units inside this one modifier): each layer is
+       validated with the same rules as the flat build above —
+       its own type's datasheet snaps, counts, decks, flags,
+       access, load class, scale and place — and the flat params
+       then mirror the selected layer (p.sel), so the panel, the
+       gizmo and the Object tab open on that layer. A layout with
+       no units list keeps the flat build as its one layer (the
+       list is built from it on first read — scaffoldUnits). */
+    if(Array.isArray(p.units)&&sct){
+      p.units=p.units.filter(function(u){return u&&typeof u==="object"}).map(function(u){
+        var ut=SCAFFOLD_TYPES[u.system]?SCAFFOLD_TYPES[u.system]:sct;
+        u.system=SCAFFOLD_TYPES[u.system]?u.system:"layher";
+        u.bayL=scaSnap(ut.bays,u.bayL,2.07); u.bayW=scaSnap(ut.bays,u.bayW,2.07);
+        u.liftH=scaSnap(ut.lifts,u.liftH,2);
+        u.scale=isFinite(+u.scale)?clamp(Math.round(+u.scale*100)/100,0.25,4):1;
+        var lu=isFinite(+u.us)?clamp(+u.us,0.25,4):1;
+        if(Math.abs(lu-1)>0.001)u.scale=clamp(Math.round(u.scale*lu*100)/100,0.25,4);
+        u.us=1; u.sclL=u.bayL; u.sclW=u.bayW; u.sclH=u.liftH;
+        u.baysX=isFinite(+u.baysX)?clamp(Math.round(+u.baysX),0,12):0;
+        u.baysZ=isFinite(+u.baysZ)?clamp(Math.round(+u.baysZ),0,12):0;
+        u.lifts=isFinite(+u.lifts)?clamp(Math.round(+u.lifts),1,6):2;
+        var dkU=Array.isArray(u.decks)?u.decks:[]; u.decks=[]; for(var diU=0;diU<u.lifts;diU++)u.decks.push(dkU[diU]!==false);
+        u.guardrail=u.guardrail!==false; u.bracing=u.bracing!==false;
+        u.access=(u.access==="stair"||u.access==="none")?u.access:"ladder";
+        u.loadClass=(+u.loadClass===4)?4:3;
+        u.x=isFinite(+u.x)?clamp(+u.x,-60,60):0;
+        u.y=isFinite(+u.y)?clamp(+u.y,0,15):0;
+        u.z=isFinite(+u.z)?clamp(+u.z,-60,60):0;
+        u.ry=isFinite(+u.ry)?Math.round(normDeg180(+u.ry)):0;
+        u.name=(typeof u.name==="string"&&u.name)?u.name:"Scaffolding";
+        return u;
+      });
+      p.sel=isFinite(+p.sel)?clamp(Math.round(+p.sel),0,Math.max(0,p.units.length-1)):0;
+      if(p.units.length){
+        var au=p.units[p.sel];
+        for(var uk2=0;uk2<SCAFFOLD_UNIT_KEYS.length;uk2++){var kk2=SCAFFOLD_UNIT_KEYS[uk2]; if(au[kk2]!==undefined)p[kk2]=Array.isArray(au[kk2])?au[kk2].slice():au[kk2]}
+      }
+    }else if(!Array.isArray(p.units)){p.sel=0}
   }
   /* Props: validate each imported model entry. The embedded model
      data is kept only as a plausible data URL within the embed
@@ -20661,6 +20805,97 @@ function scaffoldTubeKgM(t){var od=t.tubeOD, id=od-2*t.tubeWall; return Math.rou
    sizes the factor applies to, kept in the file so older builds
    can still open the layout. At ×1.00 every dimension on stage is
    the true datasheet size of the chosen system. */
+/* ── Scaffolding LAYERS — units INSIDE the one Scaffolding
+   modifier ─────────────────────────────────────────────────────
+   A Scaffolding modifier holds a LIST of layers (params.units):
+   each layer is one complete scaffolding system (its own type,
+   bays, lifts, decks, scale and place on the stage), exactly like
+   Crowd packs inside a Crowd modifier or props inside a Props
+   modifier. The "+ Scaffolding" button and the Layers + tool add
+   a LAYER to this list — never a new Modifier Stack entry.
+   The modifier's FLAT params mirror the SELECTED layer
+   (params.sel), so every existing panel field, gizmo drag, the
+   Object tab, the calc and the spec read the selected layer
+   through the flat fields exactly as before; scaffoldMirrorSave
+   writes the flat fields back into the selected layer, and
+   switching layers saves the old one and loads the new one.
+   A layout saved before layers existed has no units list: the
+   first read builds it from the flat params, so it opens as a
+   one-layer Scaffolding with the same unit it always had. */
+var SCAFFOLD_UNIT_KEYS=["system","bayL","bayW","baysX","baysZ","liftH","lifts","decks","guardrail","bracing","access","loadClass","x","y","z","ry","scale","sclL","sclW","sclH","us"];
+function scaffoldUnitFromFlat(p,name){
+  var u={name:name||"Scaffolding"};
+  SCAFFOLD_UNIT_KEYS.forEach(function(k){if(p&&p[k]!==undefined)u[k]=Array.isArray(p[k])?p[k].slice():p[k]});
+  return u;
+}
+function scaffoldUnits(m){
+  var p=m&&m.params; if(!p)return [];
+  if(!Array.isArray(p.units))p.units=[scaffoldUnitFromFlat(p,m.name)];
+  return p.units;
+}
+function scaffoldSelIdx(m){
+  var us=m&&m.params?m.params.units:null;
+  if(!Array.isArray(us)||!us.length)return 0;
+  return clamp(Math.round(+m.params.sel||0),0,us.length-1);
+}
+function scaffoldMirrorSave(m){
+  if(!m||m.type!=="scaffold")return;
+  var us=scaffoldUnits(m); if(!us.length)return;
+  var u=us[scaffoldSelIdx(m)], p=m.params;
+  SCAFFOLD_UNIT_KEYS.forEach(function(k){if(p[k]!==undefined)u[k]=Array.isArray(p[k])?p[k].slice():p[k]});
+}
+function scaffoldMirrorLoad(m){
+  if(!m||m.type!=="scaffold")return;
+  var us=scaffoldUnits(m); if(!us.length)return;
+  var u=us[scaffoldSelIdx(m)], p=m.params;
+  SCAFFOLD_UNIT_KEYS.forEach(function(k){if(u[k]!==undefined)p[k]=Array.isArray(u[k])?u[k].slice():u[k]});
+}
+function scaffoldSelectUnit(m,idx){
+  if(!m||m.type!=="scaffold")return;
+  scaffoldMirrorSave(m);
+  m.params.sel=idx;
+  scaffoldMirrorLoad(m);
+}
+/* A per-layer VIEW — an object shaped like a scaffold modifier
+   whose params ARE the layer's, so every scaffold helper (calc,
+   overall text, spec lines, the 3D builder) works on one layer
+   unchanged. The selected layer's view is the modifier itself:
+   its flat params are that layer, live edits included. */
+function scaffoldView(m,idx){
+  var us=scaffoldUnits(m);
+  if(idx===scaffoldSelIdx(m))return m;
+  var u=us[idx]; if(!u)return m;
+  return {id:m.id,type:"scaffold",name:u.name||m.name,enabled:m.enabled,params:u,_scafView:true};
+}
+function scaffoldFootprints(exceptP){
+  var out=[];
+  state.modifiers.forEach(function(x){
+    if(x.type!=="scaffold"||!x.enabled)return;
+    scaffoldUnits(x).forEach(function(u,i){
+      var v=scaffoldView(x,i);
+      if(v.params===exceptP)return;
+      out.push({p:v.params,c:scaffoldCalc(v)});
+    });
+  });
+  return out;
+}
+/* Step a candidate layer's place sideways (then further back)
+   until its footprint clears every scaffolding layer already on
+   stage, so each added layer stands in its own place. */
+function scaffoldPlaceClear(p){
+  var c=scaffoldCalc({params:p});
+  var fps=scaffoldFootprints(p), gap=0.6, homeX=p.x;
+  for(var att=0;att<48;att++){
+    var hit=null;
+    for(var i=0;i<fps.length;i++){
+      var oc=fps[i].c, op=fps[i].p;
+      if(Math.abs(p.x-op.x)<(c.L+oc.L)/2+gap&&Math.abs(p.z-op.z)<(c.W+oc.W)/2+gap){hit=fps[i]; break}
+    }
+    if(!hit)break;
+    p.x=Math.round((hit.p.x+(hit.c.L+c.L)/2+gap)*100)/100;
+    if(p.x>45){p.x=homeX; p.z=Math.round((p.z-c.W-gap)*100)/100}
+  }
+}
 function scaffoldSetScale(m,f){
   var p=m.params;
   var fac=clamp(Math.round((+f||1)*100)/100,0.25,4);
@@ -20725,10 +20960,6 @@ function scaffoldOverallText(m){
   if(c.empty)return "no bays — "+fmtMeasure(0)+" × "+fmtMeasure(0)+" × "+fmtMeasure(c.H);
   return fmtMeasureDims(c.L,c.W,c.H);
 }
-function scaffoldScaleText(m){
-  var c=scaffoldCalc(m);
-  return "Scale ×"+c.scale.toFixed(2)+" — overall "+scaffoldOverallText(m)+" (width × depth × height). The build stays on the "+c.typeLabel+" datasheet sizes — bays "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)+" · lifts "+fmtMeasure(c.liftH)+" — and the whole unit scales uniformly at this one exact ratio, from this panel or the Scale gizmo in the 3D view. At ×1.00 every dimension is the true datasheet size.";
-}
 function scaffoldStatusText(m){
   var c=scaffoldCalc(m), ty=c.type;
   if(c.empty)return "Empty container — zero bays. Set the bays along length / width to build the scaffold.";
@@ -20765,6 +20996,20 @@ function scaffoldSizeText(m){
   return "Overall "+scaffoldOverallText(m)+" (width × depth × height) · scale ×"+c.scale.toFixed(2)+" · "+c.lifts+" lift"+(c.lifts===1?"":"s")+" × "+fmtMeasure(c.liftH)+" · parts (Calculated): "+c.standards+" standards · "+c.ledgers+" ledgers · "+c.transoms+" transoms · "+c.braces+" braces · "+c.decks+" decks · "+c.baseJacks+" base jacks · "+c.guardrails+" guardrails · "+c.toeboards+" toeboards · deck area "+fmtAreaM2(c.deckArea)+" · tube steel "+c.tubeKg+" kg.";
 }
 function scaffoldSpecLines(m){
+  /* One Scaffolding modifier = its layers: with more than one
+     layer, the spec lists every layer under its own name (the
+     per-layer lines are scaffoldSpecLinesU on that layer's view). */
+  if(m&&!m._scafView&&m.params&&Array.isArray(m.params.units)&&m.params.units.length>1){
+    var outA=["  Layers: "+m.params.units.length+" scaffolding systems in this modifier."];
+    m.params.units.forEach(function(u,ui){
+      outA.push("  Layer "+(ui+1)+" — "+(u.name||"Scaffolding")+":");
+      scaffoldSpecLinesU(scaffoldView(m,ui)).forEach(function(l){outA.push(l)});
+    });
+    return outA;
+  }
+  return scaffoldSpecLinesU(m);
+}
+function scaffoldSpecLinesU(m){
   var p=m.params, c=scaffoldCalc(m), ty=c.type, out=[];
   out.push("  Scaffolding — "+ty.label.toUpperCase()+" (Datasheet: tube "+ty.tubeText+", "+ty.steelText+"; "+ty.connection+(ty.guardrailCm?("; guardrail "+ty.guardrailCm+" cm"):"")+(ty.toeboardCm?(", toeboard "+ty.toeboardCm+" cm"):"")+"). Source: "+ty.source);
   if(c.empty){out.push("  Empty container — zero bays. Set the bays along length / width in its panel to build the scaffold."); return out}
@@ -20780,7 +21025,7 @@ function modSubLabel(m){
   if(m.type==="crowd"){var cps=crowdPacks(m); var phT=crowdPhoneTotal(m); return cps.length+" pack"+(cps.length===1?"":"s")+" · "+crowdTotalPeople(m)+" people"+(phT?" · "+phT+" phones raised":"")}
   if(m.type==="light")return (p.custom?("Custom · "+(p.fixtures||[]).length+" fixtures"):Math.round(+p.count||0)+" × "+lightTypeLabel(p.ltype))+" · "+(p.beamEndless===false?("beams "+(+p.beamLen||12)+" m"):"beams endless");
   if(m.type==="truss")return p.custom?("Custom · "+(p.segs||[]).length+" seg · "+(p.trussType==="tri"?"Triangular":p.trussType==="ladder"?"Ladder":"Box")+" "+(+p.section||290)):trussMethodName(p.method)+" · "+(p.trussType==="tri"?"Triangular":p.trussType==="ladder"?"Ladder":"Box")+" "+(+p.section||290);
-  if(m.type==="scaffold"){var scL=scaffoldCalc(m); return scL.empty?(scL.typeLabel+" · 0 bays (empty)"):(scL.typeLabel+" · "+scL.nx+" × "+scL.nz+" bays · "+scL.lifts+" lift"+(scL.lifts===1?"":"s")+" · H "+fmtMeasure(scL.H)+(scL.scale!==1?" · ×"+scL.scale.toFixed(2):""))}
+  if(m.type==="scaffold"){var scUs=scaffoldUnits(m); var scL=scaffoldCalc(m); var scOne=scL.empty?(scL.typeLabel+" · 0 bays (empty)"):(scL.typeLabel+" · "+scL.nx+" × "+scL.nz+" bays · "+scL.lifts+" lift"+(scL.lifts===1?"":"s")+" · H "+fmtMeasure(scL.H)+(scL.scale!==1?" · ×"+scL.scale.toFixed(2):"")); return scUs.length>1?(scUs.length+" layers · selected: "+scOne):scOne}
   if(m.type==="speakers")return Math.round(+p.cabs||0)+" / side";
   if(m.type==="haze")return Math.round(+p.density||0)+"%";
   if(m.type==="props")return (p.items||[]).length+" prop"+((p.items||[]).length===1?"":"s")+" · 3D only";
@@ -21828,11 +22073,11 @@ function buildModParams(m){
        packs, Truss and the other modifiers) works on the selected
        layer, each row selects its layer, and every setting below
        edits the selected layer only. */
-    var scafLayers=state.modifiers.filter(function(x){return x.type==="scaffold"});
-    var scafRows=scafLayers.map(function(lm){
-      var lc=scaffoldCalc(lm);
-      return '<div class="cust-row'+(lm.id===m.id?" sel":"")+'" data-scaflayer-sel="'+lm.id+'" style="cursor:pointer"><div class="cr-head"><b>'+escapeHtml(lm.name)+'</b><span>'+escapeHtml(lc.empty?"0 bays":(lc.typeLabel+" · "+lc.nx+" × "+lc.nz+" bays · "+scaffoldOverallText(lm)))+'</span></div></div>';
-    }).join("");
+    var scafUnitsL=scaffoldUnits(m), scafSelL=scaffoldSelIdx(m);
+    var scafRows=scafUnitsL.length?scafUnitsL.map(function(lu,li){
+      var lv=scaffoldView(m,li), lc=scaffoldCalc(lv);
+      return '<div class="cust-row'+(li===scafSelL?" sel":"")+'" data-scaflayer-sel="'+li+'" style="cursor:pointer"><div class="cr-head"><b>'+escapeHtml(lu.name||("Scaffolding "+(li+1)))+'</b><span>'+escapeHtml(lc.empty?"0 bays":(lc.typeLabel+" · "+lc.nx+" × "+lc.nz+" bays · "+scaffoldOverallText(lv)))+'</span></div></div>';
+    }).join(""):'<p class="mod-note" style="margin:0">No scaffolding layer yet — press + Scaffolding to add one.</p>';
     h+='<button type="button" class="btn btn-create'+(scfOn?" on":"")+'" data-modbtn="editScaffold" aria-pressed="'+(scfOn?"true":"false")+'">Edit</button>'
       +'<button type="button" class="btn primary block" data-modbtn="addScaffoldLayer" style="margin-top:8px">+ Scaffolding</button>'
       +mRoll(m,"layers","Scaffolding Layers",
@@ -21856,13 +22101,6 @@ function buildModParams(m){
         +'<div class="grid2" style="margin-top:8px"><button type="button" class="btn" data-modbtn="addBayX">+ Bay along length</button><button type="button" class="btn" data-modbtn="addBayZ">+ Bay along width</button></div>'
         +'<div class="grid2" style="margin-top:8px"><button type="button" class="btn" data-modbtn="addLiftScaf">+ Lift</button><button type="button" class="btn" data-modbtn="clearScafBays">Clear all bays</button></div>'
         +'<p class="mod-note" data-scafsize>'+escapeHtml(scaffoldSizeText(m))+'</p>')
-      +mRoll(m,"scale","Scale — exact ratio",
-        '<div class="grid2"><div class="field"><span>Scale factor · × (two decimals)</span><input type="number" data-scafscale="num" min="0.25" max="4" step="0.01" value="'+(clamp(+p.scale||1,0.25,4)).toFixed(2)+'"></div>'
-        +'<div class="field"><span>Overall · width × depth × height</span><input type="text" data-scafscale-size value="'+escapeHtml(scaffoldOverallText(m))+'" disabled></div></div>'
-        +'<div class="zoomrow" style="margin-top:8px"><span style="font-size:11px;color:var(--muted);min-width:44px;flex:none">Scale</span><input type="range" data-scafscale="range" min="0.25" max="3" step="0.05" value="'+clamp(+p.scale||1,0.25,3)+'" aria-label="Scale factor — updates the scaffolding live"><output data-scafscale-out>×'+(clamp(+p.scale||1,0.25,4)).toFixed(2)+'</output></div>'
-        +'<div class="presets" style="margin-top:8px">'
-        +[1,1.25,1.5,2].map(function(pv){return '<button type="button" class="chip" data-scafscale-preset="'+pv.toFixed(2)+'">×'+pv.toFixed(2)+'</button>'}).join("")
-        +'</div>')
       +mRoll(m,"deck","Decks, guardrails & access",
         deckTogS
         +mToggle("guardrail","Guardrails + toeboards","")
@@ -22016,14 +22254,6 @@ function syncModParamValues(m){
       : "Scaffolding editing is OFF — press Edit, or click the scaffolding in the 3D view, to move / rotate / scale it.";
     var ss7=box.querySelector("[data-scafstatus]"); if(ss7)ss7.textContent=scaffoldStatusText(m);
     var sz7=box.querySelector("[data-scafsize]"); if(sz7)sz7.textContent=scaffoldSizeText(m);
-    /* Scale controls follow the params (gizmo drags, Object tab,
-       Undo) without a panel rebuild — a field being typed in is
-       never rewritten mid-keystroke. */
-    var scN7=box.querySelector('[data-scafscale="num"]'); if(scN7&&document.activeElement!==scN7)scN7.value=(clamp(+m.params.scale||1,0.25,4)).toFixed(2);
-    var scR7=box.querySelector('[data-scafscale="range"]'); if(scR7&&document.activeElement!==scR7)scR7.value=clamp(+m.params.scale||1,0.25,3);
-    var scO7=box.querySelector("[data-scafscale-out]"); if(scO7)scO7.textContent="×"+(clamp(+m.params.scale||1,0.25,4)).toFixed(2);
-    var scS7=box.querySelector("[data-scafscale-size]"); if(scS7)scS7.value=scaffoldOverallText(m);
-    var scT7=box.querySelector("[data-scafscale-note]"); if(scT7)scT7.textContent=scaffoldScaleText(m);
     box.querySelectorAll("[data-scafdeck]").forEach(function(tb){
       var dOn7=!(m.params.decks&&m.params.decks[+tb.getAttribute("data-scafdeck")]===false);
       tb.classList.toggle("on",dOn7); tb.textContent=dOn7?"On":"Off";
@@ -22664,7 +22894,8 @@ function syncModifierPanel(){
   var sig=state.modifiers.map(function(m){return m.id+":"+(m.enabled?1:0)+":"+m.name+":"+modSubLabel(m)}).join("|")+"#"+(selModId||"");
   if(sig!==syncModifierPanel._ss){syncModifierPanel._ss=sig; buildModStack()}
   var m=modById(selModId);
-  var key=m?(m.id+":"+m.type+":"+(m.params.sim||"")+":"+(m.params.method||"")+":"+(m.params.env||"")+":"+(m.params.custom?1:0)+":"+(m.params.ltype||"")+":"+(m.params.category||"")+":"+(m.params.lifts!=null?m.params.lifts:"")+":"+(m.params.system||"")+":"+(trussDraw&&trussDraw.mid===m.id?"D":"")):"none";
+  if(m&&m.type==="scaffold")scaffoldMirrorSave(m); /* panel / gizmo edits live in the flat params — keep the selected layer in step */
+  var key=m?(m.id+":"+m.type+":"+(m.params.sim||"")+":"+(m.params.method||"")+":"+(m.params.env||"")+":"+(m.params.custom?1:0)+":"+(m.params.ltype||"")+":"+(m.params.category||"")+":"+(m.params.lifts!=null?m.params.lifts:"")+":"+(m.params.system||"")+":"+(m.type==="scaffold"?(scaffoldUnits(m).length+":"+scaffoldSelIdx(m)):"")+":"+(trussDraw&&trussDraw.mid===m.id?"D":"")):"none";
   if(key!==syncModifierPanel._pk){syncModifierPanel._pk=key; buildModParams(m)}
   else if(m)syncModParamValues(m);
 }
@@ -22932,52 +23163,70 @@ function modBtnAction(m,act){
     }
     if(act==="addScaffoldLayer"){
       /* The Scaffolding button under Edit (and the Layers + tool):
-         adds a NEW scaffolding layer — its own separate system in
-         its own spot (addModifier steps it clear of the layers
-         already on stage), with its own type, bays, lifts, scale
-         and position, edited by the settings below once selected. */
-      addModifier("scaffold");
+         adds ONE MORE LAYER inside THIS Scaffolding modifier —
+         a new entry in its Scaffolding Layers list, NOT a new
+         Modifier Stack entry and not a copy of the modifier. The
+         layer is seeded with the suggested build for this layout
+         (the same read Suggest scaffolding makes), stepped clear
+         of every scaffolding layer already on stage so it stands
+         in its own place, and selected so the settings below edit
+         it — its own type, bays, lifts, scale and position. */
+      scaffoldMirrorSave(m);
+      var usA=scaffoldUnits(m);
+      var sgA=suggestScaffoldSystem(m), uA=scaffoldUnitFromFlat(scaffoldSuggestedParams(sgA),"");
+      var nA=usA.length+1;
+      uA.name="Scaffolding "+nA;
+      var dnA=2;
+      while(usA.some(function(u){return u.name===uA.name})){uA.name="Scaffolding "+nA+" ("+dnA+")"; dnA++}
+      scaffoldPlaceClear(uA);
+      usA.push(uA);
+      scaffoldSelectUnit(m,usA.length-1);
+      render();
+      toast("Scaffolding layer added: "+uA.name+" — inside this Scaffolding modifier's Layers, in its own place on stage ("+sgA.baysX+" × "+sgA.baysZ+" bays · "+sgA.lifts+" lift"+(sgA.lifts===1?"":"s")+" · "+fmtMeasure(sgA.H)+" high). Its settings are open below — change its Scaffolding type, bays, lifts, scale or position there.");
       return;
     }
     if(act==="dupScaffoldLayer"){
-      /* Duplicate — a full copy of the selected layer (type, bays,
-         lifts, decks, guardrails, bracing, access, load class,
-         scale and position all copied), stepped clear of every
-         scaffolding already on stage so the copy stands in its own
-         place, and selected so its settings open below — change
-         its Scaffolding type there to make the copy a different
-         system. */
-      var cpD={id:uid(),type:"scaffold",name:m.name+" copy",enabled:true,params:JSON.parse(JSON.stringify(m.params))};
-      var dnD=2;
-      while(state.modifiers.some(function(x){return x.name===cpD.name})){cpD.name=m.name+" copy "+dnD; dnD++}
-      var othersD=state.modifiers.filter(function(x){return x.type==="scaffold"&&x.enabled});
-      var ncD=scaffoldCalc(cpD), gapD=0.6, homeXD=cpD.params.x;
-      for(var attD=0;attD<48;attD++){
-        var hitD=null;
-        for(var oiD=0;oiD<othersD.length;oiD++){
-          var ocD=scaffoldCalc(othersD[oiD]), opD=othersD[oiD].params;
-          if(Math.abs(cpD.params.x-opD.x)<(ncD.L+ocD.L)/2+gapD&&Math.abs(cpD.params.z-opD.z)<(ncD.W+ocD.W)/2+gapD){hitD={oc:ocD,op:opD}; break}
-        }
-        if(!hitD)break;
-        cpD.params.x=Math.round((hitD.op.x+(hitD.oc.L+ncD.L)/2+gapD)*100)/100;
-        if(cpD.params.x>45){cpD.params.x=homeXD; cpD.params.z=Math.round((cpD.params.z-ncD.W-gapD)*100)/100}
-      }
-      state.modifiers.push(cpD); selModId=cpD.id;
+      /* Duplicate — a full copy of the selected LAYER inside this
+         modifier (type, bays, lifts, decks, guardrails, bracing,
+         access, load class, scale and position all copied),
+         stepped clear of every scaffolding layer on stage so the
+         copy stands in its own place, and selected so its
+         settings open below — change its Scaffolding type there
+         to make the copy a different system. */
+      scaffoldMirrorSave(m);
+      var usD=scaffoldUnits(m); if(!usD.length){toast("No scaffolding layer to duplicate — press + Scaffolding to add one first."); return}
+      var srcD=usD[scaffoldSelIdx(m)];
+      var cpU=JSON.parse(JSON.stringify(srcD));
+      cpU.name=(srcD.name||"Scaffolding")+" copy";
+      var dnD2=2;
+      while(usD.some(function(u){return u.name===cpU.name})){cpU.name=(srcD.name||"Scaffolding")+" copy "+dnD2; dnD2++}
+      scaffoldPlaceClear(cpU);
+      usD.push(cpU);
+      scaffoldSelectUnit(m,usD.length-1);
       render();
-      toast("Scaffolding layer duplicated: "+cpD.name+" — its settings are open below; change its Scaffolding type, bays, scale or position there.");
+      toast("Scaffolding layer duplicated: "+cpU.name+" — its settings are open below; change its Scaffolding type, bays, scale or position there.");
       return;
     }
     if(act==="delScaffoldLayer"){
-      /* Delete — removes the selected layer's system from the
-         stage; another scaffolding layer takes the selection when
-         one remains. */
-      var delNameD=m.name;
-      if(scaffoldToolArmed===m.id)scaffoldToolArmed=null;
-      state.modifiers=state.modifiers.filter(function(x){return x.id!==m.id});
-      var nxtD=state.modifiers.filter(function(x){return x.type==="scaffold"})[0];
-      selModId=nxtD?nxtD.id:null;
+      /* Delete — removes the selected LAYER from this modifier's
+         Layers list (the modifier itself stays in the stack);
+         another layer takes the selection when one remains. */
+      scaffoldMirrorSave(m);
+      var usX=scaffoldUnits(m); if(!usX.length){toast("No scaffolding layer to delete."); return}
+      var delIdxX=scaffoldSelIdx(m);
+      var delNameX=usX[delIdxX].name||"Scaffolding";
+      usX.splice(delIdxX,1);
+      if(usX.length){
+        m.params.sel=Math.min(delIdxX,usX.length-1);
+        scaffoldMirrorLoad(m);
+      }else{
+        /* No layers left: the flat params become an empty build,
+           so nothing of the deleted layer lingers on stage. */
+        m.params.sel=0;
+        m.params.baysX=0; m.params.baysZ=0;
+      }
       render();
-      toast("Scaffolding layer deleted: "+delNameD);
+      toast("Scaffolding layer deleted: "+delNameX+(usX.length?(" — "+usX.length+" layer"+(usX.length===1?"":"s")+" left in this Scaffolding modifier."):" — no layers left in this Scaffolding modifier; press + Scaffolding to add one."));
       return;
     }
     if(act==="addBayX"||act==="addBayZ"||act==="addLiftScaf"||act==="clearScafBays"){
@@ -23980,7 +24229,7 @@ function modParamEvent(ev){
          exact-ratio scale resets to ×1.00 on the sizes now chosen,
          so the scale factor shown always matches the sizes built. */
       var scNow=clamp(+m.params.scale||1,0.25,4);
-      if(Math.abs(scNow-1)>0.001)setTimeout(function(){toast("Bay / lift size picked by hand — the scale is back to ×1.00 on these sizes. Use Scale to grow the whole system by an exact ratio from here.")},0);
+      if(Math.abs(scNow-1)>0.001)setTimeout(function(){toast("Bay / lift size picked by hand — the scale is back to ×1.00 on these sizes. Drag the 3D Scale gizmo (or set Scale in the Object tab) to grow the whole system by an exact ratio from here.")},0);
       scaffoldRebase(m);
     }
   }
@@ -24080,37 +24329,23 @@ $("modParams").addEventListener("change",function(ev){
   if(k==="bayL"||k==="bayW"){m.params[k]=parseFloat(sl.value); scaffoldRebase(m); render()}
   if(k==="system"&&SCAFFOLD_TYPES[sl.value]){m.params.system=sl.value; var tyC=scaffoldTypeOf(m.params); m.params.bayL=scaffoldNearest(tyC.bays,+m.params.bayL||2.07); m.params.bayW=scaffoldNearest(tyC.bays,+m.params.bayW||2.07); m.params.liftH=scaffoldNearest(tyC.lifts,+m.params.liftH||2); scaffoldRebase(m); render()}
 });
-/* Scaffolding Scale controls — the exact-ratio factor: the number
-   field (typed to two decimals), the slider and the preset chips
-   all write through scaffoldSetScale — the same single scale the
-   3D Scale gizmo drags — so the panel readout, the 3D build and
-   the counts can never disagree. Live on input, like the ring
-   Radius / Arc controls. */
-function scaffoldScaleEvent(ev){
-  var el=ev.target.closest?ev.target.closest("[data-scafscale],[data-scafscale-preset]"):null; if(!el)return false;
-  var m=modById(selModId); if(!m||m.type!=="scaffold")return false;
-  var v=el.hasAttribute("data-scafscale-preset")?parseFloat(el.getAttribute("data-scafscale-preset")):parseFloat(el.value);
-  if(isNaN(v))return true;
-  scaffoldSetScale(m,v);
-  render();
-  return true;
-}
-$("modParams").addEventListener("input",function(ev){scaffoldScaleEvent(ev)});
-$("modParams").addEventListener("click",function(ev){if(scaffoldScaleEvent(ev))ev.preventDefault()});
 /* Scaffolding Layers rows — clicking a row selects that layer, so
    the settings below (type, bays, lifts, scale, decks, guardrails,
    bracing, access, load class, position) edit that layer. */
 $("modParams").addEventListener("click",function(ev){
   var rowS=ev.target.closest?ev.target.closest("[data-scaflayer-sel]"):null;
   if(!rowS)return;
-  var tmS=modById(rowS.getAttribute("data-scaflayer-sel"));
-  if(tmS&&tmS.type==="scaffold"&&tmS.id!==selModId){selModId=tmS.id; render()}
-});
-$("modParams").addEventListener("change",function(ev){
-  var el=ev.target.closest?ev.target.closest('[data-scafscale="num"]'):null; if(!el)return;
-  var m=modById(selModId); if(!m||m.type!=="scaffold")return;
-  var c=scaffoldCalc(m);
-  toast("Scaffolding scale ×"+c.scale.toFixed(2)+" — the whole unit at this exact ratio · overall "+scaffoldOverallText(m)+". Its build stays on the "+c.typeLabel+" datasheet sizes (bays "+c.bayL.toFixed(2)+" × "+c.bayW.toFixed(2)+" m, lifts "+c.liftH.toFixed(1)+" m); at ×1.00 every dimension is the true datasheet size.");
+  var tmS=modById(selModId);
+  if(!tmS||tmS.type!=="scaffold")return;
+  /* Clicking a layer row selects that layer INSIDE this
+     Scaffolding modifier — the settings below then edit that
+     layer — and while Scaffolding Edit is ON, the Edit arm stays
+     on this modifier, so the clicked layer is the one holding
+     the 3D gizmo. */
+  var liS=parseInt(rowS.getAttribute("data-scaflayer-sel"),10);
+  if(isNaN(liS))return;
+  scaffoldSelectUnit(tmS,liS);
+  render();
 });
 $("modParams").addEventListener("input",modParamEvent);
 $("modParams").addEventListener("click",modParamEvent);
@@ -26556,8 +26791,8 @@ function buildScaffoldPreviewGroup(m,bb){
    params x / y / z and turns on ry. Its BUILD comes from its
    bays / lifts (the type's datasheet sizes), and its exact-ratio
    Scale (scaffoldSetScale) scales the whole unit uniformly on
-   the pivot below — the same single scale the panel field and
-   the 3D Scale gizmo both drive, so at ×1.00 the unit stands at
+   the pivot below — the same single scale the Object tab field
+   and the 3D Scale gizmo both drive, so at ×1.00 the unit stands at
    true datasheet size, the 48.3 mm OD tube included.
    SELECTION, like a screen: the unit ALWAYS carries a selection
    hit box (kind "scsel") in the 3D view — clicking it selects the
@@ -26573,9 +26808,17 @@ function buildScaffoldGroup(m,bb){
     scafDeckMat=new THREE.MeshStandardMaterial({color:0x707a88,roughness:0.55,metalness:0.7});
     scafToeMat=new THREE.MeshStandardMaterial({color:0x8a6b46,roughness:0.9,metalness:0});
   }
-  var p=m.params, c=scaffoldCalc(m), ty=c.type;
   var g=new THREE.Group();
-  if(c.empty)return g;
+  /* Every layer (unit) of this modifier is built — the loop body
+     below is the single-unit builder, run once per layer with
+     that layer's view (mU): its own place, build and hit boxes
+     (modEdit idx = the layer index). An empty layer builds
+     nothing, exactly as an empty unit always did. */
+  var scUnitsB=scaffoldUnits(m), scSelB=scaffoldSelIdx(m);
+  for(var scUi=0;scUi<scUnitsB.length;scUi++){
+  var mU=scaffoldView(m,scUi);
+  var p=mU.params, c=scaffoldCalc(mU), ty=c.type;
+  if(c.empty)continue;
   var pivot=new THREE.Group();
   pivot.position.set(+p.x||0,+p.y||0,+p.z||0);
   pivot.rotation.y=(+p.ry||0)*Math.PI/180;
@@ -26674,20 +26917,20 @@ function buildScaffoldGroup(m,bb){
      modifier (armed by its Edit button OR by clicking the unit in
      the 3D view): an invisible hit box over the whole unit, and
      the scaffold gizmo on the stage-piece construction. */
-  var editHandles=T3&&!T3._ghostBuild&&state.vmode==="edit"&&selModId===m.id&&scaffoldToolArmed===m.id;
+  var editHandles=T3&&!T3._ghostBuild&&state.vmode==="edit"&&selModId===m.id&&scaffoldToolArmed===m.id&&scUi===scSelB;
   if(editHandles){
     var hw=Math.max(0.3,c.L), hh=Math.max(0.15,c.H), hd=Math.max(0.3,c.W);
     var cyC=(+p.y||0)+hh/2, ryR=(+p.ry||0)*Math.PI/180;
     var hb=new THREE.Mesh(new THREE.BoxGeometry(hw,hh,hd),modHitMat);
     hb.userData.ownGeo=true; hb.userData.measureSkip=true;
     hb.position.set(+p.x||0,cyC,+p.z||0); hb.rotation.y=ryR; hb.renderOrder=998;
-    hb.userData.modEdit={kind:"scel",mid:m.id,idx:0};
+    hb.userData.modEdit={kind:"scel",mid:m.id,idx:scUi};
     g.add(hb); T3.modHit.push(hb);
     var hl=new THREE.Mesh(new THREE.BoxGeometry(hw,hh,hd),new THREE.MeshBasicMaterial({color:0xf59e0b,wireframe:true}));
     hl.userData.ownGeo=true; hl.userData.measureSkip=true; hl.position.copy(hb.position); hl.rotation.copy(hb.rotation); g.add(hl);
     var sgg=new THREE.Group(); sgg.position.set(+p.x||0,cyC,+p.z||0);
     sgg.scale.setScalar(clamp((T3.cam?T3.cam.radius:16)*0.075,0.5,4));
-    function regSC(mesh,sub,axis){mesh.userData.ownGeo=true; mesh.renderOrder=999; mesh.userData.modEdit={kind:"scgizmo",mid:m.id,idx:0,sub:sub,axis:axis||""}; sgg.add(mesh); T3.modHit.push(mesh); return mesh}
+    function regSC(mesh,sub,axis){mesh.userData.ownGeo=true; mesh.renderOrder=999; mesh.userData.modEdit={kind:"scgizmo",mid:m.id,idx:scUi,sub:sub,axis:axis||""}; sgg.add(mesh); T3.modHit.push(mesh); return mesh}
     if(state.gizmoMode==="rotate"){
       var ringC=regSC(new THREE.Mesh(new THREE.TorusGeometry(1.0,0.035,10,64),gizmoMat(0x22c55e)),"rot","y");
       ringC.rotation.x=Math.PI/2;
@@ -26707,8 +26950,14 @@ function buildScaffoldGroup(m,bb){
       });
       regSC(new THREE.Mesh(new THREE.BoxGeometry(0.26,0.26,0.26),gizmoMat(0xffffff)),"scale","");
     }else{
+      /* Move gizmo — NO top (Y) axis: a scaffolding unit only ever
+         moves across the floor (X / Z). There is no up arrow to
+         grab, an axis drag travels along that arrow's line only,
+         and the centre ball drags freely across the floor plane —
+         the base height never changes in a move; it is set with
+         Base Y in the panel / the Object tab. */
       var upS3=new THREE.Vector3(0,1,0);
-      [["x",[1,0,0],0xef4444],["y",[0,1,0],0x22c55e],["z",[0,0,1],0x3b82f6]].forEach(function(axS3){
+      [["x",[1,0,0],0xef4444],["z",[0,0,1],0x3b82f6]].forEach(function(axS3){
         var dirS3=new THREE.Vector3(axS3[1][0],axS3[1][1],axS3[1][2]);
         var qS3=new THREE.Quaternion().setFromUnitVectors(upS3,dirS3);
         var cylS3=regSC(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.85,10),gizmoMat(axS3[2])),"axis",axS3[0]);
@@ -26733,13 +26982,14 @@ function buildScaffoldGroup(m,bb){
     var sb=new THREE.Mesh(new THREE.BoxGeometry(hw2,hh2,hd2),modHitMat);
     sb.userData.ownGeo=true; sb.userData.measureSkip=true;
     sb.position.set(+p.x||0,cyS,+p.z||0); sb.rotation.y=ryS; sb.renderOrder=998;
-    sb.userData.modEdit={kind:"scsel",mid:m.id,idx:0};
+    sb.userData.modEdit={kind:"scsel",mid:m.id,idx:scUi};
     g.add(sb); T3.modHit.push(sb);
-    if(selModId===m.id){
+    if(selModId===m.id&&scUi===scSelB){
       var hl2=new THREE.Mesh(new THREE.BoxGeometry(hw2,hh2,hd2),new THREE.MeshBasicMaterial({color:0xf59e0b,wireframe:true}));
       hl2.userData.ownGeo=true; hl2.userData.measureSkip=true; hl2.position.copy(sb.position); hl2.rotation.copy(sb.rotation); g.add(hl2);
     }
   }
+  } /* end per-layer loop — every layer of the modifier is built */
   return g;
 }
 function buildOneModGroup(m,bb){
