@@ -2182,8 +2182,6 @@ html.admin-boot #adminPage{display:block}
             </optgroup>
           </select>
         </div>
-        <button type="button" class="btn primary block" id="btnAddScaffold" style="margin-top:8px">+ Add Scaffolding</button>
-        <p class="mod-note" style="margin-top:6px">Each tap adds a separate scaffolding system in its own spot on the stage — add as many as the stage needs, then move / rotate / scale each one on its own with its gizmo.</p>
         <div class="mod-stack" id="modStack" style="margin-top:10px"></div>
         </div>
         <div class="divider"></div>
@@ -20759,8 +20757,7 @@ function scaffoldTypeInfoHtml(p){
     +rowS("Toeboard (Datasheet)",t.toeboardCm?(t.toeboardCm+" cm"):"not listed")
     +(t.extra?rowS("Also (Datasheet)",t.extra):"")
     +rowS("Source",t.source)
-    +'</div>'
-    +'<p class="mod-note">Switching type rebuilds the 3D geometry and the part counts for that type, and saves with the layout. Totals worked out from the build (part counts, weights, areas) are labelled Calculated.</p>';
+    +'</div>';
 }
 function scaffoldSizeText(m){
   var c=scaffoldCalc(m);
@@ -21666,7 +21663,6 @@ function addModifier(type){
     : name+" added to the modifier stack — its parameters are open below the stack. Open the 3D view to see it on stage.");
 }
 $("modAddSel").addEventListener("change",function(){if(this.value){addModifier(this.value); this.value=""}});
-var btnAddScaffoldEl=$("btnAddScaffold"); if(btnAddScaffoldEl)btnAddScaffoldEl.addEventListener("click",function(){addModifier("scaffold")});
 var btnModOpen3DEl=$("btnModOpen3D"); if(btnModOpen3DEl)btnModOpen3DEl.addEventListener("click",function(){toggle3D(true)});
 function buildModStack(){
   var box=$("modStack"); if(!box)return; box.innerHTML="";
@@ -21826,11 +21822,26 @@ function buildModParams(m){
     var typeOptsS=Object.keys(SCAFFOLD_TYPES).map(function(tk){return '<option value="'+tk+'"'+(scaffoldTypeKey(p)===tk?" selected":"")+'>'+SCAFFOLD_TYPES[tk].label+'</option>'}).join("");
     var deckTogS="";
     for(var dliS=0;dliS<(clamp(Math.round(+p.lifts||1),1,6));dliS++){var dOnS=!(p.decks&&p.decks[dliS]===false); deckTogS+='<div class="pref-row"><div class="pr-t"><b>Steel deck — lift '+(dliS+1)+'</b></div><button type="button" class="tgl'+(dOnS?" on":"")+'" data-scafdeck="'+dliS+'">'+(dOnS?"On":"Off")+'</button></div>'}
+    /* Layers — every scaffolding system on stage is one layer here,
+       listed across the stack's Scaffolding entries: the layer-tools
+       toolbar (+ / Duplicate / Delete, the same controls as Crowd
+       packs, Truss and the other modifiers) works on the selected
+       layer, each row selects its layer, and every setting below
+       edits the selected layer only. */
+    var scafLayers=state.modifiers.filter(function(x){return x.type==="scaffold"});
+    var scafRows=scafLayers.map(function(lm){
+      var lc=scaffoldCalc(lm);
+      return '<div class="cust-row'+(lm.id===m.id?" sel":"")+'" data-scaflayer-sel="'+lm.id+'" style="cursor:pointer"><div class="cr-head"><b>'+escapeHtml(lm.name)+'</b><span>'+escapeHtml(lc.empty?"0 bays":(lc.typeLabel+" · "+lc.nx+" × "+lc.nz+" bays · "+scaffoldOverallText(lm)))+'</span></div></div>';
+    }).join("");
     h+='<button type="button" class="btn btn-create'+(scfOn?" on":"")+'" data-modbtn="editScaffold" aria-pressed="'+(scfOn?"true":"false")+'">Edit</button>'
-      +'<p class="mod-note" data-scafedit-status>'+(scfOn
-        ? "Scaffolding editing is ON — screens are locked."
-        : "Scaffolding editing is OFF — press Edit, or click the scaffolding in the 3D view, to move / rotate / scale it.")+'</p>'
-      +'<p class="mod-note">In the 3D view you can also click the scaffolding itself to select it — it gets the same Move / Rotate / Scale gizmo as a screen.</p>'
+      +'<button type="button" class="btn primary block" data-modbtn="addScaffoldLayer" style="margin-top:8px">+ Scaffolding</button>'
+      +mRoll(m,"layers","Scaffolding Layers",
+        '<div class="layer-tools">'
+        +'<button type="button" data-modbtn="addScaffoldLayer" title="Add scaffolding layer" aria-label="Add scaffolding layer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>'
+        +'<button type="button" data-modbtn="dupScaffoldLayer" title="Duplicate — the selected scaffolding layer" aria-label="Duplicate selected scaffolding layer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'
+        +'<button type="button" data-modbtn="delScaffoldLayer" title="Delete selected scaffolding layer" aria-label="Delete selected scaffolding layer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6.5 7l1 13h9l1-13"/><path d="M10 11v6M14 11v6"/></svg></button>'
+        +'</div>'
+        +'<div id="scafLayerList">'+scafRows+'</div>')
       +mRoll(m,"suggestSc","Suggest scaffolding — for this layout",
         '<button type="button" class="btn primary block" data-modbtn="suggestScaffold">Suggest scaffolding for this layout</button>'
         +'<div id="scaffoldSuggest"></div>')
@@ -21844,7 +21855,6 @@ function buildModParams(m){
         +'<div style="margin-top:8px">'+mNum("lifts","Number of lifts",1,6,1)+'</div>'
         +'<div class="grid2" style="margin-top:8px"><button type="button" class="btn" data-modbtn="addBayX">+ Bay along length</button><button type="button" class="btn" data-modbtn="addBayZ">+ Bay along width</button></div>'
         +'<div class="grid2" style="margin-top:8px"><button type="button" class="btn" data-modbtn="addLiftScaf">+ Lift</button><button type="button" class="btn" data-modbtn="clearScafBays">Clear all bays</button></div>'
-        +'<p class="mod-note">Build your own piece by piece — add bays and lifts here, or type the counts above. A unit with zero bays shows nothing in the 3D view.</p>'
         +'<p class="mod-note" data-scafsize>'+escapeHtml(scaffoldSizeText(m))+'</p>')
       +mRoll(m,"scale","Scale — exact ratio",
         '<div class="grid2"><div class="field"><span>Scale factor · × (two decimals)</span><input type="number" data-scafscale="num" min="0.25" max="4" step="0.01" value="'+(clamp(+p.scale||1,0.25,4)).toFixed(2)+'"></div>'
@@ -21852,9 +21862,7 @@ function buildModParams(m){
         +'<div class="zoomrow" style="margin-top:8px"><span style="font-size:11px;color:var(--muted);min-width:44px;flex:none">Scale</span><input type="range" data-scafscale="range" min="0.25" max="3" step="0.05" value="'+clamp(+p.scale||1,0.25,3)+'" aria-label="Scale factor — updates the scaffolding live"><output data-scafscale-out>×'+(clamp(+p.scale||1,0.25,4)).toFixed(2)+'</output></div>'
         +'<div class="presets" style="margin-top:8px">'
         +[1,1.25,1.5,2].map(function(pv){return '<button type="button" class="chip" data-scafscale-preset="'+pv.toFixed(2)+'">×'+pv.toFixed(2)+'</button>'}).join("")
-        +'</div>'
-        +'<p class="mod-note" data-scafscale-note>'+escapeHtml(scaffoldScaleText(m))+'</p>'
-        +'<p class="mod-note">One exact ratio for the whole scaffolding — the SAME Scale you drag with the gizmo in the 3D view (Scale gizmo mode), so the panel and the gizmo always agree, exactly like a screen or a prop. The build itself stays on the '+escapeHtml(tyP.label)+' datasheet sizes picked above (bays, lifts, tube '+tyP.tubeOD.toFixed(1)+' mm); scaling grows or shrinks the whole unit uniformly, proportions exact, and at ×1.00 every dimension on stage is the true datasheet size. Picking a bay / lift size by hand resets the scale to ×1.00 on those sizes.</p>')
+        +'</div>')
       +mRoll(m,"deck","Decks, guardrails & access",
         deckTogS
         +mToggle("guardrail","Guardrails + toeboards","")
@@ -21864,8 +21872,7 @@ function buildModParams(m){
       +mRoll(m,"pos","Position",
         '<div class="grid2">'+mNum("x","Position X · m",-60,60,0.1)+mNum("z","Position Z · m",-60,60,0.1)+'</div>'
         +'<div class="grid2" style="margin-top:8px">'+mNum("y","Base Y · m",0,15,0.1)+mNum("ry","Rotation Y · °",-180,180,1)+'</div>')
-      +'<p class="mod-note" data-scafstatus>'+escapeHtml(scaffoldStatusText(m))+'</p>'
-      +'<p class="mod-note">Note: these are permissible loads for the component, not a guarantee for the whole stage — a qualified designer must check the full structure, bracing and ground on site.</p>';
+      +'<p class="mod-note" data-scafstatus>'+escapeHtml(scaffoldStatusText(m))+'</p>';
   }else if(m.type==="speakers"){
     h+=mRoll(m,"arrays","Line arrays",
       '<div class="grid2">'+mNum("cabs","Cabinets per side",1,14,1)+mNum("height","Hang height · m",3,11,0.5)+'</div>'
@@ -22587,8 +22594,7 @@ function syncScaffoldPanel(m){
         +rigRow("Footprint",fmtMeasure(sgS.L)+" × "+fmtMeasure(sgS.W)+" · "+fmtMeasure(sgS.H)+" high · behind the wall")
         +rigRow("Parts (Calculated)",pc.standards+" standards · "+pc.ledgers+" ledgers · "+pc.transoms+" transoms · "+pc.braces+" braces · "+pc.decks+" decks · "+pc.baseJacks+" base jacks")
         +'</div>';
-      sgS.reasons.forEach(function(r){sh+='<p class="mod-note">'+escapeHtml(r)+'</p>'});
-      if(sgS.sig!==trussLayoutSig())sh+='<p class="rig-flag warn">The layout has changed since this suggestion — press Suggest scaffolding again for a fresh read.</p>';
+      if(sgS.sig!==trussLayoutSig())sh+='<p class="rig-flag warn">Layout changed — Suggest again.</p>';
       sh+='<button type="button" class="btn block" data-modbtn="toggleScaffoldPreview" style="margin-top:8px">'+(scaffoldPreviewOn?"Hide 3D preview":"Preview in 3D view")+'</button>'
         +'<button type="button" class="btn primary block" data-modbtn="applyScaffoldSuggest" style="margin-top:8px">Apply suggestion</button>';
       sgBox.innerHTML=sh;
@@ -22922,6 +22928,56 @@ function modBtnAction(m,act){
       if(!sgAS){toast("No suggestion yet — press Suggest scaffolding first, and it will work one out from the current layout."); return}
       render();
       toast("Suggestion applied — the "+(sgAS.typeLabel||"Layher Allround")+" scaffold is now "+sgAS.baysX+" × "+sgAS.baysZ+" bays · "+sgAS.lifts+" lift"+(sgAS.lifts===1?"":"s")+" · "+fmtMeasure(sgAS.H)+" high, behind the wall. Change the bays / lifts in its panel to make it your own, or press Edit to move it in the 3D view.");
+      return;
+    }
+    if(act==="addScaffoldLayer"){
+      /* The Scaffolding button under Edit (and the Layers + tool):
+         adds a NEW scaffolding layer — its own separate system in
+         its own spot (addModifier steps it clear of the layers
+         already on stage), with its own type, bays, lifts, scale
+         and position, edited by the settings below once selected. */
+      addModifier("scaffold");
+      return;
+    }
+    if(act==="dupScaffoldLayer"){
+      /* Duplicate — a full copy of the selected layer (type, bays,
+         lifts, decks, guardrails, bracing, access, load class,
+         scale and position all copied), stepped clear of every
+         scaffolding already on stage so the copy stands in its own
+         place, and selected so its settings open below — change
+         its Scaffolding type there to make the copy a different
+         system. */
+      var cpD={id:uid(),type:"scaffold",name:m.name+" copy",enabled:true,params:JSON.parse(JSON.stringify(m.params))};
+      var dnD=2;
+      while(state.modifiers.some(function(x){return x.name===cpD.name})){cpD.name=m.name+" copy "+dnD; dnD++}
+      var othersD=state.modifiers.filter(function(x){return x.type==="scaffold"&&x.enabled});
+      var ncD=scaffoldCalc(cpD), gapD=0.6, homeXD=cpD.params.x;
+      for(var attD=0;attD<48;attD++){
+        var hitD=null;
+        for(var oiD=0;oiD<othersD.length;oiD++){
+          var ocD=scaffoldCalc(othersD[oiD]), opD=othersD[oiD].params;
+          if(Math.abs(cpD.params.x-opD.x)<(ncD.L+ocD.L)/2+gapD&&Math.abs(cpD.params.z-opD.z)<(ncD.W+ocD.W)/2+gapD){hitD={oc:ocD,op:opD}; break}
+        }
+        if(!hitD)break;
+        cpD.params.x=Math.round((hitD.op.x+(hitD.oc.L+ncD.L)/2+gapD)*100)/100;
+        if(cpD.params.x>45){cpD.params.x=homeXD; cpD.params.z=Math.round((cpD.params.z-ncD.W-gapD)*100)/100}
+      }
+      state.modifiers.push(cpD); selModId=cpD.id;
+      render();
+      toast("Scaffolding layer duplicated: "+cpD.name+" — its settings are open below; change its Scaffolding type, bays, scale or position there.");
+      return;
+    }
+    if(act==="delScaffoldLayer"){
+      /* Delete — removes the selected layer's system from the
+         stage; another scaffolding layer takes the selection when
+         one remains. */
+      var delNameD=m.name;
+      if(scaffoldToolArmed===m.id)scaffoldToolArmed=null;
+      state.modifiers=state.modifiers.filter(function(x){return x.id!==m.id});
+      var nxtD=state.modifiers.filter(function(x){return x.type==="scaffold"})[0];
+      selModId=nxtD?nxtD.id:null;
+      render();
+      toast("Scaffolding layer deleted: "+delNameD);
       return;
     }
     if(act==="addBayX"||act==="addBayZ"||act==="addLiftScaf"||act==="clearScafBays"){
@@ -24041,6 +24097,15 @@ function scaffoldScaleEvent(ev){
 }
 $("modParams").addEventListener("input",function(ev){scaffoldScaleEvent(ev)});
 $("modParams").addEventListener("click",function(ev){if(scaffoldScaleEvent(ev))ev.preventDefault()});
+/* Scaffolding Layers rows — clicking a row selects that layer, so
+   the settings below (type, bays, lifts, scale, decks, guardrails,
+   bracing, access, load class, position) edit that layer. */
+$("modParams").addEventListener("click",function(ev){
+  var rowS=ev.target.closest?ev.target.closest("[data-scaflayer-sel]"):null;
+  if(!rowS)return;
+  var tmS=modById(rowS.getAttribute("data-scaflayer-sel"));
+  if(tmS&&tmS.type==="scaffold"&&tmS.id!==selModId){selModId=tmS.id; render()}
+});
 $("modParams").addEventListener("change",function(ev){
   var el=ev.target.closest?ev.target.closest('[data-scafscale="num"]'):null; if(!el)return;
   var m=modById(selModId); if(!m||m.type!=="scaffold")return;
