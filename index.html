@@ -913,6 +913,9 @@ html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:fle
 .plan-lock{border:1px solid var(--accent);border-radius:12px;padding:12px 14px;background:var(--panel2);margin-bottom:12px}
 .plan-lock b{font-size:13.5px;display:block;margin-bottom:3px}
 .plan-lock p{margin:0 0 10px;font-size:12.5px;color:var(--muted);line-height:1.55}
+.plan-trial{margin:14px 0 2px}
+.plan-trial .trial-err{color:#e2574c;font-size:12.5px;line-height:1.55;margin:10px 0 0}
+.plan-trial .trial-err:empty{display:none}
 @media(max-width:700px){.plan-grid{grid-template-columns:1fr}}
 /* ── Client gate — a private share asks for a name + the passkey
    before the render view loads. Dark card over the client frame,
@@ -941,8 +944,9 @@ html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:fle
 /* ── Render Settings panel — Render view only ───────────────────────
    A floating panel on the LEFT of the cinematic frame (the Simulator
    panel owns the right), holding the Graphics tier (Low / Medium /
-   High / Ultra + Auto), the Render light rig, the HDRI environment
-   and the colour grade. Dark-glass styling matches the Simulator
+   High / Ultra + Auto), the Render light rig
+   and the colour grade (Render is always night — no environment or
+   time-of-day controls). Dark-glass styling matches the Simulator
    panel; every control is session-only and Render-only — entering
    Render applies it, leaving Render restores the editing look. */
 .rs-panel{position:absolute;top:64px;left:10px;width:292px;max-width:calc(100% - 20px);max-height:calc(100% - 208px);z-index:6;display:none;overflow-y:auto;background:rgba(10,14,20,.93);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:13px 14px;color:#e2e8f0;pointer-events:auto;box-shadow:0 16px 40px rgba(0,0,0,.45)}
@@ -1509,6 +1513,8 @@ html.admin-boot #adminPage{display:block}
         <div class="menu-sub" id="exportSub">
           <button id="mExportMenu" type="button" aria-haspopup="true" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export<span class="mi-arrow">▸</span></button>
           <div class="submenu" id="exportMenu" role="menu" aria-label="Export">
+            <button id="mExportLedx">Download .ledx — layout file (VIP)</button>
+            <div class="sep"></div>
             <button id="mExportClean">PNG — clean, actual size</button>
             <button id="mExport">PNG — framed, actual size</button>
             <button id="mExportPsd">PSD — screens as separate layers</button>
@@ -1718,16 +1724,20 @@ html.admin-boot #adminPage{display:block}
         <div class="render-bar">
           <div class="v3d-group"><span class="cap">Camera</span><button data-cam="front" class="iconly" title="Front — orthographic elevation, no perspective" aria-label="Front camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="4,8.5 16,8.5 16,20.5 4,20.5" fill="currentColor" stroke="none"/><path d="M4 8.5 7 4h12v12l-3 4.5H4Z"/><path d="M4 8.5h12M16 8.5 19 4M16 8.5v12"/></svg></button><button data-cam="top" class="iconly" title="Top — orthographic plan view" aria-label="Top camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,2.8 20.5,7.4 12,12 3.5,7.4" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="left" class="iconly" title="Left — orthographic, from stage left" aria-label="Left camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3.5,7.4 12,12 12,21.2 3.5,16.6" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="right" class="iconly" title="Right — orthographic, from stage right" aria-label="Right camera — orthographic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12,12 20.5,7.4 20.5,16.6 12,21.2" fill="currentColor" stroke="none"/><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="iso" class="iconly" title="Isometric — perspective three-quarter view" aria-label="Isometric camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg></button><button data-cam="free" class="iconly" title="Free camera — full Blender-style control: orbit, tilt all the way over, pan in the screen plane, dolly" aria-label="Free camera"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6.5" width="13" height="11" rx="2"/><path d="m15.5 10.8 6-3.3v9l-6-3.3"/></svg></button></div>
           <div class="v3d-group"><span class="cap">Graphics</span><select class="render-q" id="renderQuality" aria-label="Render graphics — Low, Medium, High, Ultra or Cinematic; Auto steps down by itself if the frame rate drops"><option value="auto" selected>Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="ultra">Ultra</option><option value="cinematic">Cinematic</option></select></div>
-          <div class="v3d-group"><button id="btnRenderSettings" aria-pressed="true" title="Show or hide the Render settings panel — Graphics, Lights, HDRI environment and Colours for this Render view">Render settings</button></div>
+          <div class="v3d-group"><button id="btnRenderSettings" aria-pressed="true" title="Show or hide the Render settings panel — Graphics, Lights and Colours for this Render view. Render is always night: there is no day / time-of-day option">Render settings</button></div>
           <div class="v3d-group"><button id="btnRenderSim" class="on" aria-pressed="true" title="Show or hide the LED Simulator panel in this Render view — play VJ visuals, a shared Resolume window or uploaded media across the virtual wall">LED Simulator</button></div>
-          <div class="v3d-group" style="margin-left:auto"><button id="btnRenderSaveSettings" title="Save settings — freeze the current Render settings (environment / HDRI, colours and the light rig, glow included) as the saved look. Share / Client view links carry this saved look, so the client sees exactly the visuals and light settings you saved"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save settings</button><button id="btnRenderSave" title="Capture — save a PNG of this cinematic frame at twice the canvas size, from exactly this camera">Capture</button><button id="btnShareClient" class="share-btn" title="Share / Client view — opens the share dialog: copy a link carrying this exact stage design, Public (opens straight away) or Private (the client enters their name + your passkey first). The client sees only the 3D render and can move the camera — no panels, no tools, no editing, no save / load"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Share / Client view</button></div>
+          <div class="v3d-group" style="margin-left:auto"><button id="btnRenderSaveSettings" title="Save settings — freeze the current Render settings (the fixed night look, colours and the light rig, glow included) as the saved look. Share / Client view links carry this saved look, so the client sees exactly the visuals and light settings you saved"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save settings</button><button id="btnRenderSave" title="Capture — save a PNG of this cinematic frame at twice the canvas size, from exactly this camera">Capture</button><button id="btnShareClient" class="share-btn" title="Share / Client view — opens the share dialog: copy a link carrying this exact stage design, Public (opens straight away) or Private (the client enters their name + your passkey first). The client sees only the 3D render and can move the camera — no panels, no tools, no editing, no save / load"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Share / Client view</button></div>
         </div>
         <!-- RENDER SETTINGS — Render view only: Graphics tier for
-             optimized PCs, the Render light rig, the HDRI environment
-             and the colour grade. Session-only: leaving Render
-             restores the editing look exactly. -->
+             optimized PCs, the Render light rig and the colour grade.
+             Render is ALWAYS NIGHT — there is no day / time-of-day
+             option: the sky and stage stay dark so the beams, pools,
+             colours and screen content are the brightest thing in the
+             frame. Session-only: leaving Render restores the editing
+             look exactly. -->
         <div class="rs-panel" id="renderSettingsPanel">
-          <div class="rs-head"><b>Render settings</b><span>Render only</span></div>
+          <div class="rs-head"><b>Render settings</b><span>Render only · always night</span></div>
+          <p class="hint" style="margin:2px 0 8px">Night only — dark sky, dark stage. The beams, light pools, colours and screen content are the brightest thing in the frame. There is no day / time-of-day option.</p>
           <div class="rs-sec open" data-rssec>
             <button type="button" class="rs-sec-head" aria-expanded="true">Graphics <span class="rs-chev">▾</span></button>
             <div class="rs-sec-body">
@@ -1772,23 +1782,6 @@ html.admin-boot #adminPage{display:block}
             </div>
           </div>
           <div class="rs-sec open" data-rssec>
-            <button type="button" class="rs-sec-head" aria-expanded="true">HDRI environment <span class="rs-chev">▾</span></button>
-            <div class="rs-sec-body">
-              <div class="field"><span>Environment</span>
-                <select id="rsHdri" aria-label="HDRI environment lighting for the Render view">
-                  <option value="studio" selected>Stage studio — softbox + cool / warm washes</option>
-                  <option value="concert">Concert — magenta / blue washes</option>
-                  <option value="warm">Warm hall — golden washes</option>
-                  <option value="cool">Cool arena — icy blue</option>
-                  <option value="mono">Mono studio — neutral grey</option>
-                  <option value="off">Off — lights only, no environment</option>
-                </select>
-              </div>
-              <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Environment intensity</span><output id="rsHdriOut">100%</output></div><input type="range" id="rsHdriI" min="0" max="200" step="5" value="100" aria-label="HDRI environment intensity"></div>
-              
-            </div>
-          </div>
-          <div class="rs-sec open" data-rssec>
             <button type="button" class="rs-sec-head" aria-expanded="true">Colours <span class="rs-chev">▾</span></button>
             <div class="rs-sec-body">
               <div class="rs-presets" id="rsColPresets">
@@ -1803,7 +1796,6 @@ html.admin-boot #adminPage{display:block}
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Saturation</span><output id="rsSatOut">100%</output></div><input type="range" id="rsSat" min="0" max="200" step="1" value="100" aria-label="Saturation"></div>
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Contrast</span><output id="rsConOut">100%</output></div><input type="range" id="rsCon" min="80" max="130" step="1" value="100" aria-label="Contrast"></div>
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Vignette</span><output id="rsVigOut">34%</output></div><input type="range" id="rsVig" min="0" max="100" step="1" value="34" aria-label="Vignette"></div>
-              <div class="rs-col"><span class="rs-lab">Backdrop</span><input type="color" id="rsBackdrop" value="#05070a" aria-label="Render backdrop colour"></div>
               <button type="button" class="btn small block" id="rsColReset">Reset colours</button>
             </div>
           </div>
@@ -2163,7 +2155,7 @@ html.admin-boot #adminPage{display:block}
       <div class="tab-pane" id="tab-modifier">
         <div class="plan-lock" id="modPlanLock" hidden>
           <b>Modifiers are locked on the Starter plan</b>
-          <p>Truss, Lighting, Crowd, Speakers, Haze, Props and Stage Settings are part of the Advance plan. Your 2D and 3D views, screens, exports and local save / load stay fully open on Starter.</p>
+          <p>Truss, Scaffolding, Lighting, Crowd, Speakers, Haze, Props and Stage Settings are part of the Advance plan. Your 2D and 3D views, screens, PNG / PSD exports and opening .ledx files stay fully open on Starter — only downloading a .ledx file needs VIP.</p>
           <button class="btn primary small" type="button" id="modPlanUpgrade">Upgrade to Advance</button>
         </div>
         <div class="modlist-hl" id="modListBox">
@@ -2177,6 +2169,7 @@ html.admin-boot #adminPage{display:block}
             <optgroup label="Stage structure">
               <option value="stage">Stage Settings — design the stage platform (boxes, steps, round shapes)</option>
               <option value="truss">Truss — LED wall support system (flown / goalpost / ground-stacked)</option>
+              <option value="scaffold">Scaffolding — Layher Allround bays, lifts, decks &amp; guardrails</option>
               <option value="speakers">Speakers — line arrays, left &amp; right</option>
             </optgroup>
             <optgroup label="Lighting &amp; atmosphere">
@@ -2199,6 +2192,15 @@ html.admin-boot #adminPage{display:block}
 
       <!-- EXPORT -->
       <div class="tab-pane" id="tab-export">
+        <div class="exportBox">
+          <h3>Layout file</h3>
+          <button class="btn" id="btnExportLedx"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download .ledx</button>
+          <div class="plan-lock" id="ledxPlanLock" hidden style="margin:10px 0 0">
+            <b>.ledx download is locked on your plan</b>
+            <p>Downloading a .ledx layout file is a VIP feature — VIP and VVIP plans only. Loading / opening a .ledx file, and PNG / PSD exports, stay open on every plan.</p>
+            <button class="btn primary small" type="button" id="ledxPlanUpgrade">Upgrade to VIP</button>
+          </div>
+        </div>
         <div class="exportBox">
           <h3>Export</h3>
           <button class="btn" id="btnExportClean"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PNG</button>
@@ -2422,18 +2424,30 @@ html.admin-boot #adminPage{display:block}
      NOT listed here: no card, no price, no Upgrade button — it is
      granted only by admin assignment in Supabase. Opened from
      Account (signed in or guest) and from any locked control (the
-     Modifier tab / pane on Starter, the Share dialog below VIP).
-     Monthly / Yearly toggle: Yearly is exactly Monthly × 12 — no
-     discount, and no discount badge anywhere. Checkout is NOT
-     connected yet (PayHere for LKR, Paddle for USD): an Upgrade tap
-     shows the chosen tier, period and price and says so plainly —
-     it never pretends a payment succeeded. Plans themselves are
-     stored per user in public.profiles.plan and assigned by admin
-     / VIP key only for now. -->
+     Modifier tab / pane on Starter, the Share dialog below VIP,
+     the .ledx download controls below VIP). Monthly / Yearly
+     toggle: Yearly is exactly Monthly × 12 — no discount, and no
+     discount badge anywhere. Checkout is NOT connected yet
+     (PayHere for LKR, Paddle for USD): an Upgrade tap shows the
+     chosen tier, period and price and says so plainly — it never
+     pretends a payment succeeded. Plans themselves are stored per
+     user in public.profiles.plan and assigned by admin / VIP key
+     only for now. The trial box (#trialBox) offers a signed-in
+     user ONE 14-day free VIP trial, stored server-side in
+     public.profiles (see supabase-trial.sql): before starting it
+     reads "Start free 14-day VIP trial", while active "VIP
+     trial — X days left, ends [date]", after expiry "Trial
+     ended" with no way to start it again. -->
 <div class="modal-bg" id="planModal">
   <div class="modal plan-modal" role="dialog" aria-modal="true" aria-labelledby="planTitle">
     <h2 id="planTitle">Plans &amp; pricing</h2>
     <p class="plan-cur">Your current plan: <b id="planCurrentName">Starter — Free</b><span id="planCurrentWho"></span></p>
+    <div class="plan-lock plan-trial" id="trialBox" hidden>
+      <b id="trialTitle">Try VIP free for 14 days</b>
+      <p id="trialText">Start a free 14-day VIP trial — no card details. While it runs you get full VIP: all modifiers, client link sharing and .ledx downloads. One trial per account; when it ends you return to your current plan.</p>
+      <button class="btn primary small" type="button" id="trialStartBtn">Start free 14-day VIP trial</button>
+      <p class="trial-err" id="trialErr" role="alert"></p>
+    </div>
     <div class="plan-billrow">
       <div class="plan-bill" role="group" aria-label="Billing period">
         <button type="button" id="planPerMonthly" class="on">Monthly</button>
@@ -2450,8 +2464,9 @@ html.admin-boot #adminPage{display:block}
         <ul class="plan-feats">
           <li><b>2D view</b>&nbsp;— layout, cabling &amp; ports</li>
           <li><b>3D view</b>&nbsp;— the stage in 3D</li>
-          <li>PNG / PSD exports, local save &amp; load</li>
-          <li class="locked-feat">Modifiers locked — Truss, Lighting, Crowd, Speakers, Haze, Props, Stage Settings</li>
+          <li>PNG / PSD exports · open &amp; load .ledx files</li>
+          <li class="locked-feat">.ledx download locked — VIP only</li>
+          <li class="locked-feat">Modifiers locked — Truss, Scaffolding, Lighting, Crowd, Speakers, Haze, Props, Stage Settings</li>
           <li class="locked-feat">Client link sharing locked</li>
         </ul>
         <button class="btn" type="button" id="planBtnStarter" disabled>Current plan</button>
@@ -2459,11 +2474,12 @@ html.admin-boot #adminPage{display:block}
       <div class="plan-card" id="planCardAdvance">
         <h3>Advance</h3>
         <div class="plan-tag">For working designers</div>
-        <div class="plan-price"><span id="planPriceAdvanceLkr">LKR 4,999.99</span> <small id="planPerAdvance">/ month</small></div>
+        <div class="plan-price"><span id="planPriceAdvanceLkr">LKR 4,987</span> <small id="planPerAdvance">/ month</small></div>
         <div class="plan-price-usd" id="planPriceAdvanceUsd">USD 15 / month</div>
         <ul class="plan-feats">
           <li>Everything in Starter</li>
-          <li><b>All modifiers</b>&nbsp;— Truss, Lighting, Crowd, Speakers, Haze, Props, Stage Settings</li>
+          <li><b>All modifiers</b>&nbsp;— Truss, Scaffolding, Lighting, Crowd, Speakers, Haze, Props, Stage Settings</li>
+          <li class="locked-feat">.ledx download locked — VIP only</li>
           <li class="locked-feat">Client link sharing locked — VIP only</li>
         </ul>
         <button class="btn primary cta-big" type="button" id="planBtnAdvance">Upgrade to Advance</button>
@@ -2471,10 +2487,11 @@ html.admin-boot #adminPage{display:block}
       <div class="plan-card" id="planCardVip">
         <h3>VIP</h3>
         <div class="plan-tag">Everything, client-facing too</div>
-        <div class="plan-price"><span id="planPriceVipLkr">LKR 10,699.99</span> <small id="planPerVip">/ month</small></div>
+        <div class="plan-price"><span id="planPriceVipLkr">LKR 9,974</span> <small id="planPerVip">/ month</small></div>
         <div class="plan-price-usd" id="planPriceVipUsd">USD 30 / month</div>
         <ul class="plan-feats">
           <li>Everything in Advance</li>
+          <li><b>.ledx download</b>&nbsp;— save &amp; export layouts as .ledx files</li>
           <li><b>Client link sharing</b>&nbsp;— short &amp; long client links, Public or Private</li>
           <li>No locks anywhere</li>
         </ul>
@@ -2858,8 +2875,8 @@ html.admin-boot #adminPage{display:block}
         <table>
           <tr><th>Plan</th><th>Monthly</th><th>Yearly</th></tr>
           <tr><td>Starter</td><td>Free</td><td>Free</td></tr>
-          <tr><td>Advance</td><td>LKR 4,999.99<span class="pp-sub">USD 15</span></td><td>LKR 59,999.88<span class="pp-sub">USD 180</span></td></tr>
-          <tr><td>VIP</td><td>LKR 10,699.99<span class="pp-sub">USD 30</span></td><td>LKR 128,399.88<span class="pp-sub">USD 360</span></td></tr>
+          <tr><td>Advance</td><td>LKR 4,987<span class="pp-sub">USD 15</span></td><td>LKR 59,844<span class="pp-sub">USD 180</span></td></tr>
+          <tr><td>VIP</td><td>LKR 9,974<span class="pp-sub">USD 30</span></td><td>LKR 119,688<span class="pp-sub">USD 360</span></td></tr>
         </table>
         <p>Yearly billing is exactly the monthly price × 12 — there is no yearly discount.</p>
         <h4>How you pay</h4>
@@ -4645,7 +4662,7 @@ function specText(){
   });
   if(state.modifiers&&state.modifiers.length){
     lines.push("Stage modifiers (3D view only):");
-    state.modifiers.forEach(function(m){lines.push("  "+m.name+" — "+modSummary(m)+(m.enabled?"":" (hidden)")); if(m.type==="truss"&&m.enabled)trussSpecLines(m).forEach(function(l){lines.push(l)})});
+    state.modifiers.forEach(function(m){lines.push("  "+m.name+" — "+modSummary(m)+(m.enabled?"":" (hidden)")); if(m.type==="truss"&&m.enabled)trussSpecLines(m).forEach(function(l){lines.push(l)}); if(m.type==="scaffold"&&m.enabled)scaffoldSpecLines(m).forEach(function(l){lines.push(l)})});
     lines.push("");
   }
   return lines.join("\n");
@@ -6109,7 +6126,9 @@ function runShortcut(id){
   function selD(){return state.displays.filter(function(d){return d.id===state.selId})[0]}
   if(id==="undo")doUndo();
   else if(id==="redo")doRedo();
-  else if(id==="save")saveJson();
+  else if(id==="save"){ /* Ctrl+S downloads a .ledx — VIP / VVIP only, like File → Save for guests */
+    if(typeof authUser!=="undefined"&&authUser)cloudSaveDesign(); else saveJson();
+  }
   else if(id==="duplicate"){var dd=selD(); if(dd)duplicateDisplay(dd)}
   else if(id==="deleteSel"){var dx=selD(); if(dx)deleteDisplay(dx)}
   else if(id==="fit")fitView();
@@ -7181,7 +7200,7 @@ function measureGroupBox(gr){
   gr.updateMatrixWorld(true);
   gr.traverse(function(o){
     if(o.isSprite||o.userData.measureSkip)return;
-    if(o.userData.modEdit&&(o.userData.modEdit.kind==="fgizmo"||o.userData.modEdit.kind==="tgizmo"||o.userData.modEdit.kind==="pgizmo"||o.userData.modEdit.kind==="ggizmo"||o.userData.modEdit.kind==="sgizmo"||o.userData.modEdit.kind==="stgizmo"||o.userData.modEdit.kind==="cgizmo"))return; /* gizmo handles are tools, not part of the element's size */
+    if(o.userData.modEdit&&(o.userData.modEdit.kind==="fgizmo"||o.userData.modEdit.kind==="tgizmo"||o.userData.modEdit.kind==="pgizmo"||o.userData.modEdit.kind==="ggizmo"||o.userData.modEdit.kind==="sgizmo"||o.userData.modEdit.kind==="stgizmo"||o.userData.modEdit.kind==="cgizmo"||o.userData.modEdit.kind==="scgizmo"))return; /* gizmo handles are tools, not part of the element's size */
     if(o.isInstancedMesh&&o.geometry){
       if(!o.geometry.boundingSphere)o.geometry.computeBoundingSphere();
       var r=o.geometry.boundingSphere?o.geometry.boundingSphere.radius:0.5;
@@ -7471,7 +7490,7 @@ var renderMats=[], renderPostState=null, fxFps={n:0,t:0};
    The state behind the Render settings panel: the Graphics tier
    (auto / low / medium / high / ultra), the effect toggles the tier
    sets (shadows / bloom), the Render light rig (key / fill / ambient
-   + the Glow level that scales the bloom), the HDRI environment and
+   + the Glow level that scales the bloom) and
    the colour grade. Nothing here is written to the layout or any
    export; enterRender applies it and exitRender restores the editing
    look it replaced. The Render bar's Save settings button freezes a
@@ -7480,7 +7499,11 @@ var renderMats=[], renderPostState=null, fxFps={n:0,t:0};
 function defaultRenderSettings(){
   return {keyI:0.45,fillI:0.25,ambI:0.5,keyCol:"#ffffff",fillCol:"#88aaff",glow:1.0,
     beamFx:true,beamImpact:1.0,flare:1.0,clearBeam:0.12,
-    hdri:"studio",hdriI:1.0,
+    /* Render is ALWAYS NIGHT: the environment is the fixed "night"
+       preset and the backdrop the fixed near-black below — there is
+       no day / time-of-day setting, no environment picker and no
+       backdrop colour picker anywhere in Render. */
+    hdri:"night",hdriI:1.0,
     exposure:1.12,temp:0,sat:1.0,contrast:1.0,vig:0.34,backdrop:"#05070a"};
 }
 var renderSettings=defaultRenderSettings();
@@ -7507,6 +7530,9 @@ function setRenderLook(look){
   if(look.settings&&typeof look.settings==="object"){
     var merged=defaultRenderSettings();
     Object.keys(merged).forEach(function(k){if(look.settings[k]!==undefined)merged[k]=look.settings[k]});
+    /* Night-only rule: a look saved before it (with an environment
+       preset or a backdrop colour) still opens at night. */
+    merged.hdri="night"; merged.backdrop="#05070a";
     renderSettings=merged;
   }
   if(look.fx){renderFx.shadows=look.fx.shadows!==false; renderFx.bloom=look.fx.bloom!==false}
@@ -7566,6 +7592,13 @@ function ensureRenderPost(){
    with bright soft panels; the panel colours ARE the environment's
    light, so switching preset relights every PBR reflection. */
 var HDRI_PRESETS={
+  /* The ONE environment Render ever uses: a near-black night room
+     with very faint cool panels — just enough for PBR reflections to
+     read, never enough to lift the stage out of the dark. The older
+     presets below are kept only so a saved look from before the
+     night-only rule still parses; applyRenderSettings never selects
+     them — Render is always night. */
+  night:{room:[0.004,0.005,0.01],panels:[[17,7,[0.55,0.65,1.0],0,16.5,0,0,Math.PI/2],[11,5,[0.22,0.3,0.55],-15,8,4,Math.PI/2.4,0],[11,5,[0.45,0.32,0.18],15,8,-2,-Math.PI/2.4,0],[19,2.2,[0.3,0.32,0.38],0,6,-17,0,0],[19,1.4,[0.12,0.13,0.18],0,3,17,Math.PI,0]]},
   studio:{room:[0.03,0.03,0.045],panels:[[17,7,[9,9,9],0,16.5,0,0,Math.PI/2],[11,5,[3.0,4.2,6.2],-15,8,4,Math.PI/2.4,0],[11,5,[6.2,3.6,1.6],15,8,-2,-Math.PI/2.4,0],[19,2.2,[5,5,5.4],0,6,-17,0,0],[19,1.4,[2.2,2.2,2.4],0,3,17,Math.PI,0]]},
   concert:{room:[0.012,0.008,0.03],panels:[[17,7,[5,2.2,7.5],0,16.5,0,0,Math.PI/2],[11,5,[2.0,2.6,9],-15,8,4,Math.PI/2.4,0],[11,5,[9,2.8,1.4],15,8,-2,-Math.PI/2.4,0],[19,2.2,[8,7,9],0,6,-17,0,0],[19,1.4,[1.2,0.8,2.4],0,3,17,Math.PI,0]]},
   warm:{room:[0.035,0.024,0.012],panels:[[17,7,[8.5,6.2,3.4],0,16.5,0,0,Math.PI/2],[11,5,[5.2,3.1,1.4],-15,8,4,Math.PI/2.4,0],[11,5,[7.2,4.6,2],15,8,-2,-Math.PI/2.4,0],[19,2.2,[4.2,3.4,2.2],0,6,-17,0,0],[19,1.4,[2.1,1.7,1.1],0,3,17,Math.PI,0]]},
@@ -7631,13 +7664,15 @@ function applyRenderSettings(){
   if(T3.hemi)T3.hemi.intensity=rs.ambI;
   if(T3.sun){T3.sun.intensity=rs.keyI; try{T3.sun.color.set(rs.keyCol)}catch(e){}}
   if(T3.fill){T3.fill.intensity=rs.fillI; try{T3.fill.color.set(rs.fillCol)}catch(e){}}
-  if(rs.hdri==="off"){T3.scene.environment=null}
-  else{var rt=getEnvRT(rs.hdri); if(rt)T3.scene.environment=rt.texture}
+  /* Night only: the environment is ALWAYS the fixed night preset
+     and the backdrop ALWAYS the fixed near-black — whatever an older
+     saved look carries, Render never shows a day / bright scene. */
+  var rtN=getEnvRT("night"); if(rtN)T3.scene.environment=rtN.texture; else T3.scene.environment=null;
   renderMats.forEach(function(rec){rec.m.envMapIntensity=rec.re*rs.hdriI});
   applyRenderGlow();
   applyRenderBeamFx();
   T3.renderer.toneMappingExposure=rs.exposure;
-  try{var bg=new THREE.Color(rs.backdrop); if(T3.scene.background&&T3.scene.background.setHex)T3.scene.background.setHex(bg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(bg.getHex())}catch(e){}
+  try{var bg=new THREE.Color("#05070a"); if(T3.scene.background&&T3.scene.background.setHex)T3.scene.background.setHex(bg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(bg.getHex())}catch(e){}
 }
 /* The effect toggles + shadow flag a tier (or the user) chose. The
    grade pass itself stays live on every tier, so the Colours keep
@@ -7805,7 +7840,7 @@ function enterRender(){
   var r=T3.renderer;
   if(typeof THREE!=="undefined"&&THREE.ACESFilmicToneMapping!==undefined)r.toneMapping=THREE.ACESFilmicToneMapping;
   r.toneMappingExposure=renderSettings.exposure;
-  try{var rbg=new THREE.Color(renderSettings.backdrop); if(T3.scene.background)T3.scene.background.setHex(rbg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(rbg.getHex())}catch(e){ if(T3.scene.background)T3.scene.background.setHex(0x05070a); if(T3.scene.fog)T3.scene.fog.color.setHex(0x05070a) }
+  try{var rbg=new THREE.Color("#05070a"); if(T3.scene.background)T3.scene.background.setHex(rbg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(rbg.getHex())}catch(e){ if(T3.scene.background)T3.scene.background.setHex(0x05070a); if(T3.scene.fog)T3.scene.fog.color.setHex(0x05070a) }
   if(T3.grid)T3.grid.visible=false;
   document.body.classList.add("rendering");
   $("view3d").classList.add("render-on");
@@ -8789,7 +8824,7 @@ function attach3DPointer(el){
     for(var hi=0;hi<hits.length;hi++){
       var hk=hits[hi].object.userData.modEdit;
       if(hits[hi].distance>d0+0.5)break;
-      if(hk&&(hk.kind==="end"||hk.kind==="tgizmo"||hk.kind==="fgizmo"||hk.kind==="ggizmo"||hk.kind==="pgizmo"||hk.kind==="sgizmo"||hk.kind==="stgizmo"||hk.kind==="cgizmo")){pick=hits[hi]; break}
+      if(hk&&(hk.kind==="end"||hk.kind==="tgizmo"||hk.kind==="fgizmo"||hk.kind==="ggizmo"||hk.kind==="pgizmo"||hk.kind==="sgizmo"||hk.kind==="stgizmo"||hk.kind==="cgizmo"||hk.kind==="scgizmo")){pick=hits[hi]; break}
     }
     var meU=pick.object.userData.modEdit;
     /* Mode gate, defence in depth (the handles are only built when
@@ -8808,6 +8843,8 @@ function attach3DPointer(el){
       if(mmU&&mmU.type!=="stage"&&stageEditOn())return null; /* stage editing ON: only stage pieces answer — everything else is locked */
       if(mmU&&mmU.type==="crowd"&&crowdToolArmed!==mmU.id)return null; /* crowd handles answer only while Crowd editing is ON for that Crowd modifier */
       if(mmU&&mmU.type!=="crowd"&&crowdEditOn())return null; /* crowd editing ON: only crowd packs answer — everything else is locked */
+      if(mmU&&mmU.type==="scaffold"&&scaffoldToolArmed!==mmU.id)return null; /* scaffold handles answer only while Scaffolding editing is ON for that Scaffolding modifier */
+      if(mmU&&mmU.type!=="scaffold"&&scaffoldEditOn())return null; /* scaffolding editing ON: only the scaffolding answers — everything else is locked */
     }
     return meU;
   }
@@ -9096,6 +9133,29 @@ function attach3DPointer(el){
             }else{
               planeP=new THREE.Plane(new THREE.Vector3(0,1,0),-gcD.y);
             }
+          }else if(miP.kind==="scel"||miP.kind==="scgizmo"){
+            /* Scaffold drag planes are built on the unit's centre
+               (base position + half its total height), on the stage
+               construction: axis arrows get the plane containing
+               that world axis through the centre, the rotate ring
+               its own horizontal plane, scale cubes a camera-facing
+               plane, the body / centre ball the horizontal plane at
+               that height. */
+            var scSC=scaffoldCalc(mmP);
+            var cenSC=new THREE.Vector3(+mmP.params.x||0,(+mmP.params.y||0)+Math.max(0.02,scSC.H*(+mmP.params.us||1))/2,+mmP.params.z||0);
+            if(miP.sub==="axis"){
+              var AgSC=AX3[miP.axis], cdSC=new THREE.Vector3(); T3.camera.getWorldDirection(cdSC);
+              var nSC=new THREE.Vector3().crossVectors(AgSC,new THREE.Vector3().crossVectors(cdSC,AgSC));
+              if(nSC.lengthSq()<1e-6)nSC=cdSC.clone(); else nSC.normalize();
+              planeP=new THREE.Plane().setFromNormalAndCoplanarPoint(nSC,cenSC);
+            }else if(miP.sub==="rot"){
+              planeP=new THREE.Plane().setFromNormalAndCoplanarPoint(new THREE.Vector3(0,1,0),cenSC);
+            }else if(miP.sub==="scale"){
+              var cdSC2=new THREE.Vector3(); T3.camera.getWorldDirection(cdSC2);
+              planeP=new THREE.Plane().setFromNormalAndCoplanarPoint(cdSC2,cenSC);
+            }else{
+              planeP=new THREE.Plane(new THREE.Vector3(0,1,0),-cenSC.y);
+            }
           }else if(miP.kind==="stgel"||miP.kind==="stgizmo"){
             /* Stage piece drag planes are built on the piece's
                centre (base position + half its height), on the prop
@@ -9209,6 +9269,7 @@ function attach3DPointer(el){
           else if(miP.kind==="sgizmo"){syncModifierPanel()}
           else if(miP.kind==="prop"||miP.kind==="pgizmo"){modSelProp=miP.idx; syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mmP)}
           else if(miP.kind==="stgel"||miP.kind==="stgizmo"){modSelStageEl=miP.idx; syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mmP)}
+          else if(miP.kind==="scel"||miP.kind==="scgizmo"){syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mmP)}
           else if(miP.kind==="crowd"||miP.kind==="cgizmo"){modSelCrowdPack=miP.idx; syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mmP)}
           else{modSelSeg=miP.idx;
             /* The lights' Blender rule, for trusses: grabbing a truss
@@ -9338,6 +9399,22 @@ function attach3DPointer(el){
                 prAng0=Math.atan2(relS3.dot(bvS3),relS3.dot(buS3));
               }
             }
+            /* Scaffold gizmo Rotate / Scale drags pivot on the
+               unit's centre, on the stage construction — the same
+               drag-state fields carry them (the move branches are
+               kind-gated). The ring's basis spans the horizontal
+               plane: a scaffold unit turns about Y only. */
+            if(miP.kind==="scgizmo"&&(miP.sub==="rot"||miP.sub==="scale")&&typeof cenSC!=="undefined"&&cenSC){
+              prCen={x:cenSC.x,y:cenSC.y,z:cenSC.z};
+              if(miP.sub==="rot"&&p0P){
+                var ArSC3=new THREE.Vector3(0,1,0);
+                var buSC3=new THREE.Vector3().crossVectors(ArSC3,new THREE.Vector3(1,0,0)).normalize();
+                var bvSC3=new THREE.Vector3().crossVectors(ArSC3,buSC3).normalize();
+                prBU={x:buSC3.x,y:buSC3.y,z:buSC3.z}; prBV={x:bvSC3.x,y:bvSC3.y,z:bvSC3.z};
+                var relSC3=p0P.clone().sub(cenSC);
+                prAng0=Math.atan2(relSC3.dot(bvSC3),relSC3.dot(buSC3));
+              }
+            }
             /* Crowd gizmo Rotate / Scale drags pivot on the pack's
                centre, on the stage construction — the same drag-state
                fields carry them (the move branches are kind-gated).
@@ -9396,6 +9473,7 @@ function attach3DPointer(el){
               fixStart:(miP.kind==="fix"||miP.kind==="fgizmo")?JSON.parse(JSON.stringify(mmP.params.fixtures[miP.idx])):null,
               propStart:(miP.kind==="prop"||miP.kind==="pgizmo")?JSON.parse(JSON.stringify(mmP.params.items[miP.idx])):null,
               stageStart:(miP.kind==="stgel"||miP.kind==="stgizmo")?JSON.parse(JSON.stringify(mmP.params.els[miP.idx])):null,
+              scafStart:(miP.kind==="scel"||miP.kind==="scgizmo")?JSON.parse(JSON.stringify(mmP.params)):null,
               crowdStart:(miP.kind==="crowd"||miP.kind==="cgizmo")?JSON.parse(JSON.stringify(crowdPacks(mmP)[miP.idx])):null,
               grpIdxs:grpIdxsP, grpStart:grpStartP, grpName:grpNameP};
             updateV3Readout(miP.kind==="end"?(miP.end==="a"
@@ -9438,6 +9516,13 @@ function attach3DPointer(el){
                 :miP.sub==="axis"
                 ?"Stage piece — "+escapeHtml(mmP.params.els[miP.idx].name)+": gizmo "+miP.axis.toUpperCase()+" arrow: dragging moves the piece along the "+miP.axis.toUpperCase()+" axis only"+(miP.axis==="y"?" (raise / lower its base)":"")+"."
                 :"Stage piece — "+escapeHtml(mmP.params.els[miP.idx].name)+": gizmo centre ball: dragging moves the piece freely across the floor plane. Its base height stays — move it up / down with the green Y arrow.")
+              :miP.kind==="scgizmo"?(miP.sub==="rot"
+                ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo rotate ring: dragging turns the unit about its centre (magnet snaps "+rotStepDeg()+"°). Its position never changes in Rotate mode."
+                :miP.sub==="scale"
+                ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo scale cube: drag away from the centre to grow the whole unit, towards it to shrink it — it resizes uniformly about its base. Bay sizes stay the datasheet sizes in its panel."
+                :miP.sub==="axis"
+                ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo "+miP.axis.toUpperCase()+" arrow: dragging moves the unit along the "+miP.axis.toUpperCase()+" axis only"+(miP.axis==="y"?" (raise / lower its base)":"")+"."
+                :"Scaffolding — "+escapeHtml(mmP.name)+": gizmo centre ball: dragging moves the unit freely across the floor plane. Its base height stays — move it up / down with the green Y arrow.")
               :miP.kind==="cgizmo"?(miP.sub==="rot"
                 ?"Crowd pack — "+escapeHtml(crowdPacks(mmP)[miP.idx].name)+": gizmo rotate ring: dragging turns the pack about the Y axis around its centre (magnet snaps "+rotStepDeg()+"°). Its head count is "+Math.round(+crowdPacks(mmP)[miP.idx].count||0)+" people."
                 :miP.sub==="scale"
@@ -9448,6 +9533,9 @@ function attach3DPointer(el){
               :miP.kind==="crowd"?(state.gizmoMode==="rotate"?"Crowd pack — "+escapeHtml(crowdPacks(mmP)[miP.idx].name)+": drag sideways to turn it about its centre."
                 :state.gizmoMode==="scale"?"Crowd pack — "+escapeHtml(crowdPacks(mmP)[miP.idx].name)+": Scale gizmo — drag to resize its area; the head count follows the area."
                 :"Crowd pack — "+escapeHtml(crowdPacks(mmP)[miP.idx].name)+": drag to move it across the stage. Switch the gizmo to Rotate to turn it, Scale to resize it. Head count: "+Math.round(+crowdPacks(mmP)[miP.idx].count||0)+" people.")
+              :miP.kind==="scel"?(state.gizmoMode==="rotate"?"Scaffolding — "+escapeHtml(mmP.name)+": drag sideways to turn it about its centre."
+                :state.gizmoMode==="scale"?"Scaffolding — "+escapeHtml(mmP.name)+": Scale gizmo — drag to resize the whole unit uniformly."
+                :"Scaffolding — "+escapeHtml(mmP.name)+": drag to move it across the stage. Switch the gizmo to Rotate to turn it, Scale to resize it.")
               :miP.kind==="stgel"?(state.gizmoMode==="rotate"?"Stage piece — "+escapeHtml(mmP.params.els[miP.idx].name)+": drag sideways to turn it about its centre."
                 :state.gizmoMode==="scale"?"Stage piece — "+escapeHtml(mmP.params.els[miP.idx].name)+": Scale gizmo — drag to resize the piece (width, depth and height together)."
                 :"Stage piece — "+escapeHtml(mmP.params.els[miP.idx].name)+": drag to move it across the stage. Switch the gizmo to Rotate to turn it, Scale to resize it.")
@@ -9686,6 +9774,28 @@ function attach3DPointer(el){
         elS.h=Math.round(clamp((+stS0.h||0.6)*fS,0.05,10)*100)/100;
         if(syncDeckFromStageEl(elS)&&T3&&view3dOpen)build3DScene(); else rebuildModGroup(mm2);
         updateV3Readout("Stage piece — "+escapeHtml(elS.name)+": "+stageElDims(elS)+(isMainStageEl(elS)?" · Main stage — Deck height follows: "+fmtMeasure(+state.stage3d.deck)+".":".")+" Release to keep it.");
+        return;
+      }
+      if(md.info.kind==="scel"&&state.gizmoMode==="rotate"){
+        /* Rotate gizmo on a scaffold unit body: sideways drag turns
+           it about its centre — yaw only. Its position never
+           changes in Rotate mode. */
+        var ppR=mm2.params;
+        ppR.ry=Math.round(normDeg180((+md.scafStart.ry||0)+(ev.clientX-md.sx)*0.4));
+        if(state.gizmoSnap){var rsSC=rotStepDeg(); ppR.ry=Math.round(ppR.ry/rsSC)*rsSC}
+        rebuildModGroup(mm2);
+        updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": turned to "+ppR.ry+"°. Release to keep it. (Move gizmo mode drags the unit itself.)");
+        return;
+      }
+      if(md.info.kind==="scel"&&state.gizmoMode==="scale"){
+        /* Scale gizmo on a scaffold unit body: drag distance
+           resizes the whole unit uniformly about its base — bay
+           sizes stay the datasheet sizes in the panel. */
+        var ppS=mm2.params;
+        var nSC2=clamp((+md.scafStart.us||1)*(1+((ev.clientX-md.sx)-(ev.clientY-md.sy))/220),0.25,4);
+        ppS.us=Math.round(nSC2*100)/100;
+        rebuildModGroup(mm2);
+        updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": unit scale ×"+ppS.us.toFixed(2)+". Release to keep it.");
         return;
       }
       if(md.info.kind==="crowd"&&state.gizmoMode==="rotate"){
@@ -10097,6 +10207,53 @@ function attach3DPointer(el){
           elQ6.y=+stgQ6.y||0;
           rebuildModGroup(mm2);
           updateV3Readout("Stage piece — "+escapeHtml(elQ6.name)+": at ("+measureNum(elQ6.x)+", "+measureNum(elQ6.y)+", "+measureNum(elQ6.z)+") "+measureUnit()+" — base height stays "+fmtMeasure(elQ6.y)+". Set Base Y in its card to raise it.");
+        }else if(md.info.kind==="scgizmo"&&md.info.sub==="rot"&&md.propCen&&md.propBU&&md.propBV){
+          /* Scaffold gizmo rotate ring: the pointer's angle in the
+             ring's horizontal plane is the turn about Y — yaw only.
+             Only the rotation is written. */
+          var ppQ3=mm2.params, stSC3=md.scafStart;
+          var relSC={x:ptM.x-md.propCen.x,y:ptM.y-md.propCen.y,z:ptM.z-md.propCen.z};
+          var angSC=Math.atan2(relSC.x*md.propBV.x+relSC.y*md.propBV.y+relSC.z*md.propBV.z,relSC.x*md.propBU.x+relSC.y*md.propBU.y+relSC.z*md.propBU.z);
+          var dDegSC=(angSC-md.propAng0)*180/Math.PI;
+          if(snapM){var rsSC2=rotStepDeg(); dDegSC=Math.round(dDegSC/rsSC2)*rsSC2}
+          ppQ3.ry=Math.round(normDeg180((+stSC3.ry||0)+dDegSC));
+          rebuildModGroup(mm2);
+          updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": turned "+(dDegSC>=0?"+":"")+Math.round(dDegSC)+"° — now facing "+ppQ3.ry+"°. Release to keep it.");
+        }else if(md.info.kind==="scgizmo"&&md.info.sub==="scale"&&md.propCen){
+          /* Scaffold gizmo scale cube: the pointer's distance from
+             the unit's centre against its distance at the grab is
+             the uniform unit-scale factor. Position never changes. */
+          var ppQ4=mm2.params, stSC4=md.scafStart;
+          var d0SC=Math.hypot(md.p0.x-md.propCen.x,md.p0.y-md.propCen.y,md.p0.z-md.propCen.z);
+          var d1SC=Math.hypot(ptM.x-md.propCen.x,ptM.y-md.propCen.y,ptM.z-md.propCen.z);
+          var fSC4=d0SC>0.05?clamp(d1SC/d0SC,0.05,20):1;
+          ppQ4.us=Math.round(clamp((+stSC4.us||1)*fSC4,0.25,4)*100)/100;
+          rebuildModGroup(mm2);
+          updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": unit scale ×"+ppQ4.us.toFixed(2)+". Release to keep it.");
+        }else if(md.info.kind==="scgizmo"&&md.info.sub==="axis"){
+          /* Scaffold gizmo axis arrow: the unit travels along that
+             one world axis from its drag-start position. */
+          var axSC5=md.info.axis, ppQ5=mm2.params, stSC5=md.scafStart;
+          var axVSC=AX3[axSC5];
+          var tSC5=(ptM.x-md.p0.x)*axVSC.x+(ptM.y-md.p0.y)*axVSC.y+(ptM.z-md.p0.z)*axVSC.z;
+          if(snapM){var gmSC=gridM(); tSC5=Math.round(tSC5/gmSC)*gmSC}
+          ppQ5.x=Math.round(clamp((+stSC5.x||0)+axVSC.x*tSC5,-60,60)*100)/100;
+          ppQ5.y=Math.round(clamp((+stSC5.y||0)+axVSC.y*tSC5,0,15)*100)/100;
+          ppQ5.z=Math.round(clamp((+stSC5.z||0)+axVSC.z*tSC5,-60,60)*100)/100;
+          rebuildModGroup(mm2);
+          updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": moving along the "+axSC5.toUpperCase()+" axis ("+fmtMeasureSigned(tSC5)+") to ("+measureNum(ppQ5.x)+", "+measureNum(ppQ5.y)+", "+measureNum(ppQ5.z)+") "+measureUnit()+".");
+        }else if(md.info.kind==="scel"||md.info.kind==="scgizmo"){
+          /* Scaffold free move: the pointer's floor-plane travel
+             since the grab, applied from the drag-start position —
+             the base height stays (the green Y arrow changes it). */
+          var ppQ6=mm2.params, stSC6=md.scafStart;
+          var ddxSC=ptM.x-md.p0.x, ddzSC=ptM.z-md.p0.z;
+          if(snapM){var gmSC2=gridM(); ddxSC=Math.round(ddxSC/gmSC2)*gmSC2; ddzSC=Math.round(ddzSC/gmSC2)*gmSC2}
+          ppQ6.x=Math.round(clamp((+stSC6.x||0)+ddxSC,-60,60)*100)/100;
+          ppQ6.z=Math.round(clamp((+stSC6.z||0)+ddzSC,-60,60)*100)/100;
+          ppQ6.y=+stSC6.y||0;
+          rebuildModGroup(mm2);
+          updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": at ("+measureNum(ppQ6.x)+", "+measureNum(ppQ6.y)+", "+measureNum(ppQ6.z)+") "+measureUnit()+" — base height stays "+fmtMeasure(ppQ6.y)+". Set Base Y in its panel to raise it.");
         }else if(md.info.kind==="crowd"||md.info.kind==="cgizmo"){
           /* Crowd pack free move: the pointer's floor-plane travel
              since the grab, applied from the drag-start position —
@@ -10532,6 +10689,9 @@ function attach3DPointer(el){
       }else if(mdF.info.kind==="stgel"||mdF.info.kind==="stgizmo"){
         var elT2=mmF.params.els[mdF.info.idx];
         if(elT2)toast("Stage piece — "+elT2.name+": "+stageShapeLabel(elT2)+" · "+stageElDims(elT2)+" · at ("+(+elT2.x||0).toFixed(1)+", "+(+elT2.y||0).toFixed(1)+", "+(+elT2.z||0).toFixed(1)+") m · rot Y "+Math.round(+elT2.ry||0)+"°. Saved with the layout; Undo steps it back.");
+      }else if(mdF.info.kind==="scel"||mdF.info.kind==="scgizmo"){
+        var ppT=mmF.params, scT2=scaffoldCalc(mmF);
+        toast("Scaffolding — "+mmF.name+": "+(scT2.empty?"empty (zero bays)":(scT2.nx+" × "+scT2.nz+" bays · "+fmtMeasure(scT2.H)+" high"))+" · at ("+(+ppT.x||0).toFixed(1)+", "+(+ppT.y||0).toFixed(1)+", "+(+ppT.z||0).toFixed(1)+") m · rot Y "+Math.round(+ppT.ry||0)+"° · scale ×"+(+ppT.us||1).toFixed(2)+". Saved with the layout; Undo steps it back.");
       }else{
         var sgT=mmF.params.segs[mdF.info.idx];
         toast("Truss segment "+(mdF.info.idx+1)+" — "+fmtMeasure(segLen(sgT))+" · ("+measureNum(sgT.ax)+", "+measureNum(sgT.ay)+", "+measureNum(sgT.az)+") → ("+measureNum(sgT.bx)+", "+measureNum(sgT.by)+", "+measureNum(sgT.bz)+") "+measureUnit()+". Custom truss: "+mmF.params.segs.length+" segments, "+fmtMeasure(trussCalc(mmF).customLen)+" total.");
@@ -10766,13 +10926,11 @@ function syncRenderSettingsUI(){
   set("rsClearBeam",Math.round((rs.clearBeam==null?0.12:rs.clearBeam)*100)); out("rsClearBeamOut",Math.round((rs.clearBeam==null?0.12:rs.clearBeam)*100)+"%");
   syncBeamFxBtn();
   set("rsKeyCol",rs.keyCol); set("rsFillCol",rs.fillCol);
-  set("rsHdri",rs.hdri); set("rsHdriI",Math.round(rs.hdriI*100)); out("rsHdriOut",Math.round(rs.hdriI*100)+"%");
   set("rsExp",Math.round(rs.exposure*100)); out("rsExpOut",Math.round(rs.exposure*100)+"%");
   set("rsTemp",Math.round(rs.temp*100)); out("rsTempOut",(rs.temp>0?"+":"")+Math.round(rs.temp*100));
   set("rsSat",Math.round(rs.sat*100)); out("rsSatOut",Math.round(rs.sat*100)+"%");
   set("rsCon",Math.round(rs.contrast*100)); out("rsConOut",Math.round(rs.contrast*100)+"%");
   set("rsVig",Math.round(rs.vig*100)); out("rsVigOut",Math.round(rs.vig*100)+"%");
-  set("rsBackdrop",rs.backdrop);
   syncRenderFxUI();
 }
 $("renderQuality").addEventListener("change",function(){setRenderGraphics(this.value)});
@@ -10817,7 +10975,6 @@ function rsBind(id,fn){var el=$(id); if(el)el.addEventListener("input",function(
 rsBind("rsKey",function(v){renderSettings.keyI=v/100; $("rsKeyOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
 rsBind("rsFill",function(v){renderSettings.fillI=v/100; $("rsFillOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
 rsBind("rsAmb",function(v){renderSettings.ambI=v/100; $("rsAmbOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
-rsBind("rsHdriI",function(v){renderSettings.hdriI=v/100; $("rsHdriOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
 rsBind("rsExp",function(v){renderSettings.exposure=v/100; $("rsExpOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
 rsBind("rsTemp",function(v){renderSettings.temp=v/100; $("rsTempOut").textContent=(v>0?"+":"")+v});
 rsBind("rsSat",function(v){renderSettings.sat=v/100; $("rsSatOut").textContent=v+"%"});
@@ -10832,8 +10989,6 @@ rsBind("rsClearBeam",function(v){renderSettings.clearBeam=v/100; $("rsClearBeamO
 (function(){var b=$("rsBeamReset"); if(b)b.addEventListener("click",function(){renderSettings.beamFx=true; renderSettings.beamImpact=1.0; renderSettings.flare=1.0; renderSettings.clearBeam=0.12; syncRenderSettingsUI(); if(renderMode)applyRenderBeamFx(); toast("Stage lights reset — realistic beams on, beam impact 100%, lens flare 100%, clear-air shaft 12%.")})})();
 $("rsKeyCol").addEventListener("input",function(){renderSettings.keyCol=this.value; if(renderMode)applyRenderSettings()});
 $("rsFillCol").addEventListener("input",function(){renderSettings.fillCol=this.value; if(renderMode)applyRenderSettings()});
-$("rsBackdrop").addEventListener("input",function(){renderSettings.backdrop=this.value; if(renderMode)applyRenderSettings()});
-$("rsHdri").addEventListener("change",function(){renderSettings.hdri=this.value; if(renderMode)applyRenderSettings()});
 $("rsLightsReset").addEventListener("click",function(){
   renderSettings.keyI=0.45; renderSettings.fillI=0.25; renderSettings.ambI=0.5; renderSettings.glow=1.0;
   renderSettings.keyCol="#ffffff"; renderSettings.fillCol="#88aaff";
@@ -10867,7 +11022,7 @@ $("rsResetAll").addEventListener("click",function(){
   renderSettings=defaultRenderSettings();
   syncRenderSettingsUI(); setRenderGraphics("auto");
   if(renderMode)applyRenderSettings();
-  toast("All Render settings reset — Graphics Auto, studio HDRI, neutral colours, key 45% / fill 25% / ambient 50%, glow 100%.");
+  toast("All Render settings reset — Graphics Auto, night look, neutral colours, key 45% / fill 25% / ambient 50%, glow 100%.");
 });
 syncRenderSettingsUI();
 /* ── Settings panel resize — Photoshop-style ─────────────────────────
@@ -12330,12 +12485,20 @@ function setTabUI(name){
    back the panel falls back to Screens. Selecting the 3D view
    unlocks and activates all three. Screens and Export never lock. */
 /* ── SUBSCRIPTION PLAN ───────────────────────────────────────────
-   userPlan is "starter" | "advance" | "vip" | "vvip". Guests /
-   signed-out users are Starter. A signed-in user's plan comes from
-   their public.profiles.plan row (see planFetch in the AUTH
-   section); anything missing or unreadable falls back to Starter.
+   userPlan is the EFFECTIVE plan: "starter" | "advance" | "vip" |
+   "vvip". Guests / signed-out users are Starter. A signed-in
+   user's STORED plan (storedPlan) comes from their
+   public.profiles.plan row (see planFetch in the AUTH section);
+   anything missing or unreadable falls back to Starter. While a
+   14-day free VIP trial is active (trial dates also stored in
+   public.profiles — see the SUBSCRIPTION PLANS section), the
+   effective plan is VIP even when the stored plan is lower.
    Starter locks every modifier; Advance unlocks modifiers but
-   locks client link sharing; VIP unlocks everything. VVIP is a
+   locks client link sharing and .ledx downloads; VIP unlocks
+   everything, including downloading a .ledx file (File → Save /
+   Save as / Ctrl+S for guests, and Export → Download .ledx) —
+   loading / opening a .ledx file, the browser autosave draft,
+   PNG and PSD exports stay open on every plan. VVIP is a
    hidden, backend-only plan: it is granted ONLY by admin
    assignment in Supabase (profiles.plan = 'vvip'), it unlocks
    everything VIP unlocks with no locks at all, and it NEVER
@@ -12343,9 +12506,19 @@ function setTabUI(name){
    the three public tiers (Starter / Advance / VIP). Rank order:
    starter < advance < vip < vvip. */
 var userPlan="starter";
+var storedPlan="starter";
 function planRankOf(p){return p==="vvip"?3:p==="vip"?2:p==="advance"?1:0}
 function planCanModifiers(){return planRankOf(userPlan)>=1}
 function planCanShare(){return planRankOf(userPlan)>=2}
+function planCanLedx(){return planRankOf(userPlan)>=2}
+function ledxLockedNotice(){
+  toast(".ledx download is locked on your plan — downloading a .ledx file is a VIP feature. Upgrade to VIP to download .ledx files.");
+  openPlanModal();
+}
+function downloadLedx(){
+  if(!planCanLedx()){ledxLockedNotice(); return}
+  saveJson();
+}
 function tabLocked(name){
   if(name==="modifier"&&!planCanModifiers())return true;
   return !view3dOpen&&(name==="object"||name==="3d"||name==="modifier");
@@ -12354,7 +12527,7 @@ function switchTab(name,fromUser){
   if(tabLocked(name)){
     if(fromUser){
       if(name==="modifier"&&view3dOpen&&!planCanModifiers()){
-        toast("Modifiers are locked on the Starter plan — Upgrade to Advance to unlock Truss, Lighting, Crowd, Speakers, Haze, Props and Stage Settings.");
+        toast("Modifiers are locked on the Starter plan — Upgrade to Advance to unlock Truss, Scaffolding, Lighting, Crowd, Speakers, Haze, Props and Stage Settings.");
         openPlanModal();
       }else toast("Locked in the 2D view — the Object, 3D and Modifier panels work in the 3D view only. Press 3D View (top right) to unlock them.");
     }
@@ -13470,6 +13643,190 @@ function downloadBriefPDF(){
     if(stPieces.length)sumRows.push(["Stage:", stPieces.length+" piece(s) · "+fmtMetres(stMxX-stMnX).replace(" "+measureUnit(),"")+" × "+fmtMetres(stMxZ-stMnZ), "Highest Top:", fmtMetres(stTop)]);
     detailsTable(sumRows);
   }
+  /* ── What you need to build this stage — bill of materials ──
+     One aggregated setup list at the very end of the report, counted
+     entirely from the layout itself (no new data to enter): screens,
+     truss, lights, cables & power, stage, speakers, crowd and props.
+     Every number is the layout's own — the same totals as the spec
+     sheet (specText) and the Cabling CSV (cablingLines / downloadCsv)
+     — and every physical size reads in the Preferences unit. */
+  sectionHead("What you need to build this stage","Bill of materials");
+  noteLine("Counted from this layout — the same numbers as the spec sheet and the Cabling CSV. A crew can set up the stage from this list alone.");
+  /* Screens */
+  subHead("Screens — "+state.displays.length+" display(s) · "+totalCabs+" cabinets");
+  if(!state.displays.length)noteLine("No displays in this layout.");
+  state.displays.forEach(function(d){
+    var n=d._pm.order.length;
+    detailsTable([
+      ["Display:", d.name, "Size:", fmtMetres(dispWm(d)).replace(" "+measureUnit(),"")+" × "+fmtMetres(dispHm(d))],
+      ["Pitch:", "P"+d.pitch, "Cabinets:", n+" un. ("+d.cols+" × "+d.rows+")"],
+      ["Resolution:", fmt(dispW(d))+" × "+fmt(dispH(d))+" px", "Data Ports:", String(d._pm.ports.length)],
+      ["Cabinet:", d.cabW+" × "+d.cabH+" mm", "Cabinet Res:", d.resX+" × "+d.resY+" px"],
+      ["Weight:", fmt(Math.round(d.weight*n*10)/10)+" kg ("+n+" × "+d.weight+" kg)", "Power (max):", fmt(d.power*n)+" W"]
+    ]);
+  });
+  if(state.displays.length)detailsTable([
+    ["TOTAL Displays:", String(state.displays.length), "TOTAL Cabinets:", totalCabs+" un."],
+    ["TOTAL Weight:", fmt(Math.round(weight*10)/10)+" kg", "TOTAL Power (max):", fmt(pMax)+" W"],
+    ["TOTAL Area:", fmtAreaM2(totalArea), "TOTAL Pixels:", fmt(totalPx)+" px"]
+  ]);
+  /* Truss */
+  var bomTruss=state.modifiers.filter(function(m){return m.type==="truss"});
+  subHead("Truss — "+bomTruss.length+" system(s)");
+  if(!bomTruss.length)noteLine("No truss in this layout.");
+  var btLen=0, btSegs=0, btKg=0;
+  bomTruss.forEach(function(m){
+    var p=m.params, tc=trussCalc(m), segs=briefTrussSegs(m);
+    var len=p.custom?(tc.customLen||0):(tc.span||0);
+    btLen+=len; btSegs+=segs.length; btKg+=(tc.beamKg||0);
+    var tn=(p.trussType==="tri"?"Triangular":p.trussType==="ladder"?"Ladder":"Box")+" "+(+p.section||290)+" mm";
+    detailsTable([
+      ["System:", m.name, "Status:", m.enabled?"On stage":"Hidden"],
+      ["Kind:", tn, "Support:", p.custom?"Custom — user-built":trussMethodName(p.method||"goalpost")],
+      ["Total Length:", fmtMetres(len), "Segments / Bars:", String(segs.length)],
+      ["Truss Weight:", fmt(Math.round((tc.beamKg||0)*10)/10)+" kg", "Self-weight:", (+p.selfKgM||0)+" kg/m"]
+    ]);
+  });
+  if(bomTruss.length)detailsTable([
+    ["TOTAL Length:", fmtMetres(btLen), "TOTAL Segments:", String(btSegs)],
+    ["TOTAL Truss Weight:", fmt(Math.round(btKg*10)/10)+" kg", "Systems:", String(bomTruss.length)]
+  ]);
+  /* Scaffolding — Layher Allround part counts (Calculated from the
+     layout; the load figures are the Datasheet values) */
+  var bomScaf=state.modifiers.filter(function(m){return m.type==="scaffold"});
+  var bsStd=0, bsLed=0, bsTra=0, bsBra=0, bsDeck=0, bsJack=0, bsGuard=0, bsToe=0, bsKg=0, bsArea=0;
+  subHead("Scaffolding — "+bomScaf.length+" system(s) · Layher Allround");
+  if(!bomScaf.length)noteLine("No scaffolding in this layout.");
+  bomScaf.forEach(function(m){
+    var p=m.params, c=scaffoldCalc(m);
+    bsStd+=c.standards; bsLed+=c.ledgers; bsTra+=c.transoms; bsBra+=c.braces; bsDeck+=c.decks; bsJack+=c.baseJacks; bsGuard+=c.guardrails; bsToe+=c.toeboards; bsKg+=c.tubeKg; bsArea+=c.deckArea;
+    detailsTable([
+      ["System:", m.name+" — Layher Allround", "Status:", m.enabled?"On stage":"Hidden"],
+      ["Build:", c.empty?"Empty — zero bays":(c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)), "Footprint:", c.empty?"—":(fmtMeasure(c.L)+" × "+fmtMeasure(c.W))],
+      ["Lifts:", c.lifts+" × "+fmtMeasure(c.liftH), "Total Height:", fmtMetres(c.H)],
+      ["Access:", p.access==="stair"?("Stair — "+c.stairs+" flight(s)"):p.access==="ladder"?"Ladder":"None", "Load Class:", "Class "+(+p.loadClass||3)+" — "+c.classLoad.toFixed(1)+" kN/m² (EN 12811-1, Datasheet)"],
+      ["Standards:", String(c.standards), "Ledgers:", String(c.ledgers)],
+      ["Transoms:", String(c.transoms), "Diagonal Braces:", String(c.braces)],
+      ["Steel Decks:", String(c.decks)+" ("+c.deckedLifts+" decked lift(s))", "Base Jacks:", String(c.baseJacks)],
+      ["Guardrails:", String(c.guardrails), "Toeboards:", String(c.toeboards)],
+      ["Permissible Load (Datasheet):", c.stdLoad!==null?(c.stdLoad+" kN per standard at "+c.liftH+" m lift"):"Not listed at "+c.liftH+" m lift", "Steel Deck Load (Datasheet):", c.deckLoad!==null?(c.deckLoad.toFixed(1)+" kN/m² at "+c.bayL+" m bay"):"Not listed at "+c.bayL+" m bay"],
+      ["Tube Steel Weight (Calculated):", fmt(Math.round(c.tubeKg*10)/10)+" kg — tube only", "Deck Area (Calculated):", fmtAreaM2(c.deckArea)]
+    ]);
+  });
+  if(bomScaf.length){
+    detailsTable([
+      ["TOTAL Standards:", String(bsStd), "TOTAL Ledgers:", String(bsLed)],
+      ["TOTAL Transoms:", String(bsTra), "TOTAL Diagonal Braces:", String(bsBra)],
+      ["TOTAL Steel Decks:", String(bsDeck), "TOTAL Base Jacks:", String(bsJack)],
+      ["TOTAL Guardrails:", String(bsGuard), "TOTAL Toeboards:", String(bsToe)],
+      ["TOTAL Tube Steel Weight (Calculated):", fmt(Math.round(bsKg*10)/10)+" kg — tube only, decks & fittings excluded", "TOTAL Deck Area (Calculated):", fmtAreaM2(Math.round(bsArea*100)/100)]
+    ]);
+    noteLine("Scaffolding loads above are permissible loads for the component (Datasheet) — not a guarantee for the whole stage. A qualified designer must check the full structure, bracing and ground on site.");
+  }
+  /* Lights */
+  var bomLights=state.modifiers.filter(function(m){return m.type==="light"});
+  var blTotal=0, blByType={};
+  bomLights.forEach(function(m){
+    var p=m.params;
+    if(p.custom){(p.fixtures||[]).forEach(function(f){blTotal++; var lb=fixtureModelLabel(f); blByType[lb]=(blByType[lb]||0)+1})}
+    else{var c=Math.round(+p.count||0); blTotal+=c; var lb2=lightTypeLabel(p.ltype); blByType[lb2]=(blByType[lb2]||0)+c}
+  });
+  subHead("Lights — "+blTotal+" fixture(s)");
+  if(!bomLights.length)noteLine("No lighting rig in this layout.");
+  bomLights.forEach(function(m){
+    var p=m.params;
+    if(p.custom){
+      detailsTable([
+        ["Rig:", m.name, "Status:", m.enabled?"On stage":"Hidden"],
+        ["Fixtures:", String((p.fixtures||[]).length), "Placed:", "Individually, per fixture"]
+      ]);
+      var counts={};
+      (p.fixtures||[]).forEach(function(f){var lb=fixtureModelLabel(f); counts[lb]=(counts[lb]||0)+1});
+      var parts=Object.keys(counts).map(function(k){return counts[k]+" × "+k}).join(" · ");
+      if(parts)noteLine("Fixture types in "+m.name+": "+parts);
+    }else{
+      detailsTable([
+        ["Rig:", m.name, "Status:", m.enabled?"On stage":"Hidden"],
+        ["Fixtures:", String(Math.round(+p.count||0)), "Type:", lightTypeLabel(p.ltype)]
+      ]);
+    }
+  });
+  if(bomLights.length){
+    var blParts=Object.keys(blByType).map(function(k){return blByType[k]+" × "+k}).join(" · ");
+    if(blParts)noteLine("Fixture types total: "+blParts);
+    detailsTable([["TOTAL Fixtures:", String(blTotal), null, null]]);
+  }
+  /* Cables & power — the cabling list, same data as the Cabling CSV */
+  subHead("Cables & power — "+totalPorts+" data port(s)");
+  if(!state.displays.length)noteLine("No displays — no signal cables in this layout.");
+  state.displays.forEach(function(d){
+    noteLine(d.name+" — "+d._pm.ports.length+" port(s) · feed "+d.corner+", "+d.path+" · power (max) "+fmt(d.power*d._pm.order.length)+" W · weight "+fmt(Math.round(d.weight*d._pm.order.length*10)/10)+" kg");
+    cablingLines(d).forEach(function(l){noteLine(l)});
+  });
+  if(state.displays.length)detailsTable([
+    ["TOTAL Data Ports:", String(totalPorts), "TOTAL Cabinets:", totalCabs+" un."],
+    ["TOTAL Power (max):", fmt(pMax)+" W", "TOTAL Weight:", fmt(Math.round(weight*10)/10)+" kg"]
+  ]);
+  /* Stage */
+  subHead("Stage — "+stPieces.length+" piece(s)");
+  if(!stPieces.length)noteLine("No stage deck in this layout — the screens stand on the floor.");
+  stPieces.forEach(function(el){
+    detailsTable([
+      ["Piece:", el.name+(isMainStageEl(el)?" · Main stage":""), "Shape:", stageShapeLabel(el)],
+      ["Size:", stageElDims(el), "Base (bottom):", fmtMetres(+el.y||0)],
+      ["Position X:", fmtMetres(+el.x||0), "Position Z:", fmtMetres(+el.z||0)]
+    ]);
+  });
+  /* Speakers */
+  var bomSpk=state.modifiers.filter(function(m){return m.type==="speakers"});
+  var bsTotal=0; bomSpk.forEach(function(m){bsTotal+=Math.round(+m.params.cabs||0)*2});
+  subHead("Speakers — "+bsTotal+" cabinet(s)");
+  if(!bomSpk.length)noteLine("No speakers in this layout.");
+  bomSpk.forEach(function(m){
+    var p=m.params;
+    detailsTable([
+      ["Arrays:", m.name, "Status:", m.enabled?"On stage":"Hidden"],
+      ["Cabinets / side:", String(Math.round(+p.cabs||0)), "TOTAL Cabinets:", String(Math.round(+p.cabs||0)*2)],
+      ["Hang Height:", fmtMetres(+p.height||0), "Gap:", fmtMeasure(+p.gap||0)]
+    ]);
+  });
+  /* Crowd — counts and areas only; every figure is fully black, so
+     no colour is listed here (or anywhere) for the crowd. */
+  var bomCrowd=state.modifiers.filter(function(m){return m.type==="crowd"});
+  var bcPeople=0, bcPacks=0;
+  bomCrowd.forEach(function(m){bcPeople+=crowdTotalPeople(m); bcPacks+=crowdPacks(m).length});
+  subHead("Crowd — "+bcPeople+" people · "+bcPacks+" pack(s)");
+  if(!bomCrowd.length)noteLine("No crowd in this layout.");
+  bomCrowd.forEach(function(m){
+    crowdPacks(m).forEach(function(pk){
+      var t=crowdTypeOf(pk);
+      detailsTable([
+        ["Pack:", pk.name, "Type:", crowdTypeLabel(t)],
+        ["People:", String(Math.round(+pk.count||0)), "Area:", (+pk.width>0?fmtMeasure(+pk.width):"stage width")+" × "+fmtMeasure(+pk.depth||0)],
+        ["Seating:", crowdSeated(t)?(t==="pavilion"?"Seated — stepped tiers, no chairs":"Seated — chairs included"):"Standing", "Status:", (pk.on===false||!m.enabled)?"Hidden":"On stage"]
+      ]);
+    });
+  });
+  /* Props */
+  var bomProps=state.modifiers.filter(function(m){return m.type==="props"});
+  var bpTotal=0; bomProps.forEach(function(m){bpTotal+=(m.params.items||[]).length});
+  subHead("Props — "+bpTotal+" item(s)");
+  if(!bpTotal)noteLine("No props in this layout.");
+  bomProps.forEach(function(m){
+    (m.params.items||[]).forEach(function(it){
+      var sc=clamp(+it.s||1,0.02,50);
+      detailsTable([
+        ["Prop:", it.name, "Status:", it.on===false?"Hidden":"On stage"],
+        ["Size (W × H × D):", fmtMeasureDims((+it.w||0)*sc,(+it.h||0)*sc,(+it.d||0)*sc), "Count:", "1"]
+      ]);
+    });
+  });
+  /* Haze */
+  var bomHaze=state.modifiers.filter(function(m){return m.type==="haze"});
+  if(bomHaze.length){
+    subHead("Haze");
+    bomHaze.forEach(function(m){detailsTable([["Haze:", m.name, "Density:", Math.round(+m.params.density||0)+"%"]])});
+  }
   var nPages=doc.getNumberOfPages();
   for(var pi=1;pi<=nPages;pi++){
     doc.setPage(pi);
@@ -13479,7 +13836,7 @@ function downloadBriefPDF(){
     doc.text("Page "+pi+" of "+nPages,196,ph-8,{align:"right"});
   }
   doc.save((state.project||"led-layout").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").toLowerCase()+"-technical-report.pdf");
-  toast("Technical Document downloaded — "+nPages+" pages: one section per display (dimensioned drawing + screen details), the full screen map with every screen's edges dimensioned, stage build details with sizes on every edge, full truss system details (front + plan drawings, every bar's length, weight and angles, load check), then the full canvas layout with totals.");
+  toast("Technical Document downloaded — "+nPages+" pages: one section per display (dimensioned drawing + screen details), the full screen map with every screen's edges dimensioned, stage build details with sizes on every edge, full truss system details (front + plan drawings, every bar's length, weight and angles, load check), the full canvas layout with totals, and finally “What you need to build this stage” — the full setup list (screens, truss, scaffolding, lights, cables & power, stage, speakers, crowd, props).");
 }
 $("btnBrief").addEventListener("click",downloadBriefPDF);
 
@@ -14515,6 +14872,12 @@ function layoutDataObject(){
   })};
 }
 function saveJson(){
+  /* .ledx DOWNLOAD is VIP / VVIP only (an active free trial counts
+     as VIP): guests, Starter and Advance get the Upgrade to VIP
+     lock instead of a download. Loading / opening a .ledx file and
+     the browser autosave draft are NOT gated — only this download.
+     Returns true only when the file was actually downloaded. */
+  if(!planCanLedx()){ledxLockedNotice(); return false}
   /* Official local layout format: .ledx — the layout JSON plus a
      top-level format marker. The loader ignores the marker, and
      legacy .json saves still load (the file picker accepts both). */
@@ -14525,8 +14888,12 @@ function saveJson(){
   var fname=/\.ledx$/i.test(base)?base:base+".ledx";
   var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:"application/json"})); a.download=fname; document.body.appendChild(a); a.click(); a.remove();
   toast("Layout saved as .ledx — reload it any time with File → Open project → Load .ledx file, or by dropping the file onto the window.");
+  return true;
 }
-$("mSave").addEventListener("click",function(){closeMenus(); if(typeof authUser!=="undefined"&&authUser)cloudSaveDesign(); else {saveJson(); projMarkSaved()}});
+/* File → Save: signed in, the layout saves to the account (cloud
+   save is open on every plan — it is not a .ledx download); signed
+   out, Save IS a .ledx download, so it is VIP / VVIP only. */
+$("mSave").addEventListener("click",function(){closeMenus(); if(typeof authUser!=="undefined"&&authUser)cloudSaveDesign(); else if(saveJson())projMarkSaved()});
 /* ══ File menu — Open project / Open recent / Save as / Import
    props / Export submenu / Pricing / Log out ════════════════════
    Every item routes into the same paths the rest of the app uses:
@@ -14602,6 +14969,11 @@ function saveAsAdoptTitle(title){
   render();
 }
 function doSaveAs(title){
+  /* Signed out, Save as IS a .ledx download — VIP / VVIP only, so
+     it is gated BEFORE the new title is adopted. Signed in, Save as
+     creates a cloud project (open on every plan); only its .ledx
+     fallback download is gated. */
+  if(!(typeof authUser!=="undefined"&&authUser&&authUser.id)&&!planCanLedx()){ledxLockedNotice(); return}
   saveAsAdoptTitle(title);
   if(typeof authUser!=="undefined"&&authUser&&authUser.id){
     var now=new Date().toISOString();
@@ -14615,13 +14987,11 @@ function doSaveAs(title){
         projMarkSaved();
         toast("Saved as a new project: \u201C"+title+"\u201D.");
       }).catch(function(){
-        saveJson(); projMarkSaved();
-        toast("Couldn't save to your account — saved \u201C"+title+"\u201D as a .ledx file instead.");
+        if(saveJson()){projMarkSaved(); toast("Couldn't save to your account — saved \u201C"+title+"\u201D as a .ledx file instead.")}
       });
     return;
   }
-  saveJson(); projMarkSaved();
-  toast("Saved as \u201C"+title+"\u201D — downloaded as a .ledx file.");
+  if(saveJson()){projMarkSaved(); toast("Saved as \u201C"+title+"\u201D — downloaded as a .ledx file.")}
 }
 (function(){
   var modal=$("saveAsModal"); if(!modal)return;
@@ -15299,10 +15669,14 @@ function authSignedInAs(u,sessionData){
   authUpsertProfile(u);
 }
 /* ══════════ SUBSCRIPTION PLANS — tiers, prices, gating ══════════
-   Prices are fixed by the product owner. Yearly is EXACTLY
-   Monthly × 12 — no discount, ever:
-     Advance — Monthly LKR 4,999.99 / USD 15 → Yearly LKR 59,999.88 / USD 180
-     VIP     — Monthly LKR 10,699.99 / USD 30 → Yearly LKR 128,399.88 / USD 360
+   Prices are fixed by the product owner. USD is the base price;
+   LKR is the USD price converted at the fixed rate 1 USD =
+   332.45 LKR (checked 12 Nov 2026), rounded to the nearest rupee
+   — the rate is NOT fetched live, prices stay fixed until the
+   owner changes them. Yearly is EXACTLY Monthly × 12 — no
+   discount, ever:
+     Advance — Monthly LKR 4,987 / USD 15 → Yearly LKR 59,844 / USD 180
+     VIP     — Monthly LKR 9,974 / USD 30 → Yearly LKR 119,688 / USD 360
    The plan itself is stored per user in public.profiles.plan
    ("starter" | "advance" | "vip" | "vvip"); see supabase-plan.sql
    for the one-time column SQL. planFetch reads it after sign-in;
@@ -15320,51 +15694,212 @@ function authSignedInAs(u,sessionData){
    shows the chosen tier / period / price and states that plainly.
    No payment is taken, no card details are collected or stored,
    and no plan ever changes from an Upgrade tap — plans change by
-   admin assignment / VIP key only. */
+   admin assignment / VIP key only.
+   ── FREE TRIAL ──────────────────────────────────────────────────
+   A signed-in user may start ONE 14-day free VIP trial, ever.
+   The trial lives SERVER-SIDE in public.profiles (trial_started_at,
+   trial_ends_at, trial_used — see supabase-trial.sql, run once):
+   starting writes now / now+14 days / trial_used=true to the
+   user's own profile row, and planFetch reads those dates back on
+   every sign-in, so signing out, clearing the browser or switching
+   device can never reset or extend a trial. While trial_ends_at
+   is in the future and the stored plan is below VIP, the EFFECTIVE
+   plan (userPlan) is VIP — modifiers, client link sharing and
+   .ledx downloads all unlock. When it ends, the effective plan
+   falls back to the stored plan and the Plans & Upgrade dialog is
+   shown with the VIP price and the checkout-not-connected note.
+   A paid VIP / VVIP plan is never downgraded by a trial. If the
+   trial columns do not exist yet (SQL not run), the trial read
+   falls back to plan-only and the Start button fails honestly
+   with a setup message — no local trial is ever created. */
 var PLAN_DEFS={
   starter:{name:"Starter",lkr:0,usd:0},
-  advance:{name:"Advance",lkr:4999.99,usd:15},
-  vip:{name:"VIP",lkr:10699.99,usd:30},
+  advance:{name:"Advance",lkr:4987,usd:15},
+  vip:{name:"VIP",lkr:9974,usd:30},
   vvip:{name:"VVIP",lkr:0,usd:0,hidden:true}
 };
 var planBilling="monthly";
 function planName(){return (PLAN_DEFS[userPlan]||PLAN_DEFS.starter).name}
+/* ── Free trial state (server-side, in public.profiles) ─────────
+   trialInfo mirrors the signed-in user's trial columns; it is
+   NEVER persisted locally. trialColumnsOk is null until the first
+   planFetch decides whether the trial columns exist: false means
+   supabase-trial.sql has not been run yet, and starting a trial
+   must then fail honestly with a setup message. */
+var trialInfo={used:false,startedAt:null,endsAt:null};
+var trialColumnsOk=null;
+var trialEndAnnounced=false;
+function trialActive(){
+  if(planRankOf(storedPlan)>=2)return false; /* a paid VIP / VVIP plan is never a "trial" */
+  if(!trialInfo.endsAt)return false;
+  var end=new Date(trialInfo.endsAt).getTime();
+  return !isNaN(end)&&end>Date.now();
+}
+function trialDaysLeft(){
+  if(!trialInfo.endsAt)return 0;
+  var ms=new Date(trialInfo.endsAt).getTime()-Date.now();
+  return ms>0?Math.ceil(ms/86400000):0;
+}
+function trialEndsLabel(){
+  if(!trialInfo.endsAt)return "";
+  var d=new Date(trialInfo.endsAt);
+  return isNaN(d.getTime())?"":d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+}
 function planLabel(){
+  if(trialActive())return "VIP — free trial, "+trialDaysLeft()+" day"+(trialDaysLeft()===1?"":"s")+" left";
   if(userPlan==="starter")return "Starter — Free";
   if(userPlan==="vvip")return "VVIP — all features unlocked";
   var d=PLAN_DEFS[userPlan];
   return d.name+" — "+planFmtLkr(d.lkr)+" / "+planFmtUsd(d.usd)+" monthly";
 }
-function planFmtLkr(n){return "LKR "+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function planFmtLkr(n){return "LKR "+Number(n).toLocaleString("en-US",{maximumFractionDigits:2})}
 function planFmtUsd(n){return "USD "+Number(n).toLocaleString("en-US",{maximumFractionDigits:(n%1?2:0)})}
 function planPriceFor(key){
   var d=PLAN_DEFS[key]; if(!d)return {lkr:0,usd:0};
   return planBilling==="yearly"?{lkr:+(d.lkr*12).toFixed(2),usd:+(d.usd*12).toFixed(2)}:{lkr:d.lkr,usd:d.usd};
 }
+/* planSet records the STORED plan (from the profile / an admin
+   change); the EFFECTIVE plan is then derived by
+   planApplyEffective: an active trial lifts a below-VIP stored
+   plan to VIP, and nothing ever lifts or lowers a paid VIP/VVIP. */
 function planSet(p){
-  userPlan=(p==="advance"||p==="vip"||p==="vvip")?p:"starter";
+  storedPlan=(p==="advance"||p==="vip"||p==="vvip")?p:"starter";
+  planApplyEffective();
+}
+function planApplyEffective(){
+  userPlan=trialActive()?"vip":storedPlan;
   var an=$("authPlanName"); if(an)an.textContent=planLabel();
   syncTabLocks();
   planLockSync();
   planRenderPrices();
 }
 function planFetch(u){
-  if(!u||!u.id){planSet("starter"); return Promise.resolve()}
-  /* Plan ONLY. This read deliberately never touches admin state:
-     the Admin Dashboard has its own separate login on /adminpower
-     (adminLoginSubmit), and signing in to the main app — whatever
-     the profile says — must never grant admin access. Any failure
-     — including the plan column not existing yet — falls back to
-     Starter; sign-in is never blocked. */
-  var url=SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(u.id)+"&select=plan";
+  if(!u||!u.id){trialInfo={used:false,startedAt:null,endsAt:null}; planSet("starter"); return Promise.resolve()}
+  /* Plan + trial ONLY. This read deliberately never touches admin
+     state: the Admin Dashboard has its own separate login on
+     /adminpower (adminLoginSubmit), and signing in to the main
+     app — whatever the profile says — must never grant admin
+     access. Any failure — including the plan column not existing
+     yet — falls back to Starter; sign-in is never blocked. */
+  function applyRow(row){
+    var p=String((row&&row.plan)||"starter").toLowerCase();
+    planSet((p==="advance"||p==="vip"||p==="vvip")?p:"starter");
+    /* A trial that has run out is announced once per session:
+       the Plans & Upgrade dialog with the VIP price + the plain
+       checkout-not-connected statement (trialAnnounceEnd). */
+    if(trialInfo.used&&trialInfo.endsAt&&!trialActive()&&planRankOf(storedPlan)<2)trialAnnounceEnd();
+  }
+  var url=SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(u.id)+"&select=plan,trial_started_at,trial_ends_at,trial_used";
   return supaFetch(url,{method:"GET",headers:authHeaders()},12000).then(function(res){
-    if(!res.ok){planSet("starter"); return null} /* includes the plan column not existing yet */
-    return res.json().then(function(rows){
-      var row=(rows&&rows[0])||{};
-      var p=String(row.plan||"starter").toLowerCase();
-      planSet((p==="advance"||p==="vip"||p==="vvip")?p:"starter");
+    if(!res.ok)throw new Error("plan+trial "+res.status);
+    return res.json();
+  }).then(function(rows){
+    var row=(rows&&rows[0])||{};
+    trialColumnsOk=true;
+    trialInfo={
+      used:row.trial_used===true,
+      startedAt:row.trial_started_at||null,
+      endsAt:row.trial_ends_at||null
+    };
+    applyRow(row);
+  }).catch(function(){
+    /* The trial columns most likely do not exist yet
+       (supabase-trial.sql not run): retry plan-only so the plan
+       itself still loads, and mark the trial as not set up so
+       the Start button fails honestly instead of faking a
+       local trial. */
+    trialColumnsOk=false;
+    trialInfo={used:false,startedAt:null,endsAt:null};
+    var url2=SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(u.id)+"&select=plan";
+    return supaFetch(url2,{method:"GET",headers:authHeaders()},12000).then(function(res){
+      if(!res.ok){planSet("starter"); return null}
+      return res.json().then(function(rows2){applyRow((rows2&&rows2[0])||{})});
+    }).catch(function(){planSet("starter")});
+  });
+}
+/* Trial end, announced once per session: the Plans & Upgrade
+   dialog opens on the VIP card's price (Monthly LKR 9,974 /
+   USD 30, Yearly LKR 119,688 / USD 360 — exactly 12 × monthly,
+   no discount) with the usual plain statement that checkout is
+   not yet connected. No payment flow is invented and no card
+   details are ever collected. */
+function trialAnnounceEnd(){
+  if(trialEndAnnounced)return;
+  trialEndAnnounced=true;
+  openPlanModal();
+  planUpgradeTap("vip");
+}
+/* Renders the trial box in the Plans & Upgrade dialog for every
+   state: guest (sign in first), not started, active (days left +
+   end date), ended (no restart), paid VIP / VVIP (box hidden —
+   a paid plan is never downgraded or replaced by a trial). */
+function trialRender(){
+  var box=$("trialBox"); if(!box)return;
+  var title=$("trialTitle"), text=$("trialText"), btn=$("trialStartBtn"), err=$("trialErr");
+  if(err)err.textContent="";
+  if(planRankOf(storedPlan)>=2){box.hidden=true; return}
+  box.hidden=false;
+  if(trialActive()){
+    if(title)title.textContent="VIP trial active";
+    if(text)text.textContent="VIP trial — "+trialDaysLeft()+" day"+(trialDaysLeft()===1?"":"s")+" left, ends "+trialEndsLabel()+". Full VIP is unlocked until then: all modifiers, client link sharing and .ledx downloads.";
+    if(btn)btn.hidden=true;
+    return;
+  }
+  if(trialInfo.used){
+    if(title)title.textContent="Trial ended";
+    if(text)text.textContent="Your 14-day VIP trial has ended"+(trialInfo.endsAt?(" (it ended "+trialEndsLabel()+")"):"")+". A trial can only be used once per account and cannot be restarted — upgrade to VIP to keep the VIP features.";
+    if(btn)btn.hidden=true;
+    return;
+  }
+  if(title)title.textContent="Try VIP free for 14 days";
+  if(btn){btn.hidden=false; btn.disabled=false}
+  if(!(typeof authUser!=="undefined"&&authUser&&authUser.id)){
+    /* Signed-in users only: a guest sees a sign-in prompt, never a
+       startable trial — the trial is tied to an account. */
+    if(text)text.textContent="Sign in first — the free trial is tied to your account, so guests can't start one. Sign in (or create a free account), then start your free 14-day VIP trial here. No card details are needed, and signing out or switching device can't reset it.";
+    if(btn)btn.textContent="Sign in to start your free trial";
+    return;
+  }
+  if(text)text.textContent="Start a free 14-day VIP trial — no card details. While it runs you get full VIP: all modifiers, client link sharing and .ledx downloads. One trial per account; when it ends you return to your current plan.";
+  if(btn)btn.textContent="Start free 14-day VIP trial";
+}
+/* Starts the one-time trial: writes the start / end / used flag
+   to the user's OWN public.profiles row in Supabase — never to
+   local storage — so the trial follows the account, not the
+   browser. If the write fails (above all: the trial columns do
+   not exist because supabase-trial.sql has not been run), it
+   fails honestly with a setup message and creates nothing. */
+function trialStart(){
+  var err=$("trialErr"), btn=$("trialStartBtn");
+  function fail(msg){if(err)err.textContent=msg; if(btn){btn.disabled=false; btn.textContent="Start free 14-day VIP trial"}}
+  if(!(typeof authUser!=="undefined"&&authUser&&authUser.id)){
+    /* Guests can never start a trial: send them to sign-in. */
+    fail("Sign in first — a free trial is tied to your account, so guests cannot start one. No card details are needed.");
+    closePlanModal();
+    if(typeof openAuthDialog==="function")openAuthDialog();
+    return;
+  }
+  if(trialInfo.used||trialActive())return;
+  if(trialColumnsOk===false){
+    fail("The free trial isn't set up yet: the trial columns are missing from Supabase. Run supabase-trial.sql once in the Supabase SQL editor, then sign in again and start the trial. Nothing was created.");
+    return;
+  }
+  if(btn){btn.disabled=true; btn.textContent="Starting trial…"}
+  var now=new Date();
+  var ends=new Date(now.getTime()+14*24*60*60*1000);
+  var body={trial_started_at:now.toISOString(),trial_ends_at:ends.toISOString(),trial_used:true};
+  supaFetch(SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(authUser.id),{method:"PATCH",headers:authHeaders({"Prefer":"return=minimal"}),body:JSON.stringify(body)},15000)
+    .then(function(res){
+      if(!res.ok)throw new Error("trial start "+res.status);
+      trialColumnsOk=true;
+      trialInfo={used:true,startedAt:body.trial_started_at,endsAt:body.trial_ends_at};
+      planApplyEffective();
+      toast("Your free 14-day VIP trial has started — full VIP is unlocked until "+trialEndsLabel()+".");
+    })
+    .catch(function(){
+      trialColumnsOk=false;
+      fail("Couldn't start the trial — nothing was created. This usually means the trial columns are missing in Supabase: run supabase-trial.sql once in the Supabase SQL editor, then sign in again and try once more.");
     });
-  }).catch(function(){planSet("starter")});
 }
 /* Keeps every plan-locked surface in step with userPlan: the
    Modifier pane banner + its controls, the Share dialog banner +
@@ -15384,6 +15919,12 @@ function planLockSync(){
   if(sb)sb.title=share
     ? "Share / Client view — opens the share dialog: copy a link carrying this exact stage design, Public (opens straight away) or Private (the client enters their name + your passkey first). The client sees only the 3D render and can move the camera — no panels, no tools, no editing, no save / load"
     : "Share / Client view — LOCKED on your plan: client link sharing is a VIP feature. Upgrade to VIP to share client links.";
+  var ledx=planCanLedx();
+  var lBanner=$("ledxPlanLock"); if(lBanner)lBanner.hidden=ledx;
+  var lb=$("btnExportLedx");
+  if(lb)lb.title=ledx
+    ? "Download .ledx — the current layout as a .ledx file (the same format as File → Save)"
+    : "Download .ledx — LOCKED on your plan: downloading a .ledx file is a VIP feature (VIP and VVIP plans). Upgrade to VIP to download .ledx files.";
 }
 function planRenderPrices(){
   var per=planBilling==="yearly"?"/ year":"/ month";
@@ -15410,6 +15951,7 @@ function planRenderPrices(){
     else{btn.disabled=false; btn.textContent="Upgrade to "+PLAN_DEFS[pair[0]].name}
   });
   var note=$("planCheckoutNote"); if(note)note.hidden=true;
+  trialRender();
 }
 function openPlanModal(){
   if(isClientViewRequest())return;
@@ -15453,7 +15995,20 @@ function initPlans(){
   var apg=$("authPlanBtnGuest"); if(apg)apg.addEventListener("click",function(){closeAuthDialog(); openPlanModal()});
   var mu=$("modPlanUpgrade"); if(mu)mu.addEventListener("click",function(){openPlanModal()});
   var su=$("sharePlanUpgrade"); if(su)su.addEventListener("click",function(){$("shareModal").classList.remove("open"); openPlanModal()});
-  planSet(userPlan);
+  var lu=$("ledxPlanUpgrade"); if(lu)lu.addEventListener("click",function(){openPlanModal()});
+  var ts=$("trialStartBtn"); if(ts)ts.addEventListener("click",function(){trialStart()});
+  var el=$("btnExportLedx"); if(el)el.addEventListener("click",function(){downloadLedx()});
+  var ml=$("mExportLedx"); if(ml)ml.addEventListener("click",function(){closeMenus(); downloadLedx()});
+  /* Trial expiry while the app sits open: re-derive the effective
+     plan once a minute; the moment an active trial lapses, the
+     locks come back and the end-of-trial dialog is shown once. */
+  setInterval(function(){
+    if(trialInfo.endsAt&&userPlan==="vip"&&planRankOf(storedPlan)<2&&!trialActive()){
+      planApplyEffective();
+      trialAnnounceEnd();
+    }
+  },60000);
+  planApplyEffective();
 }
 /* ══════════ ADMIN DASHBOARD — separate page, SEPARATE LOGIN ══
    A full page (#adminPage) that replaces the editor view, at its
@@ -16718,7 +17273,7 @@ function projIsDirty(){
   try{return JSON.stringify(layoutDataObject())!==projSavedSnap}catch(e){return false}
 }
 function cloudSaveDesign(){
-  if(!authUser){saveJson(); projMarkSaved(); return}
+  if(!authUser){if(saveJson())projMarkSaved(); return}
   var title=((state.project||"").trim()||"Untitled design");
   var data=layoutDataObject();
   var now=new Date().toISOString();
@@ -16729,8 +17284,15 @@ function cloudSaveDesign(){
     if($("projectsModal").classList.contains("open"))loadProjectsList();
   }
   function fail(){
-    toast("Couldn't save to your account — saving the .ledx file instead.");
-    saveJson(); projMarkSaved();
+    /* The fallback is a .ledx download — VIP / VVIP only. Below VIP
+       the work is NOT lost: it stays in the browser autosave draft. */
+    if(planCanLedx()){
+      toast("Couldn't save to your account — saving the .ledx file instead.");
+      if(saveJson())projMarkSaved();
+    }else{
+      toast("Couldn't save to your account, and downloading a .ledx copy needs VIP — your latest work is kept in this browser's autosave draft.");
+      openPlanModal();
+    }
   }
   if(currentProjectId){
     supaFetch(SUPABASE_URL+"/rest/v1/designs?id=eq."+encodeURIComponent(currentProjectId),{method:"PATCH",headers:authHeaders({"Prefer":"return=minimal"}),body:JSON.stringify({title:title,layout:data,updated_at:now})},20000)
@@ -17032,7 +17594,7 @@ function projDeleteProject(r){
   $("projNewBtn").addEventListener("click",projNewProject);
   var en=$("projEmptyNew"); if(en)en.addEventListener("click",projNewProject);
   $("projSearch").addEventListener("input",function(){renderProjectsGrid()});
-  $("projSaveJson").addEventListener("click",function(){saveJson(); projMarkSaved()});
+  $("projSaveJson").addEventListener("click",function(){if(saveJson())projMarkSaved()});
   $("projLoadJson").addEventListener("click",function(){closeProjectsWindow(); openLayoutPicker()});
   projMarkSaved();
 })();
@@ -18303,6 +18865,7 @@ var MOD_DEFS={
   stage:{label:"Stage Settings",icon:ICO_STAGE,defaults:{els:[],groups:[]}},
   light:{label:"Lighting",icon:ICO_BULB,defaults:{count:6,height:7,angle:16,color:"#ffb45e",opacity:32,animate:true,sweep:35,speed:40,custom:false,fixtures:[],groups:[],ltype:"beam",setX:0,setY:0,setZ:0,beamEndless:true,beamLen:12}},
   truss:{label:"Truss",icon:ICO_TRUSS,defaults:{height:6.5,span:0,support:"goalpost",depth:0,method:"goalpost",trussType:"box",section:290,selfKgM:6,hoists:2,hoistWll:500,rigKg:40,ballast:250,baseDepth:1.2,clampEvery:1,env:"indoor",wind:0,custom:false,segs:[],groups:[],drawH:6,bendDeg:0,category:"straight",straightLength:10,ringRadius:0,circularKind:"full",arcDeg:360}},
+  scaffold:{label:"Scaffolding",icon:ICO_TRUSS,defaults:{system:"layher",bayL:2.07,bayW:2.07,baysX:0,baysZ:0,lifts:2,liftH:2,decks:[true,true],guardrail:true,bracing:true,access:"ladder",loadClass:3,x:0,y:0,z:0,ry:0,us:1}},
   speakers:{label:"Speakers",icon:ICO_SPK,defaults:{cabs:6,height:6,gap:0.8}},
   haze:{label:"Haze",icon:ICO_WIND,defaults:{density:45}},
   props:{label:"Props",icon:ICO_PROP,defaults:{items:[],groups:[]}}
@@ -18906,7 +19469,22 @@ function stageEditOn(){return !!stageEditTarget()}
 var crowdToolArmed=null;
 function crowdEditTarget(){var m=crowdToolArmed?modById(crowdToolArmed):null; return (m&&m.type==="crowd"&&m.enabled)?m:null}
 function crowdEditOn(){return !!crowdEditTarget()}
-function modEditLock(){return trussEditOn()||lightEditOn()||propEditOn()||stageEditOn()||crowdEditOn()}
+/* Scaffold editing mode — the same pattern again, for a Scaffolding
+   modifier: its Edit button (at the top of the Scaffolding section)
+   is a toggle. ON: only that scaffolding unit can be moved / rotated
+   / scaled in the 3D view — the unit gets a hit box and the scaffold
+   gizmo (kind "scgizmo"), driven by the normal Position / Rotate /
+   Scale gizmo buttons — and the screens and other modifiers are
+   locked. Move writes the unit's x / y / z, Rotate writes its ry,
+   Scale writes its unit scale (us). OFF: the unit locks again and
+   the screens edit as normal. Selecting another modifier, or the
+   Scaffolding modifier being removed / switched off, ends the mode
+   — the same anti-stuck rule as the others. Scaffolding is 3D only:
+   it never touches the 2D layout, ports, cabling or PNG export. */
+var scaffoldToolArmed=null;
+function scaffoldEditTarget(){var m=scaffoldToolArmed?modById(scaffoldToolArmed):null; return (m&&m.type==="scaffold"&&m.enabled)?m:null}
+function scaffoldEditOn(){return !!scaffoldEditTarget()}
+function modEditLock(){return trussEditOn()||lightEditOn()||propEditOn()||stageEditOn()||crowdEditOn()||scaffoldEditOn()}
 /* ── EDIT-MODE CHIP (3D bar, directly under the Mode group) ──────
    A small mention under the Mode (View / Edit) buttons that always
    says WHICH section edit mode is currently on — "Truss Edit",
@@ -18918,13 +19496,14 @@ function modEditLock(){return trussEditOn()||lightEditOn()||propEditOn()||stageE
    the Edit buttons live. Precedence matches syncModifierPanel's
    anti-stuck rule: truss wins over light when both somehow sit
    armed, and arming stage / props already clears the others. */
-var EDIT_KIND_LABEL={truss:"Truss Edit",light:"Light Edit",props:"Props Edit",stage:"Stage Edit",crowd:"Crowd Edit"};
+var EDIT_KIND_LABEL={truss:"Truss Edit",light:"Light Edit",props:"Props Edit",stage:"Stage Edit",crowd:"Crowd Edit",scaffold:"Scaffolding Edit"};
 function activeEditKind(){
   if(trussEditTarget())return "truss";
   if(lightEditTarget())return "light";
   if(propEditTarget())return "props";
   if(stageEditTarget())return "stage";
   if(crowdEditTarget())return "crowd";
+  if(scaffoldEditTarget())return "scaffold";
   return null;
 }
 function syncEditModeChip(){
@@ -18944,6 +19523,7 @@ function turnEditModeOff(kind){
   else if(kind==="props"){propToolArmed=null; render(); toast("Props editing OFF — screens can be edited in the 3D view again; the props are locked.");}
   else if(kind==="stage"){stageToolArmed=null; render(); toast("Stage editing OFF — screens can be edited in the 3D view again; the stage pieces are locked.");}
   else if(kind==="crowd"){crowdToolArmed=null; render(); toast("Crowd editing OFF — screens can be edited in the 3D view again; the crowd packs are locked.");}
+  else if(kind==="scaffold"){scaffoldToolArmed=null; render(); toast("Scaffolding editing OFF — screens can be edited in the 3D view again; the scaffolding is locked.");}
 }
 /* Stage groups — the same model as the prop groups: a stage piece
    belongs to at most one group, a group has its own eye, and a
@@ -19093,9 +19673,10 @@ function trussGroupSelection(m){
    the seed a pre-packs layout migrates FROM: a layout saved with
    the old single crowd loads as ONE pack of the same type with its
    count and settings preserved (see sanitizeModifier). */
-/* Pack types: concert / ground are standing (mixed colours, lively
-   joint animation); corporate / pavilion are seated (muted colours,
-   gentle movement). Corporate sits in neat rows with a centre
+/* Pack types: concert / ground are standing (lively
+   joint animation); corporate / pavilion are seated (gentle
+   movement). Every figure in every pack is fully black — silhouettes
+   only, no colours. Corporate sits in neat rows with a centre
    aisle and chairs; a pavilion pack is stepped seating — concrete
    step tiers rising away from the stage, one step per row, with
    seated rows on the tiers (no roof, no posts). Ground is an open
@@ -19183,8 +19764,9 @@ function crowdScalePack(pk,stW,stD,stCount,f){
 /* One pack's people: the same seeded placement the old crowd used
    (seeded per pack, so rebuilds never reshuffle) — seated types in
    rows (Corporate with a centre aisle), standing types scattered.
-   Each item also carries its colours and its animation pose draws,
-   so the 3D build and the model export draw the SAME crowd. */
+   Each item carries its (always black) colours and its animation
+   pose draws, so the 3D build and the model export draw the SAME
+   crowd. */
 function crowdPackItems(m,pk,bb){
   var t=crowdTypeOf(pk), seated=crowdSeated(t);
   var fr=crowdPackFrame(pk,bb);
@@ -19209,13 +19791,15 @@ function crowdPackItems(m,pk,bb){
     var zcR=fr.z0+fr.D/2, csR=Math.cos(rotR), snR=Math.sin(rotR);
     items.forEach(function(it){var dxR=it.x-fr.cx, dzR=it.z-zcR; it.x=fr.cx+dxR*csR+dzR*snR; it.z=zcR-dxR*snR+dzR*csR});
   }
-  var tops=seated?[0x2e3a4a,0x4a4f57,0x6b7280,0x1f2937,0x8a7f70,0xd8d5cf,0x374151,0x5b4a3f]:[0xef4444,0xf59e0b,0x22c55e,0x3b82f6,0xe879f9,0xfacc15,0xfb7185,0x38bdf8,0xf8fafc,0x111827,0xa3e635,0xfb923c];
-  var legs=seated?[0x23272e,0x2f3640,0x3a3f47,0x1c1f24]:[0x1f2937,0x273549,0x374151,0x3b2f2f,0x243024,0x111827];
-  var skins=[0xf1c27d,0xe0ac69,0xc68642,0x8d5524,0xffdbac,0x6b4423];
+  /* Every crowd figure is FULLY BLACK — head, torso, arms and legs,
+     no colour variation in any pack — so the crowd reads as
+     silhouettes against the lights (and stays black in Render and
+     in the model export, which reads these same fields). There is
+     no crowd colour control anywhere: the colour is fixed here. */
   items.forEach(function(it){
-    it.top=tops[Math.floor(rng()*tops.length)];
-    it.leg=legs[Math.floor(rng()*legs.length)];
-    it.skin=skins[Math.floor(rng()*skins.length)];
+    it.top=0x000000;
+    it.leg=0x000000;
+    it.skin=0x000000;
     var ar=rng();
     it.armUp=seated?(ar<0.08?1:0):(ar<0.45?2:(ar<0.68?1:0));
     it.armPh=rng()*6.28;
@@ -19706,6 +20290,31 @@ function sanitizeModifier(o){
        A fixture with neither field keeps the historic 35° Y turn. */
     p.fixtures=Array.isArray(p.fixtures)?p.fixtures.filter(function(f){return f&&isFinite(f.x)&&isFinite(f.y)&&isFinite(f.z)}).map(function(f){var mdl=(f.model&&FIXTURE_MODELS[f.model])?f.model:null; var rotY=(f.pan!==undefined&&isFinite(+f.pan))?normDeg180(+f.pan):(f.tilt===undefined?35:0); var rotX=isFinite(+f.tilt)?normDeg180(+f.tilt):0; return {x:+f.x,y:+f.y,z:+f.z,pan:Math.round(rotY),tilt:Math.round(rotX),roll:(mdl==="batten"&&isFinite(+f.roll))?Math.round(normDeg180(+f.roll)):0,size:isFinite(+f.size)?clamp(+f.size,0.4,2.5):1,bang:isFinite(+f.bang)?clamp(+f.bang,4,60):null,bstr:isFinite(+f.bstr)?clamp(+f.bstr,5,100):null,blen:(f.blen===null||f.blen===undefined||!isFinite(+f.blen))?null:clamp(+f.blen,1,60),seg:(mdl==="batten"||mdl==="matrix")?null:(f.seg===undefined?null:f.seg),tm:(mdl==="batten"||mdl==="matrix")?null:(f.tm||null),t:+f.t||0,type:(f.type==="spot"||f.type==="wash"||f.type==="beam"||f.type==="bsw")?f.type:((p.ltype==="spot"||p.ltype==="wash"||p.ltype==="bsw")?p.ltype:"beam"),mount:(mdl==="batten"||mdl==="matrix")?null:((f.mount==="top"||f.mount==="stage"||f.mount==="screen")?f.mount:null),model:mdl,fx:mdl?sanitizeFx(mdl,f.fx):null,color:(typeof f.color==="string"&&/^#[0-9a-fA-F]{6}$/.test(f.color))?f.color:null,on:f.on!==false,group:(f.group&&gids[f.group])?f.group:null}}):[];
   }
+  /* Scaffolding: validate the Layher Allround build — bay sizes
+     from the datasheet list only, bay counts, lifts and lift
+     height, the per-lift deck switches, guardrail / bracing /
+     access / load class, and the unit's place on the stage. */
+  if(o.type==="scaffold"){
+    var SCA_BAYS=[0.73,1.09,1.4,1.57,2.07,2.57,3.07];
+    function scaBay(v,dv){v=+v; for(var bi=0;bi<SCA_BAYS.length;bi++)if(Math.abs(SCA_BAYS[bi]-v)<0.005)return SCA_BAYS[bi]; return dv}
+    p.system="layher";
+    p.bayL=scaBay(p.bayL,2.07); p.bayW=scaBay(p.bayW,2.07);
+    p.baysX=isFinite(+p.baysX)?clamp(Math.round(+p.baysX),0,12):0;
+    p.baysZ=isFinite(+p.baysZ)?clamp(Math.round(+p.baysZ),0,12):0;
+    p.lifts=isFinite(+p.lifts)?clamp(Math.round(+p.lifts),1,6):2;
+    p.liftH=[0.5,1,1.5,2].indexOf(+p.liftH)>=0?+p.liftH:2;
+    var dk=Array.isArray(p.decks)?p.decks:[];
+    p.decks=[]; for(var di=0;di<p.lifts;di++)p.decks.push(dk[di]!==false);
+    p.guardrail=p.guardrail!==false;
+    p.bracing=p.bracing!==false;
+    p.access=(p.access==="stair"||p.access==="none")?p.access:"ladder";
+    p.loadClass=(+p.loadClass===4)?4:3;
+    p.x=isFinite(+p.x)?clamp(+p.x,-60,60):0;
+    p.y=isFinite(+p.y)?clamp(+p.y,0,15):0;
+    p.z=isFinite(+p.z)?clamp(+p.z,-60,60):0;
+    p.ry=isFinite(+p.ry)?Math.round(normDeg180(+p.ry)):0;
+    p.us=isFinite(+p.us)?clamp(+p.us,0.25,4):1;
+  }
   /* Props: validate each imported model entry. The embedded model
      data is kept only as a plausible data URL within the embed
      limit — anything else becomes a listed-but-missing prop (its
@@ -19770,11 +20379,89 @@ function sanitizeModifier(o){
   }
   return {id:o.id||uid(),type:o.type,name:o.name||def.label,enabled:o.enabled!==false,params:p};
 }
+/* ══════════ SCAFFOLDING — Layher Allround (Datasheet) ══════════
+   Datasheet figures (Layher Allround, as supplied for this build —
+   labelled "Datasheet" wherever they are shown):
+   • Tube 48.3 mm OD × 3.2 mm wall, yield stress 320 N/mm²,
+     DIN EN 10219-1. Rosettes every 500 mm, up to 8 connections.
+   • Bay lengths 0.73 / 1.09 / 1.40 / 1.57 / 2.07 / 2.57 / 3.07 m,
+     max bay 4.144 m.
+   • Permissible vertical load per standard: 45 kN at a 2.0 m lift,
+     60 kN at 1.5 m, 70 kN at 1.0 m.
+   • Steel deck load: 18.0 kN/m² at 1.57 m bay, 11.4 at 2.07 m,
+     7.5 at 2.57 m, 5.0 at 3.07 m, 2.0 at 4.14 m.
+   • Load classes EN 12811-1: Class 3 = 2.0 kN/m², Class 4 = 3.0.
+   • Guardrail 99 cm, toeboard 15 cm. Layher event podiums on the
+     same kit: up to 7.5 kN/m², height up to 10 m.
+   Anything worked out from the layout (part counts, tube length,
+   tube steel weight, deck area) is labelled "Calculated". The tube
+   steel weight uses 3.56 kg/m, itself calculated from the
+   datasheet tube section (48.3 × 3.2 mm at 7 850 kg/m³). */
+var SCAFFOLD_BAY_LENGTHS=[0.73,1.09,1.4,1.57,2.07,2.57,3.07];
+var SCAFFOLD_STD_LOAD={ "2":45, "1.5":60, "1":70 }; /* kN per standard, by lift height (m) — Datasheet */
+var SCAFFOLD_DECK_LOAD={ "1.57":18.0, "2.07":11.4, "2.57":7.5, "3.07":5.0, "4.14":2.0 }; /* kN/m², by bay length (m) — Datasheet */
+var SCAFFOLD_TUBE_KGM=3.56; /* Calculated from the datasheet tube section */
+function scaffoldCalc(m){
+  var p=m.params;
+  var nx=clamp(Math.round(+p.baysX||0),0,12), nz=clamp(Math.round(+p.baysZ||0),0,12);
+  var lifts=clamp(Math.round(+p.lifts||1),1,6), liftH=+p.liftH||2;
+  var bayL=+p.bayL||2.07, bayW=+p.bayW||2.07;
+  var H=lifts*liftH, L=nx*bayL, W=nz*bayW;
+  var empty=(nx<1||nz<1);
+  var standards=empty?0:(nx+1)*(nz+1);
+  var ledgers=empty?0:nx*(nz+1)*lifts;
+  var transoms=empty?0:nz*(nx+1)*lifts;
+  var braces=0;
+  if(!empty&&p.bracing)braces=lifts*(2*nx+2*nz);
+  var deckedLifts=0, decksArr=Array.isArray(p.decks)?p.decks:[];
+  for(var di=0;di<lifts;di++)if(decksArr[di]!==false)deckedLifts++;
+  if(empty)deckedLifts=0;
+  var decks=deckedLifts*nx*nz;
+  var perim=empty?0:(2*nx+2*nz);
+  var guardrails=(!empty&&p.guardrail)?perim*2:0; /* two rail levels: mid rail + 0.99 m top guardrail (Datasheet) */
+  var toeboards=(!empty&&p.guardrail)?perim:0;
+  var ladders=(!empty&&p.access==="ladder")?1:0;
+  var stairs=(!empty&&p.access==="stair")?lifts:0; /* one flight per lift */
+  var deckArea=Math.round(deckedLifts*L*W*100)/100;
+  var diagLen=Math.sqrt(Math.pow((bayL+bayW)/2,2)+Math.pow(liftH,2));
+  var tubeLen=standards*H + ledgers*bayL + transoms*bayW + braces*diagLen + guardrails*((bayL+bayW)/2);
+  var tubeKg=tubeLen*SCAFFOLD_TUBE_KGM;
+  var stdLoad=(SCAFFOLD_STD_LOAD[String(liftH)]!==undefined)?SCAFFOLD_STD_LOAD[String(liftH)]:null;
+  var deckLoad=(SCAFFOLD_DECK_LOAD[String(bayL)]!==undefined)?SCAFFOLD_DECK_LOAD[String(bayL)]:null;
+  var classLoad=(+p.loadClass===4)?3.0:2.0;
+  return {empty:empty,nx:nx,nz:nz,lifts:lifts,liftH:liftH,bayL:bayL,bayW:bayW,H:H,L:L,W:W,
+    standards:standards,baseJacks:standards,ledgers:ledgers,transoms:transoms,braces:braces,
+    decks:decks,deckedLifts:deckedLifts,guardrails:guardrails,toeboards:toeboards,
+    ladders:ladders,stairs:stairs,deckArea:deckArea,tubeLen:Math.round(tubeLen*10)/10,
+    tubeKg:Math.round(tubeKg*10)/10,stdLoad:stdLoad,deckLoad:deckLoad,classLoad:classLoad};
+}
+function scaffoldStatusText(m){
+  var c=scaffoldCalc(m);
+  if(c.empty)return "Empty container — zero bays. Set the bays along length / width to build the scaffold.";
+  return "Datasheet: permissible vertical load per standard "+(c.stdLoad!==null?(c.stdLoad+" kN at a "+c.liftH+" m lift"):"not listed for a "+c.liftH+" m lift (70 kN at 1.0 m · 60 kN at 1.5 m · 45 kN at 2.0 m)")+" · steel deck load "+(c.deckLoad!==null?(c.deckLoad.toFixed(1)+" kN/m² at a "+c.bayL+" m bay"):"not listed for a "+c.bayL+" m bay")+" · Load Class "+(+m.params.loadClass||3)+" = "+c.classLoad.toFixed(1)+" kN/m² (EN 12811-1).";
+}
+function scaffoldSizeText(m){
+  var c=scaffoldCalc(m);
+  if(c.empty)return "Footprint: no bays yet — total height "+(Math.round(c.H*100)/100)+" m of lifts with no footprint.";
+  return "Footprint "+fmtMeasure(c.L)+" × "+fmtMeasure(c.W)+" · total height "+fmtMeasure(c.H)+" ("+c.lifts+" lift"+(c.lifts===1?"":"s")+" × "+fmtMeasure(c.liftH)+") · parts (Calculated): "+c.standards+" standards · "+c.ledgers+" ledgers · "+c.transoms+" transoms · "+c.braces+" braces · "+c.decks+" decks · "+c.baseJacks+" base jacks · "+c.guardrails+" guardrails · "+c.toeboards+" toeboards · deck area "+fmtAreaM2(c.deckArea)+" · tube steel "+c.tubeKg+" kg.";
+}
+function scaffoldSpecLines(m){
+  var p=m.params, c=scaffoldCalc(m), out=[];
+  out.push("  Scaffolding — LAYHER ALLROUND (Datasheet: tube 48.3 mm OD × 3.2 mm wall, yield stress 320 N/mm², DIN EN 10219-1; rosettes every 500 mm, up to 8 connections per rosette; guardrail 99 cm, toeboard 15 cm):");
+  if(c.empty){out.push("  Empty container — zero bays. Set the bays along length / width in its panel to build the scaffold."); return out}
+  out.push("  Build: "+c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)+" — footprint "+fmtMeasure(c.L)+" × "+fmtMeasure(c.W)+" · "+c.lifts+" lift(s) of "+fmtMeasure(c.liftH)+" · total height "+fmtMeasure(c.H)+" · access: "+(p.access==="stair"?"stair tower (1 flight per lift)":p.access==="ladder"?"ladder":"none")+" · load class "+(+p.loadClass||3)+" (EN 12811-1: "+c.classLoad.toFixed(1)+" kN/m², Datasheet)");
+  out.push("  Datasheet permissible loads: "+(c.stdLoad!==null?("vertical load per standard "+c.stdLoad+" kN at a "+c.liftH+" m lift"):"no per-standard figure listed for a "+c.liftH+" m lift (Datasheet lists 70 kN at 1.0 m, 60 kN at 1.5 m, 45 kN at 2.0 m)")+" · "+(c.deckLoad!==null?("steel deck "+c.deckLoad.toFixed(1)+" kN/m² at a "+c.bayL+" m bay"):"no steel-deck figure listed for a "+c.bayL+" m bay (Datasheet lists 18.0 kN/m² at 1.57 m, 11.4 at 2.07 m, 7.5 at 2.57 m, 5.0 at 3.07 m, 2.0 at 4.14 m)"));
+  out.push("  Parts (Calculated): "+c.standards+" standards · "+c.ledgers+" ledgers · "+c.transoms+" transoms · "+c.braces+" diagonal braces · "+c.decks+" steel decks ("+c.deckedLifts+" decked lift(s)) · "+c.baseJacks+" base jacks · "+c.guardrails+" guardrails · "+c.toeboards+" toeboards"+(c.ladders?" · 1 ladder":"")+(c.stairs?" · "+c.stairs+" stair flight(s)":""));
+  out.push("  Totals (Calculated): tube steel weight "+c.tubeKg+" kg (tube only, "+SCAFFOLD_TUBE_KGM+" kg/m from the datasheet tube section — decks and fittings excluded) · total deck area "+fmtAreaM2(c.deckArea));
+  out.push("  Note: these are permissible loads for the component, not a guarantee for the whole stage — a qualified designer must check the full structure, bracing and ground on site.");
+  return out;
+}
 function modSubLabel(m){
   var p=m.params;
   if(m.type==="crowd"){var cps=crowdPacks(m); return cps.length+" pack"+(cps.length===1?"":"s")+" · "+crowdTotalPeople(m)+" people"}
   if(m.type==="light")return (p.custom?("Custom · "+(p.fixtures||[]).length+" fixtures"):Math.round(+p.count||0)+" × "+lightTypeLabel(p.ltype))+" · "+(p.beamEndless===false?("beams "+(+p.beamLen||12)+" m"):"beams endless");
   if(m.type==="truss")return p.custom?("Custom · "+(p.segs||[]).length+" seg · "+(p.trussType==="tri"?"Triangular":p.trussType==="ladder"?"Ladder":"Box")+" "+(+p.section||290)):trussMethodName(p.method)+" · "+(p.trussType==="tri"?"Triangular":p.trussType==="ladder"?"Ladder":"Box")+" "+(+p.section||290);
+  if(m.type==="scaffold"){var scL=scaffoldCalc(m); return scL.empty?"Layher Allround · 0 bays (empty)":("Layher Allround · "+scL.nx+" × "+scL.nz+" bays · "+scL.lifts+" lift"+(scL.lifts===1?"":"s")+" · H "+fmtMeasure(scL.H))}
   if(m.type==="speakers")return Math.round(+p.cabs||0)+" / side";
   if(m.type==="haze")return Math.round(+p.density||0)+"%";
   if(m.type==="props")return (p.items||[]).length+" prop"+((p.items||[]).length===1?"":"s")+" · 3D only";
@@ -19791,6 +20478,7 @@ function modSummary(m){
     if(p.method==="stacked")return tn+" · ground-stacked behind the wall · base "+fmtMeasure(+p.baseDepth||0)+" deep · ballast "+Math.round(+p.ballast||0)+" kg/base · wall "+Math.round(tc.cabWeight)+" kg to the floor";
     return tn+" · "+trussMethodName(p.method).toLowerCase()+" · underside "+fmtMeasure(+p.height||0)+" · "+(tc.span>0?fmtMeasure(tc.span)+" span":"auto span")+" · "+Math.round(tc.total)+" kg on "+Math.round(+p.hoists||0)+" hoist(s)";
   }
+  if(m.type==="scaffold"){var scS=scaffoldCalc(m); return scS.empty?"Layher Allround scaffolding · empty container (zero bays) — 3D view only":("Layher Allround scaffolding · "+scS.nx+" × "+scS.nz+" bays ("+fmtMeasure(scS.bayL)+" × "+fmtMeasure(scS.bayW)+") · "+scS.lifts+" lift(s) × "+fmtMeasure(scS.liftH)+" = "+fmtMeasure(scS.H)+" high · "+scS.standards+" standards · "+scS.ledgers+" ledgers · "+scS.transoms+" transoms · "+scS.braces+" braces · "+scS.decks+" steel decks · "+scS.baseJacks+" base jacks · "+scS.guardrails+" guardrails · "+scS.toeboards+" toeboards · deck area "+fmtAreaM2(scS.deckArea)+" (Calculated) · tube steel "+scS.tubeKg+" kg (Calculated) — 3D view only")}
   if(m.type==="speakers")return "line arrays · "+Math.round(+p.cabs||0)+" cabinets per side · hung at "+fmtMeasure(+p.height||0);
   if(m.type==="haze")return "atmosphere haze · density "+Math.round(+p.density||0)+"%";
   if(m.type==="props")return "imported 3D props on the stage (3D view only — never in the 2D layout, screen tables or exports): "+((p.items||[]).map(function(it){return it.name}).join(", ")||"none yet");
@@ -20509,7 +21197,7 @@ function addModifier(type){
      is inert for Starter anyway; this is the belt-and-braces guard
      for every other path that could add one. */
   if(!planCanModifiers()){
-    toast("Modifiers are locked on the Starter plan — Upgrade to Advance to unlock Truss, Lighting, Crowd, Speakers, Haze, Props and Stage Settings.");
+    toast("Modifiers are locked on the Starter plan — Upgrade to Advance to unlock Truss, Scaffolding, Lighting, Crowd, Speakers, Haze, Props and Stage Settings.");
     openPlanModal();
     return;
   }
@@ -20556,7 +21244,9 @@ function addModifier(type){
   }
   state.modifiers.push(m); selModId=m.id;
   render();
-  toast(type==="truss"
+  toast(type==="scaffold"
+    ? name+" added — an empty scaffolding container: zero bays, nothing is built yet. Set the bays along length / width in its panel below to build the Layher Allround scaffold in the 3D view."
+    : type==="truss"
     ? name+" added — an empty truss container: no truss system is placed yet. Add one with Suggest truss, Add segment or Draw path in its panel below."
     : type==="stage"
     ? name+" added — your stage platform starts as the Main deck piece, the size of the deck it replaces. Add boxes, steps and round platforms in its panel below, organise them in Layers, and press Edit to move / rotate / scale every piece in the 3D view."
@@ -20715,6 +21405,35 @@ function buildModParams(m){
         : mRoll(m,"stack","Stacking — ground support",
             '<div class="grid2">'+mNum("baseDepth","Base plate depth · m",0.6,3,0.1)+mNum("clampEvery","Back clamps every · m of height",0.5,3,0.25)+'</div>'
             +'<div style="margin-top:8px">'+mNum("ballast","Ballast · kg per base (system calc)",0,5000,25)+'</div>')):"");
+  }else if(m.type==="scaffold"){
+    var scfOn=scaffoldToolArmed===m.id;
+    var bayOptsS=function(cur){return SCAFFOLD_BAY_LENGTHS.map(function(b){return '<option value="'+b+'"'+(Math.abs(b-cur)<0.005?" selected":"")+'>'+b.toFixed(2)+" m</option>"}).join("")};
+    var deckTogS="";
+    for(var dliS=0;dliS<(clamp(Math.round(+p.lifts||1),1,6));dliS++){var dOnS=!(p.decks&&p.decks[dliS]===false); deckTogS+='<div class="pref-row"><div class="pr-t"><b>Steel deck — lift '+(dliS+1)+'</b></div><button type="button" class="tgl'+(dOnS?" on":"")+'" data-scafdeck="'+dliS+'">'+(dOnS?"On":"Off")+'</button></div>'}
+    h+='<button type="button" class="btn btn-create'+(scfOn?" on":"")+'" data-modbtn="editScaffold" aria-pressed="'+(scfOn?"true":"false")+'">Edit</button>'
+      +'<p class="mod-note" data-scafedit-status>'+(scfOn
+        ? "Scaffolding editing is ON — screens are locked."
+        : "Scaffolding editing is OFF — the scaffolding is locked.")+'</p>'
+      +mRoll(m,"system","System — Layher Allround",
+        '<div class="field"><span>System</span><input type="text" value="Layher Allround" disabled></div>'
+        +'<p class="mod-note">Datasheet: tube 48.3 mm OD × 3.2 mm wall · yield stress 320 N/mm² · DIN EN 10219-1 · rosettes every 500 mm on the standard, up to 8 connections per rosette · bay lengths 0.73 / 1.09 / 1.40 / 1.57 / 2.07 / 2.57 / 3.07 m, max bay 4.144 m · guardrail 99 cm · toeboard 15 cm · Layher event podiums on the same kit: permissible load up to 7.5 kN/m², height up to 10 m.</p>')
+      +mRoll(m,"bays","Bays & lifts",
+        '<div class="grid2"><div class="field"><span>Bay length · m (Datasheet list)</span><select data-mparam="bayL">'+bayOptsS(+p.bayL)+'</select></div><div class="field"><span>Bay width · m (Datasheet list)</span><select data-mparam="bayW">'+bayOptsS(+p.bayW)+'</select></div></div>'
+        +'<div class="grid2" style="margin-top:8px">'+mNum("baysX","Bays along length",0,12,1)+mNum("baysZ","Bays along width",0,12,1)+'</div>'
+        +'<div style="margin-top:8px">'+mLab("Lift height · m")+mSeg("liftH",[["0.5","0.5 m"],["1","1.0 m"],["1.5","1.5 m"],["2","2.0 m"]])+'</div>'
+        +'<div style="margin-top:8px">'+mNum("lifts","Number of lifts",1,6,1)+'</div>'
+        +'<p class="mod-note" data-scafsize>'+escapeHtml(scaffoldSizeText(m))+'</p>')
+      +mRoll(m,"deck","Decks, guardrails & access",
+        deckTogS
+        +mToggle("guardrail","Guardrails + toeboards","")
+        +mToggle("bracing","Diagonal bracing","")
+        +'<div style="margin-top:8px">'+mLab("Access")+mSeg("access",[["ladder","Ladder"],["stair","Stair"],["none","None"]])+'</div>'
+        +'<div style="margin-top:8px">'+mLab("Load class · EN 12811-1 (Datasheet)")+mSeg("loadClass",[["3","Class 3 · 2.0 kN/m²"],["4","Class 4 · 3.0 kN/m²"]])+'</div>')
+      +mRoll(m,"pos","Position",
+        '<div class="grid2">'+mNum("x","Position X · m",-60,60,0.1)+mNum("z","Position Z · m",-60,60,0.1)+'</div>'
+        +'<div class="grid2" style="margin-top:8px">'+mNum("y","Base Y · m",0,15,0.1)+mNum("ry","Rotation Y · °",-180,180,1)+'</div>')
+      +'<p class="mod-note" data-scafstatus>'+escapeHtml(scaffoldStatusText(m))+'</p>'
+      +'<p class="mod-note">Note: these are permissible loads for the component, not a guarantee for the whole stage — a qualified designer must check the full structure, bracing and ground on site.</p>';
   }else if(m.type==="speakers"){
     h+=mRoll(m,"arrays","Line arrays",
       '<div class="grid2">'+mNum("cabs","Cabinets per side",1,14,1)+mNum("height","Hang height · m",3,11,0.5)+'</div>'
@@ -20844,6 +21563,24 @@ function syncModParamValues(m){
     if(es6)es6.textContent=crOn2
       ? "Crowd editing is ON — screens are locked."
       : "Crowd editing is OFF — crowd packs are locked.";
+  }
+  if(m.type==="scaffold"){
+    /* Same live sync as the other Edit toggles, plus the scaffold
+       status / size lines and the per-lift deck switches, which
+       follow the params without a panel rebuild. */
+    var scfOn2=scaffoldToolArmed===m.id;
+    var eb7=box.querySelector('[data-modbtn="editScaffold"]');
+    if(eb7){eb7.classList.toggle("on",scfOn2); eb7.setAttribute("aria-pressed",String(scfOn2))}
+    var es7=box.querySelector("[data-scafedit-status]");
+    if(es7)es7.textContent=scfOn2
+      ? "Scaffolding editing is ON — screens are locked."
+      : "Scaffolding editing is OFF — the scaffolding is locked.";
+    var ss7=box.querySelector("[data-scafstatus]"); if(ss7)ss7.textContent=scaffoldStatusText(m);
+    var sz7=box.querySelector("[data-scafsize]"); if(sz7)sz7.textContent=scaffoldSizeText(m);
+    box.querySelectorAll("[data-scafdeck]").forEach(function(tb){
+      var dOn7=!(m.params.decks&&m.params.decks[+tb.getAttribute("data-scafdeck")]===false);
+      tb.classList.toggle("on",dOn7); tb.textContent=dOn7?"On":"Off";
+    });
   }
   syncCustomLists(m);
   if(m.type==="crowd")syncCrowdLists(m);
@@ -21266,7 +22003,7 @@ function syncCrowdLists(m){
       +'<div class="pref-row" style="margin-top:10px"><div class="pr-t"><b>Animate this pack</b></div><button type="button" class="tgl'+(spk.animate!==false?" on":"")+'" data-cparam="animate" data-cidx="'+ci+'">'+(spk.animate!==false?"On":"Off")+'</button></div>'
       +'<div class="zoomrow"><span style="font-size:11px;color:var(--muted);min-width:74px;flex:none">'+(seated?"Movement":"Animation speed")+'</span><input type="range" data-cparam="movement" data-cidx="'+ci+'" min="0" max="100" step="1" value="'+Math.round(+spk.movement||0)+'"><output>'+Math.round(+spk.movement||0)+'%</output></div>'
       +'<div class="field" style="margin-top:6px"><span>Group</span><select data-cgroup="'+ci+'"><option value=""'+(!spk.group?" selected":"")+'>Ungrouped</option>'+cgroups.map(function(g){return '<option value="'+g.id+'"'+(spk.group===g.id?" selected":"")+'>'+escapeHtml(g.name)+'</option>'}).join("")+'</select></div>'
-      +(st==="pavilion"?'<p class="mod-note">Pavilion — stepped seating: concrete step tiers rising away from the stage, each row one step higher than the row in front, with seated rows on the tiers. No roof or posts.</p>':st==="ground"?'<p class="mod-note">Ground standing — an open standing area on the floor in front of the stage. No structure.</p>':st==="corporate"?'<p class="mod-note">Corporate seated — neat rows with a centre aisle, chairs included, muted colours and gentle movement.</p>':'<p class="mod-note">Concert standing — mixed colours and lively movement, arms waving.</p>')
+      +(st==="pavilion"?'<p class="mod-note">Pavilion — stepped seating: concrete step tiers rising away from the stage, each row one step higher than the row in front, with seated rows on the tiers. No roof or posts.</p>':st==="ground"?'<p class="mod-note">Ground standing — an open standing area on the floor in front of the stage. No structure.</p>':st==="corporate"?'<p class="mod-note">Corporate seated — neat rows with a centre aisle, chairs included, gentle movement. Every figure is fully black — a silhouette against the lights.</p>':'<p class="mod-note">Concert standing — lively movement, arms waving. Every figure is fully black — a silhouette against the lights.</p>')
       +'</div>';
   }
 }
@@ -21431,6 +22168,13 @@ function syncModifierPanel(){
     var cm3=modById(crowdToolArmed);
     if(selModId!==crowdToolArmed||!cm3||!cm3.enabled)crowdToolArmed=null;
   }
+  /* Same anti-stuck rule for scaffold editing: it belongs to the
+     selected Scaffolding modifier — selecting another modifier, or
+     the scaffolding being removed / switched off, ends the mode. */
+  if(scaffoldToolArmed){
+    var sm7=modById(scaffoldToolArmed);
+    if(selModId!==scaffoldToolArmed||!sm7||!sm7.enabled)scaffoldToolArmed=null;
+  }
   if(trussToolArmed&&lightToolArmed)lightToolArmed=null;
   syncTrussBar();
   syncEditModeChip();
@@ -21441,7 +22185,7 @@ function syncModifierPanel(){
   var sig=state.modifiers.map(function(m){return m.id+":"+(m.enabled?1:0)+":"+m.name+":"+modSubLabel(m)}).join("|")+"#"+(selModId||"");
   if(sig!==syncModifierPanel._ss){syncModifierPanel._ss=sig; buildModStack()}
   var m=modById(selModId);
-  var key=m?(m.id+":"+m.type+":"+(m.params.sim||"")+":"+(m.params.method||"")+":"+(m.params.env||"")+":"+(m.params.custom?1:0)+":"+(m.params.ltype||"")+":"+(m.params.category||"")+":"+(trussDraw&&trussDraw.mid===m.id?"D":"")):"none";
+  var key=m?(m.id+":"+m.type+":"+(m.params.sim||"")+":"+(m.params.method||"")+":"+(m.params.env||"")+":"+(m.params.custom?1:0)+":"+(m.params.ltype||"")+":"+(m.params.category||"")+":"+(m.params.lifts!=null?m.params.lifts:"")+":"+(trussDraw&&trussDraw.mid===m.id?"D":"")):"none";
   if(key!==syncModifierPanel._pk){syncModifierPanel._pk=key; buildModParams(m)}
   else if(m)syncModParamValues(m);
 }
@@ -21523,7 +22267,7 @@ function createTrussCategory(m,cat){
   fresh.forEach(function(s){s.group=gid; s.on=true; p.segs.push(s)});
   segSelSet={}; fresh.forEach(function(s,i){segSelSet[firstIdx+i]=true});
   modSelSeg=firstIdx; segSelAnchor=firstIdx;
-  trussToolArmed=m.id; propToolArmed=null; stageToolArmed=null; crowdToolArmed=null; trussDraw=null; trussPreviewOn=false;
+  trussToolArmed=m.id; propToolArmed=null; stageToolArmed=null; crowdToolArmed=null; scaffoldToolArmed=null; trussDraw=null; trussPreviewOn=false;
   if(!view3dOpen)toggle3D(true);
   setVMode("edit");
   render();
@@ -21579,7 +22323,7 @@ function modBtnAction(m,act){
       /* Pressed → crowd editing ON. Only one edit mode at a time:
          arming crowd ends any truss / light / props / stage
          editing, exactly as arming one of those ends this. */
-      trussToolArmed=null; trussDraw=null; lightToolArmed=null; propToolArmed=null; stageToolArmed=null;
+      trussToolArmed=null; trussDraw=null; lightToolArmed=null; propToolArmed=null; stageToolArmed=null; scaffoldToolArmed=null;
       crowdToolArmed=m.id;
       if(!view3dOpen)toggle3D(true);
       setVMode("edit");
@@ -21639,7 +22383,7 @@ function modBtnAction(m,act){
       /* Pressed → stage editing ON. Only one edit mode at a time:
          arming stage editing ends any truss / light / props
          editing, exactly as arming one of those ends this. */
-      trussToolArmed=null; trussDraw=null; lightToolArmed=null; propToolArmed=null; crowdToolArmed=null;
+      trussToolArmed=null; trussDraw=null; lightToolArmed=null; propToolArmed=null; crowdToolArmed=null; scaffoldToolArmed=null;
       stageToolArmed=m.id;
       if(!view3dOpen)toggle3D(true);
       setVMode("edit");
@@ -21656,6 +22400,28 @@ function modBtnAction(m,act){
       var sgn="Group "+(m.params.groups.length+1);
       m.params.groups.push({id:uid(),name:sgn,on:true});
       render(); toast(sgn+" added — set a stage piece's Group in its card under Layers; the group's eye there hides / shows all its pieces together.");
+      return;
+    }
+  }
+  if(m.type==="scaffold"){
+    if(act==="editScaffold"){
+      if(scaffoldToolArmed===m.id){
+        /* Pressed again → scaffolding editing OFF: the handles go
+           away, the unit locks, and the screens edit again. */
+        scaffoldToolArmed=null;
+        render();
+        toast("Scaffolding editing OFF — screens can be edited in the 3D view again; the scaffolding is locked.");
+        return;
+      }
+      /* Pressed → scaffolding editing ON. Only one edit mode at a
+         time: arming scaffolding editing ends any other section's
+         editing, exactly as arming one of those ends this. */
+      trussToolArmed=null; trussDraw=null; lightToolArmed=null; propToolArmed=null; stageToolArmed=null; crowdToolArmed=null;
+      scaffoldToolArmed=m.id;
+      if(!view3dOpen)toggle3D(true);
+      setVMode("edit");
+      render();
+      toast("Scaffolding editing ON — only the scaffolding can be moved / rotated / scaled in the 3D view; the screens and other modifiers are locked. It uses the normal Position / Rotate / Scale gizmo buttons. Press Edit again to go back to editing screens.");
       return;
     }
   }
@@ -21698,7 +22464,7 @@ function modBtnAction(m,act){
         modSelSeg=m.params.segs.length?0:-1;
         segSelSet={}; segSelAnchor=-1; if(modSelSeg>=0)segSelOnly(modSelSeg);
       }
-      trussToolArmed=m.id; propToolArmed=null; stageToolArmed=null; crowdToolArmed=null; trussPreviewOn=false; /* hand-editing the truss supersedes the suggestion ghost */
+      trussToolArmed=m.id; propToolArmed=null; stageToolArmed=null; crowdToolArmed=null; scaffoldToolArmed=null; trussPreviewOn=false; /* hand-editing the truss supersedes the suggestion ghost */
       if(!view3dOpen)toggle3D(true);
       setVMode("edit");
       render();
@@ -21892,7 +22658,7 @@ function modBtnAction(m,act){
           modSelFix=m.params.fixtures.length?0:-1;
         }
       }
-      lightToolArmed=m.id; propToolArmed=null; stageToolArmed=null; crowdToolArmed=null;
+      lightToolArmed=m.id; propToolArmed=null; stageToolArmed=null; crowdToolArmed=null; scaffoldToolArmed=null;
       /* Light Edit has no Scale: if the Scale gizmo was active, fall
          back to Move (the Scale button is disabled while armed). */
       if(state.gizmoMode==="scale"){state.gizmoMode="move"; syncGizmoControls()}
@@ -21995,7 +22761,7 @@ function modBtnAction(m,act){
     /* Pressed → props editing ON. Only one edit mode at a time:
        arming props ends any truss / light editing, exactly as
        arming one of those ends this. */
-    trussToolArmed=null; trussDraw=null; lightToolArmed=null; stageToolArmed=null; crowdToolArmed=null;
+    trussToolArmed=null; trussDraw=null; lightToolArmed=null; stageToolArmed=null; crowdToolArmed=null; scaffoldToolArmed=null;
     propToolArmed=m.id;
     if(!view3dOpen)toggle3D(true);
     setVMode("edit");
@@ -22609,6 +23375,16 @@ function modParamEvent(ev){
     else return;
   }else if(el.type==="color"||el.tagName==="SELECT"){m.params[k]=el.value}
   else{var v=parseFloat(el.value); if(isNaN(v))return; if(isModLenKey(k))v=fromMeasureVal(v); m.params[k]=v}
+  if(m.type==="scaffold"){
+    /* Seg buttons and selects write strings — the scaffold's bay,
+       lift and class values are numbers, so coerce them back, and
+       keep the per-lift deck switches the length of the lifts. */
+    if(k==="bayL"||k==="bayW"||k==="liftH")m.params[k]=parseFloat(m.params[k]);
+    if(k==="loadClass")m.params[k]=(+m.params[k]===4)?4:3;
+    if(k==="baysX"||k==="baysZ")m.params[k]=clamp(Math.round(+m.params[k]||0),0,12);
+    if(k==="lifts"){m.params[k]=clamp(Math.round(+m.params[k]||1),1,6); if(!Array.isArray(m.params.decks))m.params.decks=[]; while(m.params.decks.length<m.params[k])m.params.decks.push(true); m.params.decks.length=m.params[k]}
+    if(k==="ry")m.params[k]=Math.round(normDeg180(+m.params[k]||0));
+  }
   if(m.type==="truss"&&k==="method")m.params.support=m.params.method==="flown"?"flown":"goalpost";
   /* Create Truss: Straight is a plain straight system (any old
      beam curve is cleared); Circular is a ring system — the preset
@@ -22682,6 +23458,28 @@ function modParamEvent(ev){
   if(k==="custom"&&m.params.custom&&m.type==="truss")toast("Custom truss on — seeded from your "+trussMethodName(m.params.method||"goalpost")+" preset as "+m.params.segs.length+" editable segments. Open the 3D view in Edit mode: drag segments, use the truss gizmo on the selected segment, drag the green ball to extend from the gray start ball, or Draw path in the panel.");
   if(k==="custom"&&m.params.custom&&m.type==="light")toast("Custom placement on — fixtures are individual now, one added to start: on the TOP truss when the layout has a truss, on top of the screen when it has none. Drag it along the bar in the 3D Edit view.");
 }
+/* Scaffolding per-lift deck switches — each writes its own lift's
+   entry in the modifier's decks array (the generic data-mparam
+   path writes single keys only). */
+$("modParams").addEventListener("click",function(ev){
+  var tb=ev.target.closest?ev.target.closest("[data-scafdeck]"):null; if(!tb)return;
+  var m=modById(selModId); if(!m||m.type!=="scaffold")return;
+  var di=+tb.getAttribute("data-scafdeck");
+  if(!Array.isArray(m.params.decks))m.params.decks=[];
+  while(m.params.decks.length<clamp(Math.round(+m.params.lifts||1),1,6))m.params.decks.push(true);
+  m.params.decks[di]=!(m.params.decks[di]!==false);
+  render();
+  toast("Steel deck on lift "+(di+1)+(m.params.decks[di]?" — ON: that lift is decked.":" — OFF: that lift has no deck."));
+});
+/* Scaffolding bay selects — the generic data-mparam path handles
+   them on input; this change listener is the belt-and-braces route
+   so a bay pick always lands, in every browser. */
+$("modParams").addEventListener("change",function(ev){
+  var sl=ev.target.closest?ev.target.closest("select[data-mparam]"):null; if(!sl)return;
+  var m=modById(selModId); if(!m||m.type!=="scaffold")return;
+  var k=sl.getAttribute("data-mparam");
+  if(k==="bayL"||k==="bayW"){m.params[k]=parseFloat(sl.value); render()}
+});
 $("modParams").addEventListener("input",modParamEvent);
 $("modParams").addEventListener("click",modParamEvent);
 /* Release-time resync for the ring Radius / Arc controls: their
@@ -23020,8 +23818,8 @@ function ensureModMats(){
   spkFrontMat=new THREE.MeshStandardMaterial({color:0x2a3342,roughness:0.9,metalness:0.05});
   fixMat=new THREE.MeshStandardMaterial({color:0x11151c,roughness:0.5,metalness:0.6});
   chairMat=new THREE.MeshStandardMaterial({color:0x232f3e,roughness:0.85});
-  crowdBodyMat=new THREE.MeshStandardMaterial({roughness:0.85,metalness:0});
-  crowdHeadMat=new THREE.MeshStandardMaterial({roughness:0.65,metalness:0});
+  crowdBodyMat=new THREE.MeshStandardMaterial({color:0x000000,roughness:0.85,metalness:0});
+  crowdHeadMat=new THREE.MeshStandardMaterial({color:0x000000,roughness:0.65,metalness:0});
   ballastMat=new THREE.MeshStandardMaterial({color:0x39424f,roughness:0.95,metalness:0.05});
   barMat=new THREE.MeshStandardMaterial({color:0x2b3442,roughness:0.45,metalness:0.7});
   /* Custom-build editing: colour-coded end balls (drawn on top, like
@@ -23208,9 +24006,9 @@ function cylBetween(a,b,r,mat,parent){
 }
 /* ── Crowd ───────────────────────────────────────────────────────────
    Every pack of a Crowd modifier builds its own audience block:
-   Concert / Ground packs stand (scattered, mixed colours, lively),
+   Concert / Ground packs stand (scattered, lively),
    Corporate packs sit in neat rows with a centre aisle and chairs
-   (muted colours, gentle), Pavilion packs sit on stepped seating —
+   (gentle), Pavilion packs sit on stepped seating —
    concrete step tiers rising away from the stage, one step per row.
    Packs whose
    eye (or whose group's eye) is off are not built at all.
@@ -25050,8 +25848,152 @@ function buildLightsPreviewGroup(m,bb){
   T3.lightPreview=g;
   return g;
 }
+/* ── Scaffolding ─────────────────────────────────────────────────
+   A Layher Allround unit built from REAL parts in the stage frame:
+   base jacks (plate + stem), vertical standards with a rosette
+   collar every 500 mm (Datasheet), horizontal ledgers and transoms
+   at every lift level, diagonal braces across every perimeter bay
+   of every lift, steel decks on the lifts whose deck switch is on,
+   guardrails at 0.5 m and 0.99 m (Datasheet) with 15 cm toeboards
+   (Datasheet) around the top deck, and a ladder or stair access.
+   One modifier = one unit: it stands at its params x / y / z, turns
+   on ry and scales on us. Only while Scaffolding editing is ON does
+   the unit get a hit box (kind "scel") and the scaffold gizmo (kind
+   "scgizmo"), on the stage-piece pattern. 3D only — nothing here is
+   read by the 2D layout, ports, cabling or PNG export. */
+var scafDeckMat=null, scafToeMat=null;
+function buildScaffoldGroup(m,bb){
+  ensureModMats();
+  if(!scafDeckMat){
+    scafDeckMat=new THREE.MeshStandardMaterial({color:0x707a88,roughness:0.55,metalness:0.7});
+    scafToeMat=new THREE.MeshStandardMaterial({color:0x8a6b46,roughness:0.9,metalness:0});
+  }
+  var p=m.params, c=scaffoldCalc(m);
+  var g=new THREE.Group();
+  if(c.empty)return g;
+  var us=clamp(+p.us||1,0.25,4);
+  var pivot=new THREE.Group();
+  pivot.position.set(+p.x||0,+p.y||0,+p.z||0);
+  pivot.rotation.y=(+p.ry||0)*Math.PI/180;
+  pivot.scale.setScalar(us);
+  g.add(pivot);
+  var R=0.02415; /* 48.3 mm OD tube (Datasheet) */
+  var x0=-c.L/2, z0=-c.W/2;
+  function tube(ax,ay,az,bx,by,bz,r,mat){cylBetween(v3(ax,ay,az),v3(bx,by,bz),r||R,mat||trussMat,pivot)}
+  var i,j,lf;
+  /* Base jacks + standards, with a rosette collar every 500 mm */
+  for(i=0;i<=c.nx;i++)for(j=0;j<=c.nz;j++){
+    var sx=x0+i*c.bayL, sz=z0+j*c.bayW;
+    var plate=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.02,0.15),ballastMat);
+    plate.position.set(sx,0.01,sz); plate.userData.ownGeo=true; pivot.add(plate);
+    tube(sx,0,sz,sx,0.35,sz,0.017,barMat); /* base jack stem */
+    tube(sx,0,sz,sx,c.H,sz); /* standard */
+    for(var rsy=0.5;rsy<c.H-0.01;rsy+=0.5){
+      var ros=new THREE.Mesh(new THREE.CylinderGeometry(0.062,0.062,0.028,12),barMat);
+      ros.position.set(sx,rsy,sz); ros.userData.ownGeo=true; pivot.add(ros);
+    }
+  }
+  /* Ledgers + transoms at every lift level; steel decks per lift */
+  for(lf=1;lf<=c.lifts;lf++){
+    var ly=lf*c.liftH;
+    for(j=0;j<=c.nz;j++)for(i=0;i<c.nx;i++)tube(x0+i*c.bayL,ly,z0+j*c.bayW,x0+(i+1)*c.bayL,ly,z0+j*c.bayW); /* ledgers */
+    for(i=0;i<=c.nx;i++)for(j=0;j<c.nz;j++)tube(x0+i*c.bayL,ly,z0+j*c.bayW,x0+i*c.bayL,ly,z0+(j+1)*c.bayW); /* transoms */
+    if(!(p.decks&&p.decks[lf-1]===false)){
+      for(i=0;i<c.nx;i++)for(j=0;j<c.nz;j++){
+        var dk=new THREE.Mesh(new THREE.BoxGeometry(c.bayL*0.96,0.045,c.bayW*0.96),scafDeckMat);
+        dk.position.set(x0+(i+0.5)*c.bayL,ly-0.03,z0+(j+0.5)*c.bayW);
+        dk.castShadow=true; dk.receiveShadow=true; dk.userData.ownGeo=true; pivot.add(dk);
+      }
+    }
+    if(p.bracing){
+      var yb=(lf-1)*c.liftH;
+      for(i=0;i<c.nx;i++){tube(x0+i*c.bayL,yb,z0,x0+(i+1)*c.bayL,ly,z0); tube(x0+i*c.bayL,yb,z0+c.W,x0+(i+1)*c.bayL,ly,z0+c.W)}
+      for(j=0;j<c.nz;j++){tube(x0,yb,z0+j*c.bayW,x0,ly,z0+(j+1)*c.bayW); tube(x0+c.L,yb,z0+j*c.bayW,x0+c.L,ly,z0+(j+1)*c.bayW)}
+    }
+  }
+  /* Guardrails (mid rail + 99 cm top rail, Datasheet) on posts above
+     the top deck, and 15 cm toeboards (Datasheet) around it */
+  if(p.guardrail){
+    var ty=c.H;
+    for(i=0;i<=c.nx;i++){tube(x0+i*c.bayL,ty,z0,x0+i*c.bayL,ty+0.99,z0); tube(x0+i*c.bayL,ty,z0+c.W,x0+i*c.bayL,ty+0.99,z0+c.W)}
+    for(j=1;j<c.nz;j++){tube(x0,ty,z0+j*c.bayW,x0,ty+0.99,z0+j*c.bayW); tube(x0+c.L,ty,z0+j*c.bayW,x0+c.L,ty+0.99,z0+j*c.bayW)}
+    [0.5,0.99].forEach(function(go){
+      for(var i6=0;i6<c.nx;i6++){tube(x0+i6*c.bayL,ty+go,z0,x0+(i6+1)*c.bayL,ty+go,z0); tube(x0+i6*c.bayL,ty+go,z0+c.W,x0+(i6+1)*c.bayL,ty+go,z0+c.W)}
+      for(var j6=0;j6<c.nz;j6++){tube(x0,ty+go,z0+j6*c.bayW,x0,ty+go,z0+(j6+1)*c.bayW); tube(x0+c.L,ty+go,z0+j6*c.bayW,x0+c.L,ty+go,z0+(j6+1)*c.bayW)}
+    });
+    function toe(cx,cz,w,d){var tb2=new THREE.Mesh(new THREE.BoxGeometry(w,0.15,d),scafToeMat); tb2.position.set(cx,ty+0.075,cz); tb2.userData.ownGeo=true; pivot.add(tb2)}
+    toe(0,z0+0.02,c.L,0.03); toe(0,z0+c.W-0.02,c.L,0.03); toe(x0+0.02,0,0.03,c.W); toe(x0+c.L-0.02,0,0.03,c.W);
+  }
+  /* Access — a ladder up the front face, or one stair flight per
+     lift inside the first bay */
+  if(p.access==="ladder"){
+    var lx=x0+c.bayL/2, lz=z0+c.W+0.28;
+    tube(lx-0.2,0,lz,lx-0.2,c.H,lz,0.02,barMat); tube(lx+0.2,0,lz,lx+0.2,c.H,lz,0.02,barMat);
+    for(var rg=0.25;rg<c.H;rg+=0.28)tube(lx-0.2,rg,lz,lx+0.2,rg,lz,0.012,barMat);
+  }else if(p.access==="stair"){
+    for(lf=0;lf<c.lifts;lf++){
+      var yb2=lf*c.liftH, nst=Math.max(2,Math.round(c.liftH/0.2)), sd=c.bayL/nst;
+      tube(x0,yb2,z0+0.3,x0+c.bayL,yb2+c.liftH,z0+0.3,0.02,barMat);
+      for(var st=0;st<nst;st++){
+        var stb=new THREE.Mesh(new THREE.BoxGeometry(sd*0.95,0.04,0.6),scafDeckMat);
+        stb.position.set(x0+(st+0.5)*sd,yb2+(st+1)*(c.liftH/nst),z0+0.3); stb.userData.ownGeo=true; pivot.add(stb);
+      }
+    }
+  }
+  /* Edit handles — only while Scaffolding editing is ON for this
+     modifier: an invisible hit box over the whole unit, and the
+     scaffold gizmo on the stage-piece construction. */
+  var editHandles=T3&&state.vmode==="edit"&&selModId===m.id&&scaffoldToolArmed===m.id;
+  if(editHandles){
+    var hw=Math.max(0.3,c.L*us), hh=Math.max(0.15,c.H*us), hd=Math.max(0.3,c.W*us);
+    var cyC=(+p.y||0)+hh/2, ryR=(+p.ry||0)*Math.PI/180;
+    var hb=new THREE.Mesh(new THREE.BoxGeometry(hw,hh,hd),modHitMat);
+    hb.userData.ownGeo=true; hb.userData.measureSkip=true;
+    hb.position.set(+p.x||0,cyC,+p.z||0); hb.rotation.y=ryR; hb.renderOrder=998;
+    hb.userData.modEdit={kind:"scel",mid:m.id,idx:0};
+    g.add(hb); T3.modHit.push(hb);
+    var hl=new THREE.Mesh(new THREE.BoxGeometry(hw,hh,hd),new THREE.MeshBasicMaterial({color:0xf59e0b,wireframe:true}));
+    hl.userData.ownGeo=true; hl.userData.measureSkip=true; hl.position.copy(hb.position); hl.rotation.copy(hb.rotation); g.add(hl);
+    var sgg=new THREE.Group(); sgg.position.set(+p.x||0,cyC,+p.z||0);
+    sgg.scale.setScalar(clamp((T3.cam?T3.cam.radius:16)*0.075,0.5,4));
+    function regSC(mesh,sub,axis){mesh.userData.ownGeo=true; mesh.renderOrder=999; mesh.userData.modEdit={kind:"scgizmo",mid:m.id,idx:0,sub:sub,axis:axis||""}; sgg.add(mesh); T3.modHit.push(mesh); return mesh}
+    if(state.gizmoMode==="rotate"){
+      var ringC=regSC(new THREE.Mesh(new THREE.TorusGeometry(1.0,0.035,10,64),gizmoMat(0x22c55e)),"rot","y");
+      ringC.rotation.x=Math.PI/2;
+      var hitC=regSC(new THREE.Mesh(new THREE.TorusGeometry(1.0,0.13,8,48),modHitMat),"rot","y");
+      hitC.rotation.x=Math.PI/2;
+      var hubC=new THREE.Mesh(new THREE.SphereGeometry(0.11,14,10),gizmoMat(0xffffff));
+      hubC.userData.ownGeo=true; sgg.add(hubC);
+    }else if(state.gizmoMode==="scale"){
+      var upSC=new THREE.Vector3(0,1,0);
+      [["x",[1,0,0],0xef4444],["y",[0,1,0],0x22c55e],["z",[0,0,1],0x3b82f6]].forEach(function(axSC){
+        var dirSC=new THREE.Vector3(axSC[1][0],axSC[1][1],axSC[1][2]);
+        var qSC=new THREE.Quaternion().setFromUnitVectors(upSC,dirSC);
+        var cylSC=regSC(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.85,10),gizmoMat(axSC[2])),"scale",axSC[0]);
+        cylSC.position.copy(dirSC.clone().multiplyScalar(0.42)); cylSC.quaternion.copy(qSC);
+        var cubeSC=regSC(new THREE.Mesh(new THREE.BoxGeometry(0.22,0.22,0.22),gizmoMat(axSC[2])),"scale",axSC[0]);
+        cubeSC.position.copy(dirSC.clone().multiplyScalar(1.02));
+      });
+      regSC(new THREE.Mesh(new THREE.BoxGeometry(0.26,0.26,0.26),gizmoMat(0xffffff)),"scale","");
+    }else{
+      var upS3=new THREE.Vector3(0,1,0);
+      [["x",[1,0,0],0xef4444],["y",[0,1,0],0x22c55e],["z",[0,0,1],0x3b82f6]].forEach(function(axS3){
+        var dirS3=new THREE.Vector3(axS3[1][0],axS3[1][1],axS3[1][2]);
+        var qS3=new THREE.Quaternion().setFromUnitVectors(upS3,dirS3);
+        var cylS3=regSC(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.85,10),gizmoMat(axS3[2])),"axis",axS3[0]);
+        cylS3.position.copy(dirS3.clone().multiplyScalar(0.42)); cylS3.quaternion.copy(qS3);
+        var coneS3=regSC(new THREE.Mesh(new THREE.ConeGeometry(0.12,0.32,14),gizmoMat(axS3[2])),"axis",axS3[0]);
+        coneS3.position.copy(dirS3.clone().multiplyScalar(1.05)); coneS3.quaternion.copy(qS3);
+      });
+      regSC(new THREE.Mesh(new THREE.SphereGeometry(0.14,14,10),gizmoMat(0xffffff)),"free","");
+    }
+    g.add(sgg);
+  }
+  return g;
+}
 function buildOneModGroup(m,bb){
   try{
+    if(m.type==="scaffold")return buildScaffoldGroup(m,bb);
     if(m.type==="crowd")return buildCrowdGroup(m,bb);
     if(m.type==="light")return buildLightsGroup(m,bb);
     if(m.type==="truss")return buildTrussGroup(m,bb);
