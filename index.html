@@ -2182,6 +2182,8 @@ html.admin-boot #adminPage{display:block}
             </optgroup>
           </select>
         </div>
+        <button type="button" class="btn primary block" id="btnAddScaffold" style="margin-top:8px">+ Add Scaffolding</button>
+        <p class="mod-note" style="margin-top:6px">Each tap adds a separate scaffolding system in its own spot on the stage — add as many as the stage needs, then move / rotate / scale each one on its own with its gizmo.</p>
         <div class="mod-stack" id="modStack" style="margin-top:10px"></div>
         </div>
         <div class="divider"></div>
@@ -2845,7 +2847,7 @@ html.admin-boot #adminPage{display:block}
       <p class="about-desc">We'd love to hear your thoughts, suggestions, and feedback as we continue developing the platform.</p>
       <p class="about-desc">Share your feedback: hello@lutas.digital</p>
       <p class="about-desc">Privacy: visits to LUTAS LED are counted anonymously — a hashed identifier, the country, the device type and how long the page was open. Guests are never identified by name or email, and no IP address is stored. A visit is linked to an account only when that visitor signs in during the visit.</p>
-      <div class="about-info"><span>Version</span><strong>V1.0.0.0.1</strong></div>
+      <div class="about-info"><span>Version</span><strong>V1.0.0.0.2</strong></div>
       <div class="about-info"><span>Developed by</span><strong>Team LUTAS</strong></div>
       <div class="about-info"><span>Created on</span><strong>October 22, 2026</strong></div>
       <section class="about-donate" aria-label="Support the developers">
@@ -9580,7 +9582,7 @@ function attach3DPointer(el){
               :miP.kind==="scgizmo"?(miP.sub==="rot"
                 ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo rotate ring: dragging turns the unit about its centre (magnet snaps "+rotStepDeg()+"°). Its position never changes in Rotate mode."
                 :miP.sub==="scale"
-                ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo scale cube: drag away from the centre to grow the whole unit, towards it to shrink it — an exact-ratio scale about its base: bay / lift sizes snap to the datasheet list and the tube stays 48.3 mm."
+                ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo scale cube: drag away from the centre to grow the whole unit, towards it to shrink it — one exact ratio about its base, live as you drag, the same Scale gizmo a screen has."
                 :miP.sub==="axis"
                 ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo "+miP.axis.toUpperCase()+" arrow: dragging moves the unit along the "+miP.axis.toUpperCase()+" axis only"+(miP.axis==="y"?" (raise / lower its base)":"")+"."
                 :"Scaffolding — "+escapeHtml(mmP.name)+": gizmo centre ball: dragging moves the unit freely across the floor plane. Its base height stays — move it up / down with the green Y arrow.")
@@ -9851,15 +9853,13 @@ function attach3DPointer(el){
       if(md.info.kind==="scel"&&state.gizmoMode==="scale"){
         /* Scale gizmo on a scaffold unit body: drag distance scales
            the whole unit by an exact ratio about its base — the
-           ratio is applied to the drag-start bays / lifts and each
-           size SNAPS to the type's datasheet list (scaffoldSetScale
-           with the drag-start build as the base), so the tube stays
-           the real 48.3 mm and no non-datasheet bay is ever built.
-           Its position never changes in Scale mode. */
-        var ppS=mm2.params, stSS=md.scafStart;
+           drag's factor multiplies the scale the unit had when the
+           drag started, and the whole unit grows / shrinks uniformly
+           and LIVE, exactly like scaling a screen or a prop. Its
+           position never changes in Scale mode. */
+        var stSS=md.scafStart;
         var fSS=clamp(1+((ev.clientX-md.sx)-(ev.clientY-md.sy))/220,0.25,4);
-        ppS.sclL=+stSS.bayL||2.07; ppS.sclW=+stSS.bayW||2.07; ppS.sclH=+stSS.liftH||2;
-        var cSS=scaffoldSetScale(mm2,fSS);
+        var cSS=scaffoldSetScale(mm2,(+stSS.scale||1)*fSS);
         rebuildModGroup(mm2); syncModifierPanel();
         updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": scale ×"+cSS.scale.toFixed(2)+" — bays "+cSS.bayL.toFixed(2)+" × "+cSS.bayW.toFixed(2)+" m · overall "+escapeHtml(scaffoldOverallText(mm2))+". Release to keep it.");
         return;
@@ -10288,16 +10288,16 @@ function attach3DPointer(el){
         }else if(md.info.kind==="scgizmo"&&md.info.sub==="scale"&&md.propCen){
           /* Scaffold gizmo scale cube: the pointer's distance from
              the unit's centre against its distance at the grab is
-             the exact-ratio scale factor, applied to the drag-start
-             build as the base and SNAPPED to the type's datasheet
-             bay / lift sizes — the tube never scales. Position
-             never changes. */
-          var ppQ4=mm2.params, stSC4=md.scafStart;
+             the drag's scale factor; multiplied by the scale the
+             unit had at the grab it becomes the unit's new exact
+             ratio, and the whole unit grows / shrinks uniformly and
+             LIVE as the pointer moves — the same gizmo scale the
+             screens and props have. Position never changes. */
+          var stSC4=md.scafStart;
           var d0SC=Math.hypot(md.p0.x-md.propCen.x,md.p0.y-md.propCen.y,md.p0.z-md.propCen.z);
           var d1SC=Math.hypot(ptM.x-md.propCen.x,ptM.y-md.propCen.y,ptM.z-md.propCen.z);
           var fSC4=d0SC>0.05?clamp(d1SC/d0SC,0.25,4):1;
-          ppQ4.sclL=+stSC4.bayL||2.07; ppQ4.sclW=+stSC4.bayW||2.07; ppQ4.sclH=+stSC4.liftH||2;
-          var cSC4=scaffoldSetScale(mm2,fSC4);
+          var cSC4=scaffoldSetScale(mm2,(+stSC4.scale||1)*fSC4);
           rebuildModGroup(mm2); syncModifierPanel();
           updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": scale ×"+cSC4.scale.toFixed(2)+" — bays "+cSC4.bayL.toFixed(2)+" × "+cSC4.bayW.toFixed(2)+" m · overall "+escapeHtml(scaffoldOverallText(mm2))+". Release to keep it.");
         }else if(md.info.kind==="scgizmo"&&md.info.sub==="axis"){
@@ -12210,7 +12210,7 @@ function objView(o){
     var sm=o.mod, sp=sm.params, scf=scaffoldCalc(sm);
     return {badge:"Scaffolding", name:sm.name,
       info:scf.typeLabel+" · "+(scf.empty?"empty — zero bays":(scf.nx+" × "+scf.nz+" bays · overall "+scaffoldOverallText(sm))),
-      note:""+measureUnit()+" — X across, Y the height of the unit's base, Z depth. Rotation is in degrees: Y is the unit's facing; X / Z are locked at 0° — a scaffolding unit never tilts. Scale is the unit's exact ratio, the same on all three axes: it multiplies the base build and snaps every bay length and lift height to the nearest "+scf.typeLabel+" datasheet size, so the sizes built are always real datasheet sizes and the tube stays "+scf.type.tubeOD.toFixed(1)+" mm. The same Scale control, with the live overall size, is in the Scaffolding panel.",
+      note:""+measureUnit()+" — X across, Y the height of the unit's base, Z depth. Rotation is in degrees: Y is the unit's facing; X / Z are locked at 0° — a scaffolding unit never tilts. Scale is the unit's exact ratio, the same on all three axes: the whole unit grows / shrinks uniformly from its "+scf.typeLabel+" datasheet build, so the overall size is that build × the ratio (at ×1.00 every size is the true datasheet size, tube "+scf.type.tubeOD.toFixed(1)+" mm). The same Scale control, with the live overall size, is in the Scaffolding panel — and the 3D Scale gizmo drags it too.",
       t:{px:r2(sp.x), py:r2(sp.y), pz:r2(sp.z), rx:0, ry:Math.round(+sp.ry||0), rz:0, sx:scf.scale, sy:scf.scale, sz:scf.scale},
       lock:{rx:1, rz:1}, slab:["Scale X · size ×","Scale Y · size ×","Scale Z · size ×"]};
   }
@@ -12307,7 +12307,7 @@ function applyObjField(o,key,v){
     else if(key==="py")spp.y=r2(clamp(v,0,15));
     else if(key==="pz")spp.z=r2(clamp(v,-60,60));
     else if(key==="ry")spp.ry=Math.round(normDeg180(v));
-    else if(key==="sx"||key==="sy"||key==="sz")scaffoldSetScale(o.mod,v); /* exact ratio — snaps bays / lifts to the type's datasheet sizes */
+    else if(key==="sx"||key==="sy"||key==="sz")scaffoldSetScale(o.mod,v); /* exact ratio — the whole unit scales uniformly, same as the panel and the gizmo */
     return;
   }
   var it2=o.item;
@@ -13896,16 +13896,18 @@ function downloadBriefPDF(){
   /* Crowd — counts and areas only; every figure is fully black, so
      no colour is listed here (or anywhere) for the crowd. */
   var bomCrowd=state.modifiers.filter(function(m){return m.type==="crowd"});
-  var bcPeople=0, bcPacks=0;
-  bomCrowd.forEach(function(m){bcPeople+=crowdTotalPeople(m); bcPacks+=crowdPacks(m).length});
-  subHead("Crowd — "+bcPeople+" people · "+bcPacks+" pack(s)");
+  var bcPeople=0, bcPacks=0, bcPhones=0;
+  bomCrowd.forEach(function(m){bcPeople+=crowdTotalPeople(m); bcPacks+=crowdPacks(m).length; bcPhones+=crowdPhoneTotal(m)});
+  subHead("Crowd — "+bcPeople+" people · "+bcPacks+" pack(s)"+(bcPhones?" · phones raised: "+bcPhones:""));
   if(!bomCrowd.length)noteLine("No crowd in this layout.");
   bomCrowd.forEach(function(m){
     crowdPacks(m).forEach(function(pk){
       var t=crowdTypeOf(pk);
+      var psB=crowdPhoneStats(m,pk);
       detailsTable([
         ["Pack:", pk.name, "Type:", crowdTypeLabel(t)],
         ["People:", String(Math.round(+pk.count||0)), "Area:", (+pk.width>0?fmtMeasure(+pk.width):"stage width")+" × "+fmtMeasure(+pk.depth||0)],
+        ["Phones raised:", psB.x+" of "+psB.y, "Phones:", crowdPhonesOn(pk)?CROWD_PHONE_LEVELS[crowdPhoneLevel(pk)].label:"Off"],
         ["Seating:", crowdSeated(t)?(t==="pavilion"?"Seated — stepped tiers, no chairs":"Seated — chairs included"):"Standing", "Status:", (pk.on===false||!m.enabled)?"Hidden":"On stage"]
       ]);
     });
@@ -14457,7 +14459,7 @@ function modelCrowd(groups,m){
       /* Arms — upper arm then forearm, bent at the elbow; the
          figure's cheer pose (both up / one up / resting) */
       [-1,1].forEach(function(sd,ai){
-        var up=it.armUp===2||(it.armUp===1&&ai===0);
+        var up=it.armUp===2||(it.armUp===1&&ai===1); /* ai 1 = the sd +1 arm — the same arm the 3D pose raises, and the hand a phone rides in */
         var sh=[it.x+sd*0.205*s,hipY+(seated?0.47:0.50)*s,it.z], rx, rz, bendA;
         if(seated){ if(up){rz=Math.PI-sd*0.35; rx=-0.25; bendA=-0.3} else{rx=0.62; rz=sd*0.10; bendA=0.35} }
         else if(up){rz=Math.PI-sd*0.22; rx=0.12; bendA=-0.28}
@@ -14470,6 +14472,24 @@ function modelCrowd(groups,m){
         capsuleSeg(el,wr,0.042*s,bodyC);
         pushSphere(arr,wr,MT_I,0.045*s,0.045*s,0.045*s,skinC,6,5);
       });
+      /* Phone — held in the raised (sd +1) hand: a black phone body
+         with a lit screen on the holder's side, tilted toward the
+         stage, at the same wrist the 3D view poses it from (the
+         export is a static pose — it has no frames to animate). */
+      if(it.phone){
+        var sdP=1, rxPa, rzPa, bPa;
+        if(seated){rzPa=Math.PI-sdP*0.35; rxPa=-0.25; bPa=-0.3} else{rzPa=Math.PI-sdP*0.22; rxPa=0.12; bPa=-0.28}
+        var shP=[it.x+sdP*0.205*s,hipY+(seated?0.47:0.50)*s,it.z];
+        var dUPa=dirDownE(rxPa,rzPa);
+        var elP=[shP[0]+dUPa[0]*0.26*s,shP[1]+dUPa[1]*0.26*s,shP[2]+dUPa[2]*0.26*s];
+        var dFPa=dirDownE(rxPa+bPa,rzPa);
+        var wrP=[elP[0]+dFPa[0]*0.27*s,elP[1]+dFPa[1]*0.27*s,elP[2]+dFPa[2]*0.27*s];
+        var pcP=[wrP[0],wrP[1]+0.062*s,wrP[2]];
+        var MPp=rotMat3((it.phoneRx!=null?it.phoneRx:-0.35),0,(it.phoneRz||0));
+        pushBox(arr,pcP,MPp,0.038*s,0.076*s,0.0045*s,[0,0,0],[0,0,0]);
+        var offP=mVec3(MPp,[0,0,0.0058*s]);
+        pushBox(arr,[pcP[0]+offP[0],pcP[1]+offP[1],pcP[2]+offP[2]],MPp,0.032*s,0.069*s,0.0016*s,[0.85,0.93,1],[0.85,0.93,1]);
+      }
       if(seated&&built.type!=="pavilion"){
         pushBox(arr,[it.x,0.46,it.z],MT_I,0.23,0.035,0.22,chairC,chairC);
         pushBox(arr,[it.x,0.78,it.z+0.22],MT_I,0.23,0.275,0.035,chairC,chairC);
@@ -19801,12 +19821,52 @@ function crowdTypeOf(pk){
 }
 function crowdTypeLabel(t){var d=CROWD_TYPES[t]||CROWD_TYPES.concert; return d.label}
 function crowdSeated(t){return !!(CROWD_TYPES[t]||CROWD_TYPES.concert).seated}
+/* ── Phones — crowd members recording the show ─────────────────
+   A pack can have some of its figures holding a mobile phone up
+   in one raised hand, as if recording: the figure and the phone
+   body stay fully black (0x000000, like every crowd figure); only
+   the phone's screen is lit (phoneScreenMat — unlit and pushed
+   past the night Render's bloom threshold, so the screens read
+   as little glowing rectangles in the dark crowd). phones is the
+   pack's on/off switch; phonesLevel is the share of the pack
+   holding a phone up: "some" ≈ 1 in 3, "many" ≈ 3 in 5, "none" =
+   nobody. Concert packs default to phones ON at "some"; every
+   other pack (Corporate / Pavilion / Ground) defaults to phones
+   OFF, with the level at "some" so switching the toggle on gives
+   that share straight away — the control is there for every pack.
+   The choice is rolled per figure from the pack's seeded RNG in
+   crowdPackItems, so holders are scattered at random through the
+   pack — never a row or a block — and the same crowd (and the
+   same phone count) comes back on every rebuild, in the 3D view
+   and in the model export alike. */
+var CROWD_PHONE_LEVELS={none:{label:"None",frac:0},some:{label:"Some · ~1 in 3",frac:1/3},many:{label:"Many · ~3 in 5",frac:0.6}};
+function crowdPhoneLevel(pk){var lv=pk&&pk.phonesLevel; return CROWD_PHONE_LEVELS[lv]?lv:"some"}
+function crowdPhonesOn(pk){return !!pk&&pk.phones!==false&&crowdPhoneLevel(pk)!=="none"}
+function crowdPhoneFrac(pk){return crowdPhonesOn(pk)?CROWD_PHONE_LEVELS[crowdPhoneLevel(pk)].frac:0}
+/* "phones raised: X of Y" for one pack — counted from the pack's
+   own seeded items (the same items the 3D view draws), so the
+   panel, the spec sheet, the Technical PDF BOM and the stage
+   always agree. Falls back to share × head count if the stage
+   bounds are somehow unavailable. */
+function crowdPhoneStats(m,pk){
+  try{
+    var built=crowdPackItems(m,pk,sceneBBox3D()), x=0;
+    built.items.forEach(function(it){if(it.phone)x++});
+    return {x:x,y:built.items.length};
+  }catch(e){
+    var y=clamp(Math.round(+pk.count||0),0,600);
+    return {x:Math.round(y*crowdPhoneFrac(pk)),y:y};
+  }
+}
+function crowdPhoneTotal(m){return crowdPacks(m).reduce(function(a,pk){return a+crowdPhoneStats(m,pk).x},0)}
+function crowdPhoneSummaryBit(m,pk){var ps=crowdPhoneStats(m,pk); return ps.x?(" · phones raised: "+ps.x+" of "+ps.y):""}
 /* One new pack with the standing defaults (or a type's defaults). */
 function newCrowdPack(type,name){
   var t=CROWD_TYPES[type]?type:"concert";
   return {id:uid(),name:name||("Crowd pack "+t),type:t,
     count:t==="concert"||t==="ground"?240:160,
     width:0,depth:8,gap:2.5,animate:true,movement:t==="concert"||t==="ground"?60:35,
+    phones:t==="concert",phonesLevel:"some",
     x:0,z:0,rot:0,on:true,group:null};
 }
 /* The packs of a crowd modifier, migrating the legacy single-crowd
@@ -19824,6 +19884,7 @@ function crowdPacks(m){
       width:isFinite(+p.width)?+p.width:0, depth:isFinite(+p.depth)?+p.depth:8,
       gap:isFinite(+p.gap)?+p.gap:2.5, animate:p.animate!==false,
       movement:isFinite(+p.movement)?clamp(+p.movement,0,100):60,
+      phones:t==="concert",phonesLevel:"some",
       x:0,z:0,rot:0,on:true,group:null});
   }
   return p.packs;
@@ -19899,6 +19960,7 @@ function crowdPackItems(m,pk,bb){
      silhouettes against the lights (and stays black in Render and
      in the model export, which reads these same fields). There is
      no crowd colour control anywhere: the colour is fixed here. */
+  var phoneFrac=crowdPhoneFrac(pk);
   items.forEach(function(it){
     it.top=0x000000;
     it.leg=0x000000;
@@ -19907,6 +19969,15 @@ function crowdPackItems(m,pk,bb){
     it.armUp=seated?(ar<0.08?1:0):(ar<0.45?2:(ar<0.68?1:0));
     it.armPh=rng()*6.28;
     it.armSpd=(seated?1.1:2.4+2.6*mv)+rng()*0.9;
+    /* Phones: this figure holds a phone up — a seeded roll against
+       the pack's share, so holders scatter at random through the
+       pack. A holder's pose becomes ONE arm up; the phone rides in
+       that raised hand (the sd>0 arm in the pose maths), tilted
+       toward the stage, and moves with the figure's bounce / sway
+       because updateCrowdInstances takes its matrix from that
+       hand's wrist every frame. */
+    it.phone=phoneFrac>0&&(rng()<phoneFrac);
+    if(it.phone){it.armUp=1; it.phoneRx=-0.28-rng()*0.22; it.phoneRz=(rng()-0.5)*0.24}
   });
   return {items:items,frame:fr,type:t,seated:seated};
 }
@@ -20354,6 +20425,8 @@ function sanitizeModifier(o){
         x:isFinite(+pk.x)?clamp(+pk.x,-60,60):0,
         z:isFinite(+pk.z)?clamp(+pk.z,-30,60):0,
         rot:isFinite(+pk.rot)?Math.round(normDeg180(+pk.rot)):0,
+        phones:(typeof pk.phones==="boolean")?pk.phones:(t==="concert"),
+        phonesLevel:CROWD_PHONE_LEVELS[pk.phonesLevel]?pk.phonesLevel:"some",
         on:pk.on!==false, group:(pk.group&&cgids[pk.group])?pk.group:null};
     }
     if(Array.isArray(p.packs)&&p.packs.length){
@@ -20398,13 +20471,16 @@ function sanitizeModifier(o){
      lift height snap to the type's lift sizes, the per-lift deck
      switches, guardrail / bracing / access / load class, the
      exact-ratio scale state, and the unit's place on the stage.
-     A layout saved by the old build carried a free unit scale
-     (us) that stretched the whole unit including its tube: it is
-     migrated ONCE here into the exact-ratio scale — the bays /
-     lifts snap to the datasheet sizes nearest the old stretched
-     size, the tube returns to the type's real 48.3 mm, and us is
-     retired to 1 (kept in the file only so older builds can still
-     open the layout). */
+     The scale is ONE exact-ratio factor applied uniformly to the
+     whole unit (the panel field and the 3D Scale gizmo both drive
+     it — scaffoldSetScale); the bays / lifts themselves always
+     stay on the type's datasheet lists. A layout saved by an old
+     build may carry a free unit scale (us): it folds into that
+     same factor here, and us is retired to 1 (kept in the file
+     only so older builds can still open the layout). A layout
+     saved while scale snapped the bays keeps those snapped bay
+     sizes as its build — they are on-list sizes — with its stored
+     factor applying uniformly on top. */
   if(o.type==="scaffold"){
     var sct=(typeof SCAFFOLD_TYPES!=="undefined"&&SCAFFOLD_TYPES[p.system])?SCAFFOLD_TYPES[p.system]:((typeof SCAFFOLD_TYPES!=="undefined")?SCAFFOLD_TYPES.layher:null);
     if(sct){
@@ -20413,14 +20489,13 @@ function sanitizeModifier(o){
       p.bayL=scaSnap(sct.bays,p.bayL,2.07); p.bayW=scaSnap(sct.bays,p.bayW,2.07);
       p.liftH=scaSnap(sct.lifts,p.liftH,2);
       p.scale=isFinite(+p.scale)?clamp(Math.round(+p.scale*100)/100,0.25,4):1;
-      function scaBase(v,cur){v=+v; return (isFinite(v)&&v>0.05)?Math.round(v*1000)/1000:(Math.round((cur/p.scale)*1000)/1000)}
-      p.sclL=scaBase(p.sclL,p.bayL); p.sclW=scaBase(p.sclW,p.bayW); p.sclH=scaBase(p.sclH,p.liftH);
+      /* The scale is a plain uniform factor on the build (see
+         scaffoldSetScale): the scl* mirrors simply follow the
+         build sizes, and a legacy free unit scale (us) folds into
+         that same factor instead of snapping the bays. */
       var legacyUs=isFinite(+p.us)?clamp(+p.us,0.25,4):1;
-      if(Math.abs(legacyUs-1)>0.001){
-        var lbL=p.bayL, lbW=p.bayW, lbH=p.liftH;
-        p.sclL=lbL; p.sclW=lbW; p.sclH=lbH; p.scale=Math.round(legacyUs*100)/100;
-        p.bayL=scaSnap(sct.bays,lbL*legacyUs); p.bayW=scaSnap(sct.bays,lbW*legacyUs); p.liftH=scaSnap(sct.lifts,lbH*legacyUs);
-      }
+      if(Math.abs(legacyUs-1)>0.001)p.scale=clamp(Math.round(p.scale*legacyUs*100)/100,0.25,4);
+      p.sclL=p.bayL; p.sclW=p.bayW; p.sclH=p.liftH;
     }else{
       p.system="layher"; p.scale=1;
     }
@@ -20577,28 +20652,21 @@ function scaffoldTypeOf(p){return SCAFFOLD_TYPES[p&&p.system]||SCAFFOLD_TYPES.la
 function scaffoldTypeKey(p){return SCAFFOLD_TYPES[p&&p.system]?p.system:"layher"}
 function scaffoldNearest(list,v){var best=list[0],bd=1e9; for(var i=0;i<list.length;i++){var d=Math.abs(list[i]-v); if(d<bd){bd=d; best=list[i]}} return best}
 function scaffoldTubeKgM(t){var od=t.tubeOD, id=od-2*t.tubeWall; return Math.round((Math.PI/4*(od*od-id*id))*7850/1e6*100)/100} /* kg/m — Calculated from the tube section */
-/* The scale state: sclL / sclW / sclH are the base bay / lift sizes
-   at scale 1.00. Missing or invalid bases are derived from the
-   current build, so a layout saved before Scale existed (or by
-   hand) still scales from what is on stage. */
-function scaffoldScaleBase(p){
-  var s=clamp(+p.scale||1,0.25,4);
-  function base(v,cur){v=+v; return (isFinite(v)&&v>0.05)?v:(Math.round((cur/s)*1000)/1000)}
-  return {L:base(p.sclL,+p.bayL||2.07), W:base(p.sclW,+p.bayW||2.07), H:base(p.sclH,+p.liftH||2)};
-}
-/* Apply an exact-ratio scale: base sizes × factor, each SNAPPED to
-   the nearest size on the type's datasheet list. Writes the snapped
-   bayL / bayW / liftH (so the panel, scaffoldCalc, the 3D build,
-   the spec sheet and the PDF BOM all read the same real sizes),
-   stores the factor (two decimals) and the base it came from.
-   The tube diameter is never touched — it is the type's real tube. */
+/* The scale state: ONE exact-ratio factor for the whole unit —
+   the same scale a screen, a prop or a stage piece carries. The
+   build itself (bayL / bayW / liftH, picked from the type's
+   datasheet lists) never changes when the scale changes; the whole
+   unit — every tube, deck and rail — grows or shrinks uniformly by
+   the factor, so the proportions stay exact at any size and the
+   scale responds to every millimetre of a gizmo drag, exactly like
+   the other modifiers. sclL / sclW / sclH simply mirror the build
+   sizes the factor applies to, kept in the file so older builds
+   can still open the layout. At ×1.00 every dimension on stage is
+   the true datasheet size of the chosen system. */
 function scaffoldSetScale(m,f){
-  var p=m.params, t=scaffoldTypeOf(p), base=scaffoldScaleBase(p);
+  var p=m.params;
   var fac=clamp(Math.round((+f||1)*100)/100,0.25,4);
-  p.scale=fac; p.sclL=base.L; p.sclW=base.W; p.sclH=base.H;
-  p.bayL=scaffoldNearest(t.bays,base.L*fac);
-  p.bayW=scaffoldNearest(t.bays,base.W*fac);
-  p.liftH=scaffoldNearest(t.lifts,base.H*fac);
+  p.scale=fac; p.sclL=+p.bayL||2.07; p.sclW=+p.bayW||2.07; p.sclH=+p.liftH||2;
   return scaffoldCalc(m);
 }
 /* A direct edit of a bay / lift size (or a type switch) is a new
@@ -20617,7 +20685,10 @@ function scaffoldCalc(m){
   var nx=clamp(Math.round(+p.baysX||0),0,12), nz=clamp(Math.round(+p.baysZ||0),0,12);
   var lifts=clamp(Math.round(+p.lifts||1),1,6), liftH=+p.liftH||2;
   var bayL=+p.bayL||2.07, bayW=+p.bayW||2.07;
-  var H=lifts*liftH, L=nx*bayL, W=nz*bayW;
+  /* Overall dims are the datasheet build × the unit's exact-ratio
+     scale; bayL / bayW / liftH themselves stay the build sizes. */
+  var fS=clamp(+p.scale||1,0.25,4);
+  var H=lifts*liftH*fS, L=nx*bayL*fS, W=nz*bayW*fS;
   var empty=(nx<1||nz<1);
   var standards=empty?0:(nx+1)*(nz+1);
   var ledgers=empty?0:nx*(nz+1)*lifts;
@@ -20635,7 +20706,7 @@ function scaffoldCalc(m){
   var stairs=(!empty&&p.access==="stair")?lifts:0; /* one flight per lift */
   var deckArea=Math.round(deckedLifts*L*W*100)/100;
   var diagLen=Math.sqrt(Math.pow((bayL+bayW)/2,2)+Math.pow(liftH,2));
-  var tubeLen=standards*H + ledgers*bayL + transoms*bayW + braces*diagLen + guardrails*((bayL+bayW)/2);
+  var tubeLen=(standards*(lifts*liftH) + ledgers*bayL + transoms*bayW + braces*diagLen + guardrails*((bayL+bayW)/2))*fS; /* every tube length scales with the unit's exact-ratio scale */
   var tubeKgM=scaffoldTubeKgM(ty);
   var tubeKg=tubeLen*tubeKgM;
   var stdLoad=(ty.stdLoad&&ty.stdLoad[String(liftH)]!==undefined)?ty.stdLoad[String(liftH)]:null;
@@ -20658,7 +20729,7 @@ function scaffoldOverallText(m){
 }
 function scaffoldScaleText(m){
   var c=scaffoldCalc(m);
-  return "Scale ×"+c.scale.toFixed(2)+" — overall "+scaffoldOverallText(m)+" (width × depth × height). Bays "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)+" · lifts "+fmtMeasure(c.liftH)+" — snapped to the "+c.typeLabel+" datasheet sizes; tube stays "+scaffoldTypeOf(m.params).tubeOD.toFixed(1)+" mm.";
+  return "Scale ×"+c.scale.toFixed(2)+" — overall "+scaffoldOverallText(m)+" (width × depth × height). The build stays on the "+c.typeLabel+" datasheet sizes — bays "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)+" · lifts "+fmtMeasure(c.liftH)+" — and the whole unit scales uniformly at this one exact ratio, from this panel or the Scale gizmo in the 3D view. At ×1.00 every dimension is the true datasheet size.";
 }
 function scaffoldStatusText(m){
   var c=scaffoldCalc(m), ty=c.type;
@@ -20700,7 +20771,7 @@ function scaffoldSpecLines(m){
   var p=m.params, c=scaffoldCalc(m), ty=c.type, out=[];
   out.push("  Scaffolding — "+ty.label.toUpperCase()+" (Datasheet: tube "+ty.tubeText+", "+ty.steelText+"; "+ty.connection+(ty.guardrailCm?("; guardrail "+ty.guardrailCm+" cm"):"")+(ty.toeboardCm?(", toeboard "+ty.toeboardCm+" cm"):"")+"). Source: "+ty.source);
   if(c.empty){out.push("  Empty container — zero bays. Set the bays along length / width in its panel to build the scaffold."); return out}
-  out.push("  Build: "+c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)+" — footprint "+fmtMeasure(c.L)+" × "+fmtMeasure(c.W)+" · "+c.lifts+" lift(s) of "+fmtMeasure(c.liftH)+" · total height "+fmtMeasure(c.H)+" · overall (width × depth × height) "+scaffoldOverallText(m)+" · scale ×"+c.scale.toFixed(2)+" (exact ratio — bays / lifts snapped to the "+ty.label+" datasheet sizes; tube stays "+ty.tubeOD.toFixed(1)+" mm) · access: "+(p.access==="stair"?"stair tower (1 flight per lift)":p.access==="ladder"?"ladder":"none")+" · load class "+(+p.loadClass||3)+" (EN 12811-1: "+c.classLoad.toFixed(1)+" kN/m², Datasheet)");
+  out.push("  Build: "+c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)+" — footprint "+fmtMeasure(c.L)+" × "+fmtMeasure(c.W)+" · "+c.lifts+" lift(s) of "+fmtMeasure(c.liftH)+" · total height "+fmtMeasure(c.H)+" · overall (width × depth × height) "+scaffoldOverallText(m)+" · scale ×"+c.scale.toFixed(2)+" (exact ratio — the whole unit scales uniformly from the datasheet build above; at ×1.00 every dimension is the true datasheet size) · access: "+(p.access==="stair"?"stair tower (1 flight per lift)":p.access==="ladder"?"ladder":"none")+" · load class "+(+p.loadClass||3)+" (EN 12811-1: "+c.classLoad.toFixed(1)+" kN/m², Datasheet)");
   out.push("  Datasheet permissible loads: "+(!ty.stdLoad?("per-standard load not listed for "+ty.label):(c.stdLoad!==null?("vertical load per standard "+c.stdLoad+" kN at a "+c.liftH+" m lift"):"no per-standard figure listed for a "+c.liftH+" m lift (Datasheet lists "+Object.keys(ty.stdLoad).map(function(k){return ty.stdLoad[k]+" kN at "+k+" m"}).join(", ")+")"))+" · "+(!ty.deckLoad?("steel deck load not listed for "+ty.label):(c.deckLoad!==null?("steel deck "+c.deckLoad.toFixed(1)+" kN/m² at a "+c.bayL+" m bay"):"no steel-deck figure listed for a "+c.bayL+" m bay (Datasheet lists "+Object.keys(ty.deckLoad).map(function(k){return ty.deckLoad[k].toFixed(1)+" kN/m² at "+k+" m"}).join(", ")+")")));
   out.push("  Parts (Calculated): "+c.standards+" standards · "+c.ledgers+" ledgers · "+c.transoms+" transoms · "+c.braces+" diagonal braces · "+c.decks+" steel decks ("+c.deckedLifts+" decked lift(s)) · "+c.baseJacks+" base jacks · "+c.guardrails+" guardrails · "+c.toeboards+" toeboards"+(c.ladders?" · 1 ladder":"")+(c.stairs?" · "+c.stairs+" stair flight(s)":""));
   out.push("  Totals (Calculated): tube steel weight "+c.tubeKg+" kg (tube only, "+c.tubeKgM+" kg/m calculated from the datasheet tube section — decks and fittings excluded) · total deck area "+fmtAreaM2(c.deckArea));
@@ -20709,7 +20780,7 @@ function scaffoldSpecLines(m){
 }
 function modSubLabel(m){
   var p=m.params;
-  if(m.type==="crowd"){var cps=crowdPacks(m); return cps.length+" pack"+(cps.length===1?"":"s")+" · "+crowdTotalPeople(m)+" people"}
+  if(m.type==="crowd"){var cps=crowdPacks(m); var phT=crowdPhoneTotal(m); return cps.length+" pack"+(cps.length===1?"":"s")+" · "+crowdTotalPeople(m)+" people"+(phT?" · "+phT+" phones raised":"")}
   if(m.type==="light")return (p.custom?("Custom · "+(p.fixtures||[]).length+" fixtures"):Math.round(+p.count||0)+" × "+lightTypeLabel(p.ltype))+" · "+(p.beamEndless===false?("beams "+(+p.beamLen||12)+" m"):"beams endless");
   if(m.type==="truss")return p.custom?("Custom · "+(p.segs||[]).length+" seg · "+(p.trussType==="tri"?"Triangular":p.trussType==="ladder"?"Ladder":"Box")+" "+(+p.section||290)):trussMethodName(p.method)+" · "+(p.trussType==="tri"?"Triangular":p.trussType==="ladder"?"Ladder":"Box")+" "+(+p.section||290);
   if(m.type==="scaffold"){var scL=scaffoldCalc(m); return scL.empty?(scL.typeLabel+" · 0 bays (empty)"):(scL.typeLabel+" · "+scL.nx+" × "+scL.nz+" bays · "+scL.lifts+" lift"+(scL.lifts===1?"":"s")+" · H "+fmtMeasure(scL.H)+(scL.scale!==1?" · ×"+scL.scale.toFixed(2):""))}
@@ -20721,7 +20792,7 @@ function modSubLabel(m){
 }
 function modSummary(m){
   var p=m.params;
-  if(m.type==="crowd")return "crowd packs (3D view only): "+crowdPacks(m).map(function(pk){return pk.name+" — "+crowdTypeLabel(crowdTypeOf(pk)).toLowerCase()+" · "+Math.round(+pk.count||0)+" people · area "+(+pk.width>0?fmtMeasure(+pk.width):"stage width")+" × "+fmtMeasure(+pk.depth||0)+(pk.on===false?" · hidden":"")}).join("; ");
+  if(m.type==="crowd")return "crowd packs (3D view only): "+crowdPacks(m).map(function(pk){return pk.name+" — "+crowdTypeLabel(crowdTypeOf(pk)).toLowerCase()+" · "+Math.round(+pk.count||0)+" people · area "+(+pk.width>0?fmtMeasure(+pk.width):"stage width")+" × "+fmtMeasure(+pk.depth||0)+crowdPhoneSummaryBit(m,pk)+(pk.on===false?" · hidden":"")}).join("; ");
   if(m.type==="light")return p.custom?((p.fixtures||[]).length+" fixtures placed individually — each with its own fixture (moving head, wash head, PAR can, profile, strobe, LED batten, laser, matrix panel, gobo projector) and colour · base angle "+Math.round(+p.angle||0)+"° · set colour "+p.color):(Math.round(+p.count||0)+" "+lightTypeLabel(p.ltype)+" fixtures · "+p.color+" · "+Math.round((+p.angle||0)*lightTypeMul(p.ltype))+"° beam");
   if(m.type==="truss"){
     var tc=trussCalc(m), tn=(p.trussType==="tri"?"triangular":p.trussType==="ladder"?"ladder":"box")+" truss "+(+p.section||290)+" mm";
@@ -20729,7 +20800,7 @@ function modSummary(m){
     if(p.method==="stacked")return tn+" · ground-stacked behind the wall · base "+fmtMeasure(+p.baseDepth||0)+" deep · ballast "+Math.round(+p.ballast||0)+" kg/base · wall "+Math.round(tc.cabWeight)+" kg to the floor";
     return tn+" · "+trussMethodName(p.method).toLowerCase()+" · underside "+fmtMeasure(+p.height||0)+" · "+(tc.span>0?fmtMeasure(tc.span)+" span":"auto span")+" · "+Math.round(tc.total)+" kg on "+Math.round(+p.hoists||0)+" hoist(s)";
   }
-  if(m.type==="scaffold"){var scS=scaffoldCalc(m); return scS.empty?(scS.typeLabel+" scaffolding · empty container (zero bays) — 3D view only"):(scS.typeLabel+" scaffolding · "+scS.nx+" × "+scS.nz+" bays ("+fmtMeasure(scS.bayL)+" × "+fmtMeasure(scS.bayW)+") · "+scS.lifts+" lift(s) × "+fmtMeasure(scS.liftH)+" = "+fmtMeasure(scS.H)+" high · overall "+scaffoldOverallText(m)+" · scale ×"+scS.scale.toFixed(2)+" · "+scS.standards+" standards · "+scS.ledgers+" ledgers · "+scS.transoms+" transoms · "+scS.braces+" braces · "+scS.decks+" steel decks · "+scS.baseJacks+" base jacks · "+scS.guardrails+" guardrails · "+scS.toeboards+" toeboards · deck area "+fmtAreaM2(scS.deckArea)+" (Calculated) · tube steel "+scS.tubeKg+" kg (Calculated) — 3D view only")}
+  if(m.type==="scaffold"){var scS=scaffoldCalc(m); return scS.empty?(scS.typeLabel+" scaffolding · empty container (zero bays) — 3D view only"):(scS.typeLabel+" scaffolding · "+scS.nx+" × "+scS.nz+" bays ("+fmtMeasure(scS.bayL)+" × "+fmtMeasure(scS.bayW)+") · "+scS.lifts+" lift(s) × "+fmtMeasure(scS.liftH)+" · total height "+fmtMeasure(scS.H)+" · overall "+scaffoldOverallText(m)+" · scale ×"+scS.scale.toFixed(2)+" · "+scS.standards+" standards · "+scS.ledgers+" ledgers · "+scS.transoms+" transoms · "+scS.braces+" braces · "+scS.decks+" steel decks · "+scS.baseJacks+" base jacks · "+scS.guardrails+" guardrails · "+scS.toeboards+" toeboards · deck area "+fmtAreaM2(scS.deckArea)+" (Calculated) · tube steel "+scS.tubeKg+" kg (Calculated) — 3D view only")}
   if(m.type==="speakers")return "line arrays · "+Math.round(+p.cabs||0)+" cabinets per side · hung at "+fmtMeasure(+p.height||0);
   if(m.type==="haze")return "atmosphere haze · density "+Math.round(+p.density||0)+"%";
   if(m.type==="props")return "imported 3D props on the stage (3D view only — never in the 2D layout, screen tables or exports): "+((p.items||[]).map(function(it){return it.name}).join(", ")||"none yet");
@@ -21554,16 +21625,40 @@ function addModifier(type){
      user then has to discover and fill in before anything shows.
      From there the bays / lifts in its panel build their own, and
      Suggest scaffolding + Apply re-reads the layout at any time. */
-  var scafAddNote="";
+  var scafAddNote="", scafStepped=false;
   if(type==="scaffold"){
     var sgSd=suggestScaffoldSystem(m), spSd=scaffoldSuggestedParams(sgSd);
     for(var skSd in spSd)m.params[skSd]=spSd[skSd];
+    /* ADDING MORE SCAFFOLDINGS: the suggestion always reads the
+       same place behind the wall, so a second, third… scaffolding
+       seeded from it would stand exactly inside the first —
+       invisible as a separate unit and impossible to click apart
+       from it. When scaffoldings are already on stage, step the
+       new unit sideways (and, when a row fills up, further back)
+       until its footprint clears every existing one, so each added
+       scaffolding is its own visible system in its own spot, ready
+       to be moved / rotated / scaled on its own. */
+    var othersSd=state.modifiers.filter(function(x){return x.type==="scaffold"&&x.enabled});
+    if(othersSd.length){
+      var ncSd=scaffoldCalc(m), gapSd=0.6, homeXSd=m.params.x;
+      for(var attSd=0;attSd<48;attSd++){
+        var hitSd=null;
+        for(var oiSd=0;oiSd<othersSd.length;oiSd++){
+          var ocSd=scaffoldCalc(othersSd[oiSd]), opSd=othersSd[oiSd].params;
+          if(Math.abs(m.params.x-opSd.x)<(ncSd.L+ocSd.L)/2+gapSd&&Math.abs(m.params.z-opSd.z)<(ncSd.W+ocSd.W)/2+gapSd){hitSd={oc:ocSd,op:opSd}; break}
+        }
+        if(!hitSd)break;
+        scafStepped=true;
+        m.params.x=Math.round((hitSd.op.x+(hitSd.oc.L+ncSd.L)/2+gapSd)*100)/100;
+        if(m.params.x>45){m.params.x=homeXSd; m.params.z=Math.round((m.params.z-ncSd.W-gapSd)*100)/100}
+      }
+    }
     scafAddNote=sgSd.baysX+" × "+sgSd.baysZ+" bays · "+sgSd.lifts+" lift"+(sgSd.lifts===1?"":"s")+" · "+fmtMeasure(sgSd.H)+" high";
   }
   state.modifiers.push(m); selModId=m.id;
   render();
   toast(type==="scaffold"
-    ? name+" added — a suggested build for this layout is already placed behind the wall ("+scafAddNote+"), so it shows in the 3D view now. Click it in the 3D view to select it and use the Move / Rotate / Scale gizmo, build your own with the bays / lifts in its panel, or press Suggest scaffolding for a fresh read of the layout."
+    ? name+" added — a suggested build for this layout is already placed "+(scafStepped?"in its own free spot beside the scaffolding already on stage":"behind the wall")+" ("+scafAddNote+"), so it shows in the 3D view now. Click it in the 3D view to select it and use the Move / Rotate / Scale gizmo, build your own with the bays / lifts in its panel, or press Suggest scaffolding for a fresh read of the layout."
     : type==="truss"
     ? name+" added — an empty truss container: no truss system is placed yet. Add one with Suggest truss, Add segment or Draw path in its panel below."
     : type==="stage"
@@ -21571,6 +21666,7 @@ function addModifier(type){
     : name+" added to the modifier stack — its parameters are open below the stack. Open the 3D view to see it on stage.");
 }
 $("modAddSel").addEventListener("change",function(){if(this.value){addModifier(this.value); this.value=""}});
+var btnAddScaffoldEl=$("btnAddScaffold"); if(btnAddScaffoldEl)btnAddScaffoldEl.addEventListener("click",function(){addModifier("scaffold")});
 var btnModOpen3DEl=$("btnModOpen3D"); if(btnModOpen3DEl)btnModOpen3DEl.addEventListener("click",function(){toggle3D(true)});
 function buildModStack(){
   var box=$("modStack"); if(!box)return; box.innerHTML="";
@@ -21758,7 +21854,7 @@ function buildModParams(m){
         +[1,1.25,1.5,2].map(function(pv){return '<button type="button" class="chip" data-scafscale-preset="'+pv.toFixed(2)+'">×'+pv.toFixed(2)+'</button>'}).join("")
         +'</div>'
         +'<p class="mod-note" data-scafscale-note>'+escapeHtml(scaffoldScaleText(m))+'</p>'
-        +'<p class="mod-note">The scale is an exact ratio of the whole system, applied uniformly so proportions stay exact. Each bay length and lift height is snapped to the nearest size on the '+escapeHtml(tyP.label)+' datasheet list — a non-datasheet size is never built — and the tube stays '+tyP.tubeOD.toFixed(1)+' mm: scaling never stretches the tube. The overall size shown is the exact snapped size, and the part counts follow it. Picking a bay / lift size by hand resets the scale to ×1.00 on those sizes.</p>')
+        +'<p class="mod-note">One exact ratio for the whole scaffolding — the SAME Scale you drag with the gizmo in the 3D view (Scale gizmo mode), so the panel and the gizmo always agree, exactly like a screen or a prop. The build itself stays on the '+escapeHtml(tyP.label)+' datasheet sizes picked above (bays, lifts, tube '+tyP.tubeOD.toFixed(1)+' mm); scaling grows or shrinks the whole unit uniformly, proportions exact, and at ×1.00 every dimension on stage is the true datasheet size. Picking a bay / lift size by hand resets the scale to ×1.00 on those sizes.</p>')
       +mRoll(m,"deck","Decks, guardrails & access",
         deckTogS
         +mToggle("guardrail","Guardrails + toeboards","")
@@ -22286,7 +22382,7 @@ function syncCrowdLists(m){
   if(modSelCrowdPack<0&&packs.length)modSelCrowdPack=0;
   var cgroups=m.params.groups||[];
   var csig=modSelCrowdPack+":"+cgroups.map(function(g){return g.id+","+(g.on===false?0:1)+","+(g.collapsed===true?1:0)+","+g.name}).join("|")+":G"+(grpRename&&grpRename.kind==="crowd"?grpRename.gid:"")+":P"+(crowdPackRename&&crowdPackRename.mid===m.id?crowdPackRename.pid:"")+":"+packs.map(function(pk){
-    return [pk.id,pk.name,pk.type,Math.round(+pk.count||0),pk.on===false?0:1,pk.group||"",Math.round((+pk.width||0)*100),Math.round((+pk.depth||0)*100),Math.round((+pk.gap||0)*100),pk.animate===false?0:1,Math.round(+pk.movement||0),Math.round((+pk.x||0)*100),Math.round((+pk.z||0)*100),Math.round(+pk.rot||0)].join(",");
+    return [pk.id,pk.name,pk.type,pk.phones===false?0:1,pk.phonesLevel||"",Math.round(+pk.count||0),pk.on===false?0:1,pk.group||"",Math.round((+pk.width||0)*100),Math.round((+pk.depth||0)*100),Math.round((+pk.gap||0)*100),pk.animate===false?0:1,Math.round(+pk.movement||0),Math.round((+pk.x||0)*100),Math.round((+pk.z||0)*100),Math.round(+pk.rot||0)].join(",");
   }).join("|");
   csig+=":U"+measureUnit();
   if(csig===syncCrowdLists._cs&&syncCrowdLists._el===listBox)return;
@@ -22325,6 +22421,7 @@ function syncCrowdLists(m){
     var spk=(modSelCrowdPack>=0&&modSelCrowdPack<packs.length)?packs[modSelCrowdPack]:null;
     if(!spk){ccard.innerHTML=""; return}
     var ci=modSelCrowdPack, st=crowdTypeOf(spk), seated=crowdSeated(st);
+    var phLevel=crowdPhoneLevel(spk), phOn=crowdPhonesOn(spk), phStats=crowdPhoneStats(m,spk);
     function cNum(key,lab,val,step,min,max){return '<div class="field"><span>'+lab+'</span><input type="number" step="'+step+'" min="'+min+'" max="'+max+'" data-cparam="'+key+'" data-cidx="'+ci+'" value="'+val+'"></div>'}
     function cLen(key,lab,valM){return '<div class="field"><span>'+lab+' · '+measureUnit()+'</span><input type="number" step="'+measureStep(0.5)+'" data-cparam="'+key+'" data-cidx="'+ci+'" value="'+measureInputVal(valM)+'"></div>'}
     ccard.innerHTML='<div class="cust-row sel" style="margin-top:8px"><div class="cr-head"><b>'+escapeHtml(spk.name)+'</b><span>'+crowdTypeLabel(st)+' · '+Math.round(+spk.count||0)+' people</span><span class="cr-acts"><button type="button" data-crowddup="'+ci+'">Duplicate</button><button type="button" data-crowddel="'+ci+'">Remove</button></span></div>'
@@ -22347,6 +22444,11 @@ function syncCrowdLists(m){
       +'<p class="mod-note" style="margin-top:6px">Head count: <b style="color:var(--text)">'+Math.round(+spk.count||0)+' people</b> — scaling this pack with the Crowd Edit gizmo resizes its area and recalculates the head count at the same density.</p>'
       +'<div class="pref-row" style="margin-top:10px"><div class="pr-t"><b>Animate this pack</b></div><button type="button" class="tgl'+(spk.animate!==false?" on":"")+'" data-cparam="animate" data-cidx="'+ci+'">'+(spk.animate!==false?"On":"Off")+'</button></div>'
       +'<div class="zoomrow"><span style="font-size:11px;color:var(--muted);min-width:74px;flex:none">'+(seated?"Movement":"Animation speed")+'</span><input type="range" data-cparam="movement" data-cidx="'+ci+'" min="0" max="100" step="1" value="'+Math.round(+spk.movement||0)+'"><output>'+Math.round(+spk.movement||0)+'%</output></div>'
+      +'<div class="pref-row" style="margin-top:10px"><div class="pr-t"><b>Phones</b></div><button type="button" class="tgl'+(phOn?" on":"")+'" data-cparam="phones" data-cidx="'+ci+'">'+(phOn?"On":"Off")+'</button></div>'
+      +'<div class="seg" style="grid-template-columns:1fr 1fr 1fr;margin-top:6px">'
+      +[["none","None"],["some","Some"],["many","Many"]].map(function(o){return '<button type="button" data-cparam="phonesLevel" data-cidx="'+ci+'" data-cval="'+o[0]+'"'+(phLevel===o[0]?' class="on"':"")+'>'+o[1]+'</button>'}).join("")
+      +'</div>'
+      +'<p class="mod-note" style="margin-top:6px">Phones raised: <b style="color:var(--text)">'+phStats.x+' of '+phStats.y+'</b> — some of the crowd hold a phone up in one raised hand, recording. Holders are scattered at random through the pack; each phone is black with a lit screen, so the screens glow in the night Render. Some \u2248 1 in 3, Many \u2248 3 in 5.</p>'
       +'<div class="field" style="margin-top:6px"><span>Group</span><select data-cgroup="'+ci+'"><option value=""'+(!spk.group?" selected":"")+'>Ungrouped</option>'+cgroups.map(function(g){return '<option value="'+g.id+'"'+(spk.group===g.id?" selected":"")+'>'+escapeHtml(g.name)+'</option>'}).join("")+'</select></div>'
       +(st==="pavilion"?'<p class="mod-note">Pavilion — stepped seating: concrete step tiers rising away from the stage, each row one step higher than the row in front, with seated rows on the tiers. No roof or posts.</p>':st==="ground"?'<p class="mod-note">Ground standing — an open standing area on the floor in front of the stage. No structure.</p>':st==="corporate"?'<p class="mod-note">Corporate seated — neat rows with a centre aisle, chairs included, gentle movement. Every figure is fully black — a silhouette against the lights.</p>':'<p class="mod-note">Concert standing — lively movement, arms waving. Every figure is fully black — a silhouette against the lights.</p>')
       +'</div>';
@@ -23598,8 +23700,14 @@ function modParamEvent(ev){
          crowd pack) is what made switching a 240-person pack to
          Pavilion stall the page. Mirrors the slider path below,
          which already rebuilds only the crowd group on input. */
-      if(cpEl.hasAttribute("data-cval")){pkC.type=cpEl.getAttribute("data-cval"); syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mcp); toast(pkC.name+" — now "+crowdTypeLabel(crowdTypeOf(pkC)).toLowerCase()+".")}
-      else if(cpEl.classList.contains("tgl")){pkC.animate=pkC.animate===false?true:false; syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mcp)}
+      if(cpEl.hasAttribute("data-cval")){
+        if(ck==="phonesLevel"){pkC.phonesLevel=cpEl.getAttribute("data-cval"); if(pkC.phonesLevel!=="none")pkC.phones=true; syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mcp); toast(pkC.name+" — phones "+CROWD_PHONE_LEVELS[crowdPhoneLevel(pkC)].label.toLowerCase()+": that share of the pack holds a phone up.")}
+        else{pkC.type=cpEl.getAttribute("data-cval"); syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mcp); toast(pkC.name+" — now "+crowdTypeLabel(crowdTypeOf(pkC)).toLowerCase()+".")}
+      }
+      else if(cpEl.classList.contains("tgl")){
+        if(ck==="phones"){if(crowdPhonesOn(pkC))pkC.phones=false; else{pkC.phones=true; if(crowdPhoneLevel(pkC)==="none")pkC.phonesLevel="some"} syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mcp)}
+        else{pkC.animate=pkC.animate===false?true:false; syncModifierPanel(); if(T3&&view3dOpen)rebuildModGroup(mcp)}
+      }
       return;
     }
     if(ev.type!=="input"&&ev.type!=="change")return;
@@ -23918,10 +24026,10 @@ $("modParams").addEventListener("change",function(ev){
 });
 /* Scaffolding Scale controls — the exact-ratio factor: the number
    field (typed to two decimals), the slider and the preset chips
-   all write through scaffoldSetScale, which snaps every bay /
-   lift size to the type's datasheet list, so the panel readout,
-   the 3D build and the counts can never disagree. Live on input,
-   like the ring Radius / Arc controls. */
+   all write through scaffoldSetScale — the same single scale the
+   3D Scale gizmo drags — so the panel readout, the 3D build and
+   the counts can never disagree. Live on input, like the ring
+   Radius / Arc controls. */
 function scaffoldScaleEvent(ev){
   var el=ev.target.closest?ev.target.closest("[data-scafscale],[data-scafscale-preset]"):null; if(!el)return false;
   var m=modById(selModId); if(!m||m.type!=="scaffold")return false;
@@ -23937,7 +24045,7 @@ $("modParams").addEventListener("change",function(ev){
   var el=ev.target.closest?ev.target.closest('[data-scafscale="num"]'):null; if(!el)return;
   var m=modById(selModId); if(!m||m.type!=="scaffold")return;
   var c=scaffoldCalc(m);
-  toast("Scaffolding scale ×"+c.scale.toFixed(2)+" — bays "+c.bayL.toFixed(2)+" × "+c.bayW.toFixed(2)+" m, lifts "+c.liftH.toFixed(1)+" m (snapped to the "+c.typeLabel+" datasheet sizes) · overall "+scaffoldOverallText(m)+". Tube stays "+c.type.tubeOD.toFixed(1)+" mm.");
+  toast("Scaffolding scale ×"+c.scale.toFixed(2)+" — the whole unit at this exact ratio · overall "+scaffoldOverallText(m)+". Its build stays on the "+c.typeLabel+" datasheet sizes (bays "+c.bayL.toFixed(2)+" × "+c.bayW.toFixed(2)+" m, lifts "+c.liftH.toFixed(1)+" m); at ×1.00 every dimension is the true datasheet size.");
 });
 $("modParams").addEventListener("input",modParamEvent);
 $("modParams").addEventListener("click",modParamEvent);
@@ -24267,7 +24375,7 @@ $("modParams").addEventListener("dragend",function(){
    build3DScene). All units are metres, floor at 0, audience towards
    +Z — the same frame as the displays. Geometry created here is
    disposed on rebuild; shared materials are kept. */
-var trussMat=null, cableMat=null, spkMat=null, spkFrontMat=null, fixMat=null, chairMat=null, crowdBodyMat=null, crowdHeadMat=null, ballastMat=null, barMat=null, modStartMat=null, modEndMat=null, modHitMat=null, segHiMat=null;
+var trussMat=null, cableMat=null, spkMat=null, spkFrontMat=null, fixMat=null, chairMat=null, crowdBodyMat=null, crowdHeadMat=null, phoneBodyMat=null, phoneScreenMat=null, ballastMat=null, barMat=null, modStartMat=null, modEndMat=null, modHitMat=null, segHiMat=null;
 var beamMatCache={}, lensMatCache={};
 function ensureModMats(){
   if(trussMat)return;
@@ -24279,6 +24387,14 @@ function ensureModMats(){
   chairMat=new THREE.MeshStandardMaterial({color:0x232f3e,roughness:0.85});
   crowdBodyMat=new THREE.MeshStandardMaterial({color:0x000000,roughness:0.85,metalness:0});
   crowdHeadMat=new THREE.MeshStandardMaterial({color:0x000000,roughness:0.65,metalness:0});
+  phoneBodyMat=new THREE.MeshStandardMaterial({color:0x000000,roughness:0.4,metalness:0.3});
+  /* Phone screens: an UNLIT basic material (the fixture-lens
+     pattern) in pale blue-white pushed past 1.0, so a screen reads
+     as lit in the editing view and — in the night Render, whose
+     bloom threshold is 0.78 — clears the threshold and glows
+     against the black crowd, while every figure and the phone
+     body itself stay fully black (0x000000). */
+  phoneScreenMat=new THREE.MeshBasicMaterial({color:new THREE.Color(0xdceeff).multiplyScalar(1.7),fog:false});
   ballastMat=new THREE.MeshStandardMaterial({color:0x39424f,roughness:0.95,metalness:0.05});
   barMat=new THREE.MeshStandardMaterial({color:0x2b3442,roughness:0.45,metalness:0.7});
   /* Custom-build editing: colour-coded end balls (drawn on top, like
@@ -24528,7 +24644,8 @@ function crowdGeos(){
   crowdGeoCache={torso:crowdTorsoGeo(0.155,0.42),head:new THREE.SphereGeometry(0.11,14,12),
     uarm:crowdCapsuleGeo(0.05,0.26),farm:crowdCapsuleGeo(0.042,0.24),hand:new THREE.SphereGeometry(0.045,8,6),
     thigh:crowdCapsuleGeo(0.075,0.40),shin:crowdCapsuleGeo(0.055,0.40),
-    seat:seatGeo,back:backGeo,step:stepGeo};
+    seat:seatGeo,back:backGeo,step:stepGeo,
+    phoneBody:new THREE.BoxGeometry(0.076,0.152,0.009),phoneScreen:new THREE.BoxGeometry(0.065,0.138,0.002)};
   return crowdGeoCache;
 }
 function buildCrowdPackGroup(m,pk,bb,g,pkIdx){
@@ -24577,7 +24694,17 @@ function buildCrowdPackGroup(m,pk,bb,g,pkIdx){
     for(var ri2=0;ri2<rowsS;ri2++){var szR=fr.z0+0.6+ri2*1.05, sdzR=szR-stepZc; dm1.position.set(fr.cx+sdzR*stepSn,0,stepZc+sdzR*stepCs); dm1.rotation.set(0,stepRot,0); dm1.scale.set(fr.W,(ri2+1)*CROWD_STEP_RISE,1.06); dm1.updateMatrix(); steps.setMatrixAt(ri2,dm1.matrix)}
     g.add(steps);
   }
+  /* Phones — one instanced black phone body + one instanced lit
+     screen per holder in this pack. phoneSlot maps a figure index
+     to its phone instance (or -1); updateCrowdInstances poses each
+     phone from its figure's raised-hand wrist every frame, so the
+     phones bounce and sway with the crowd animation. */
+  var phoneSlot=new Array(n); for(var psi=0;psi<n;psi++)phoneSlot[psi]=-1;
+  var phoneCount=0; items.forEach(function(it,ix){if(it.phone)phoneSlot[ix]=phoneCount++});
+  var phoneBody=null, phoneScreen=null;
+  if(phoneCount){phoneBody=im(CG.phoneBody,phoneBodyMat,phoneCount); phoneScreen=im(CG.phoneScreen,phoneScreenMat,phoneCount)}
   var crowd={torso:torso,head:head,uarm:uarm,farm:farm,hand:hand,thigh:thigh,shin:shin,items:items,
+    phoneBody:phoneBody,phoneScreen:phoneScreen,phoneSlot:phoneSlot,
     mid:m.id,packId:pk.id,
     seated:seated,type:built.type,animate:!!pk.animate,
     amp:seated?0.02*mv:(0.02+0.16*mv)};
@@ -24665,7 +24792,7 @@ function updateCrowdInstances(c,t){
     return out.set(0,-1,0).applyQuaternion(q);
   }
   for(var i=0;i<c.items.length;i++){
-    var it=c.items[i], s=it.s, dy=0, sway=0;
+    var it=c.items[i], s=it.s, dy=0, sway=0, phoneHand=null;
     if(c.animate){
       if(!c.seated){dy=Math.abs(Math.sin(t*it.spd+it.phase))*c.amp; sway=Math.sin(t*it.spd*0.5+it.phase)*0.05}
       else{sway=Math.sin(t*0.8+it.phase)*(0.012+c.amp)}
@@ -24720,6 +24847,23 @@ function updateCrowdInstances(c,t){
       setMesh(c.farm,ai,elX,elY,elZ,frx,0,rz,s);
       dirDown(frx,0,rz,v);
       setMesh(c.hand,ai,elX+v.x*0.27*s,elY+v.y*0.27*s,elZ+v.z*0.27*s,0,0,0,s);
+      if(it.phone&&sd>0)phoneHand=[elX+v.x*0.27*s,elY+v.y*0.27*s,elZ+v.z*0.27*s];
+    }
+    /* Phone — posed from the raised hand's wrist, so it rides the
+       figure's bounce / sway with the crowd animation. Tilted
+       toward the stage (top leaning to −Z, the way a phone aims
+       at the stage while recording), gripped at its base so most
+       of it stands above the hand; the lit screen sits on the +Z
+       face, towards the holder — glowing rectangles dotted
+       through the black crowd in the night Render. */
+    if(c.phoneBody&&c.phoneSlot&&c.phoneSlot[i]>=0&&phoneHand){
+      var piP=c.phoneSlot[i];
+      var pRxP=(it.phoneRx!=null?it.phoneRx:-0.35), pRzP=(it.phoneRz||0)+(c.animate?Math.sin(t*it.armSpd+it.armPh)*0.045:0);
+      dm.position.set(phoneHand[0],phoneHand[1]+0.062*s,phoneHand[2]); e.set(pRxP,0,pRzP); dm.quaternion.setFromEuler(e); dm.scale.set(s,s,s); dm.updateMatrix();
+      c.phoneBody.setMatrixAt(piP,dm.matrix);
+      v.set(0,0,0.0058*s).applyQuaternion(dm.quaternion);
+      dm.position.set(phoneHand[0]+v.x,phoneHand[1]+0.062*s+v.y,phoneHand[2]+v.z); dm.updateMatrix();
+      c.phoneScreen.setMatrixAt(piP,dm.matrix);
     }
   }
   c.torso.instanceMatrix.needsUpdate=true;
@@ -24729,6 +24873,8 @@ function updateCrowdInstances(c,t){
   c.hand.instanceMatrix.needsUpdate=true;
   c.thigh.instanceMatrix.needsUpdate=true;
   c.shin.instanceMatrix.needsUpdate=true;
+  if(c.phoneBody)c.phoneBody.instanceMatrix.needsUpdate=true;
+  if(c.phoneScreen)c.phoneScreen.instanceMatrix.needsUpdate=true;
 }
 
 /* ── Lighting ────────────────────────────────────────────────────────
@@ -26342,10 +26488,12 @@ function buildScaffoldPreviewGroup(m,bb){
    rail + top rail; the 0.99 m top rail is the Layher Datasheet
    figure) with 15 cm toeboards around the top deck, and a ladder
    or stair access. One modifier = one unit: it stands at its
-   params x / y / z and turns on ry. Its SIZE comes only from its
-   bays / lifts — the exact-ratio Scale snaps those to the type's
-   datasheet sizes (scaffoldSetScale), so the tube is ALWAYS the
-   type's real tube (48.3 mm OD) and never stretches with scale.
+   params x / y / z and turns on ry. Its BUILD comes from its
+   bays / lifts (the type's datasheet sizes), and its exact-ratio
+   Scale (scaffoldSetScale) scales the whole unit uniformly on
+   the pivot below — the same single scale the panel field and
+   the 3D Scale gizmo both drive, so at ×1.00 the unit stands at
+   true datasheet size, the 48.3 mm OD tube included.
    SELECTION, like a screen: the unit ALWAYS carries a selection
    hit box (kind "scsel") in the 3D view — clicking it selects the
    modifier and arms Scaffolding editing, so the unit gets the
@@ -26366,9 +26514,16 @@ function buildScaffoldGroup(m,bb){
   var pivot=new THREE.Group();
   pivot.position.set(+p.x||0,+p.y||0,+p.z||0);
   pivot.rotation.y=(+p.ry||0)*Math.PI/180;
+  /* The unit's exact-ratio scale, applied to the whole unit at
+     once — the same uniform scale the gizmo gives a screen or a
+     prop: the geometry below is laid out at the build's datasheet
+     sizes (L0 / W0 / H0) and the pivot scales all of it together,
+     so a scale drag grows / shrinks the unit live and uniformly. */
+  pivot.scale.setScalar(c.scale);
   g.add(pivot);
-  var R=ty.tubeOD/2000; /* the type's real tube radius in m — 48.3 mm OD (Datasheet); scaling never changes it */
-  var x0=-c.L/2, z0=-c.W/2;
+  var R=ty.tubeOD/2000; /* the type's real tube radius in m — 48.3 mm OD (Datasheet) at scale ×1.00 */
+  var L0=c.nx*c.bayL, W0=c.nz*c.bayW, H0=c.lifts*c.liftH;
+  var x0=-L0/2, z0=-W0/2;
   function tube(ax,ay,az,bx,by,bz,r,mat){cylBetween(v3(ax,ay,az),v3(bx,by,bz),r||R,mat||trussMat,pivot)}
   var i,j,lf;
   /* Base jacks + standards, with the type's connection collars */
@@ -26377,14 +26532,14 @@ function buildScaffoldGroup(m,bb){
     var plate=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.02,0.15),ballastMat);
     plate.position.set(sx,0.01,sz); plate.userData.ownGeo=true; pivot.add(plate);
     tube(sx,0,sz,sx,0.35,sz,0.017,barMat); /* base jack stem */
-    tube(sx,0,sz,sx,c.H,sz); /* standard */
+    tube(sx,0,sz,sx,H0,sz); /* standard */
     if(ty.nodeKind==="rosette"){
-      for(var rsy=0.5;rsy<c.H-0.01;rsy+=0.5){
+      for(var rsy=0.5;rsy<H0-0.01;rsy+=0.5){
         var ros=new THREE.Mesh(new THREE.CylinderGeometry(0.062,0.062,0.028,12),barMat);
         ros.position.set(sx,rsy,sz); ros.userData.ownGeo=true; pivot.add(ros);
       }
     }else if(ty.nodeKind==="cup"){
-      for(var csy=0.5;csy<c.H-0.01;csy+=0.5){
+      for(var csy=0.5;csy<H0-0.01;csy+=0.5){
         var cup=new THREE.Mesh(new THREE.CylinderGeometry(0.058,0.042,0.055,12),barMat);
         cup.position.set(sx,csy,sz); cup.userData.ownGeo=true; pivot.add(cup);
         var cupT=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.02,12),barMat);
@@ -26414,8 +26569,8 @@ function buildScaffoldGroup(m,bb){
     }
     if(p.bracing){
       var yb=(lf-1)*c.liftH;
-      for(i=0;i<c.nx;i++){tube(x0+i*c.bayL,yb,z0,x0+(i+1)*c.bayL,ly,z0); tube(x0+i*c.bayL,yb,z0+c.W,x0+(i+1)*c.bayL,ly,z0+c.W)}
-      for(j=0;j<c.nz;j++){tube(x0,yb,z0+j*c.bayW,x0,ly,z0+(j+1)*c.bayW); tube(x0+c.L,yb,z0+j*c.bayW,x0+c.L,ly,z0+(j+1)*c.bayW)}
+      for(i=0;i<c.nx;i++){tube(x0+i*c.bayL,yb,z0,x0+(i+1)*c.bayL,ly,z0); tube(x0+i*c.bayL,yb,z0+W0,x0+(i+1)*c.bayL,ly,z0+W0)}
+      for(j=0;j<c.nz;j++){tube(x0,yb,z0+j*c.bayW,x0,ly,z0+(j+1)*c.bayW); tube(x0+L0,yb,z0+j*c.bayW,x0+L0,ly,z0+(j+1)*c.bayW)}
     }
   }
   /* Guardrails (mid rail + top rail — 99 cm for Layher, its
@@ -26424,22 +26579,22 @@ function buildScaffoldGroup(m,bb){
      deck, and 15 cm toeboards around it */
   if(p.guardrail){
     var grH=ty.guardrailCm?ty.guardrailCm/100:1;
-    var ty=c.H;
-    for(i=0;i<=c.nx;i++){tube(x0+i*c.bayL,ty,z0,x0+i*c.bayL,ty+grH,z0); tube(x0+i*c.bayL,ty,z0+c.W,x0+i*c.bayL,ty+grH,z0+c.W)}
-    for(j=1;j<c.nz;j++){tube(x0,ty,z0+j*c.bayW,x0,ty+grH,z0+j*c.bayW); tube(x0+c.L,ty,z0+j*c.bayW,x0+c.L,ty+grH,z0+j*c.bayW)}
+    var ty=H0;
+    for(i=0;i<=c.nx;i++){tube(x0+i*c.bayL,ty,z0,x0+i*c.bayL,ty+grH,z0); tube(x0+i*c.bayL,ty,z0+W0,x0+i*c.bayL,ty+grH,z0+W0)}
+    for(j=1;j<c.nz;j++){tube(x0,ty,z0+j*c.bayW,x0,ty+grH,z0+j*c.bayW); tube(x0+L0,ty,z0+j*c.bayW,x0+L0,ty+grH,z0+j*c.bayW)}
     [0.5,grH].forEach(function(go){
-      for(var i6=0;i6<c.nx;i6++){tube(x0+i6*c.bayL,ty+go,z0,x0+(i6+1)*c.bayL,ty+go,z0); tube(x0+i6*c.bayL,ty+go,z0+c.W,x0+(i6+1)*c.bayL,ty+go,z0+c.W)}
-      for(var j6=0;j6<c.nz;j6++){tube(x0,ty+go,z0+j6*c.bayW,x0,ty+go,z0+(j6+1)*c.bayW); tube(x0+c.L,ty+go,z0+j6*c.bayW,x0+c.L,ty+go,z0+(j6+1)*c.bayW)}
+      for(var i6=0;i6<c.nx;i6++){tube(x0+i6*c.bayL,ty+go,z0,x0+(i6+1)*c.bayL,ty+go,z0); tube(x0+i6*c.bayL,ty+go,z0+W0,x0+(i6+1)*c.bayL,ty+go,z0+W0)}
+      for(var j6=0;j6<c.nz;j6++){tube(x0,ty+go,z0+j6*c.bayW,x0,ty+go,z0+(j6+1)*c.bayW); tube(x0+L0,ty+go,z0+j6*c.bayW,x0+L0,ty+go,z0+(j6+1)*c.bayW)}
     });
     function toe(cx,cz,w,d){var tb2=new THREE.Mesh(new THREE.BoxGeometry(w,0.15,d),scafToeMat); tb2.position.set(cx,ty+0.075,cz); tb2.userData.ownGeo=true; pivot.add(tb2)}
-    toe(0,z0+0.02,c.L,0.03); toe(0,z0+c.W-0.02,c.L,0.03); toe(x0+0.02,0,0.03,c.W); toe(x0+c.L-0.02,0,0.03,c.W);
+    toe(0,z0+0.02,L0,0.03); toe(0,z0+W0-0.02,L0,0.03); toe(x0+0.02,0,0.03,W0); toe(x0+L0-0.02,0,0.03,W0);
   }
   /* Access — a ladder up the front face, or one stair flight per
      lift inside the first bay */
   if(p.access==="ladder"){
-    var lx=x0+c.bayL/2, lz=z0+c.W+0.28;
-    tube(lx-0.2,0,lz,lx-0.2,c.H,lz,0.02,barMat); tube(lx+0.2,0,lz,lx+0.2,c.H,lz,0.02,barMat);
-    for(var rg=0.25;rg<c.H;rg+=0.28)tube(lx-0.2,rg,lz,lx+0.2,rg,lz,0.012,barMat);
+    var lx=x0+c.bayL/2, lz=z0+W0+0.28;
+    tube(lx-0.2,0,lz,lx-0.2,H0,lz,0.02,barMat); tube(lx+0.2,0,lz,lx+0.2,H0,lz,0.02,barMat);
+    for(var rg=0.25;rg<H0;rg+=0.28)tube(lx-0.2,rg,lz,lx+0.2,rg,lz,0.012,barMat);
   }else if(p.access==="stair"){
     for(lf=0;lf<c.lifts;lf++){
       var yb2=lf*c.liftH, nst=Math.max(2,Math.round(c.liftH/0.2)), sd=c.bayL/nst;
