@@ -326,7 +326,7 @@ body.panel-resizing{user-select:none}
 .obj-title{flex:1;min-width:0;background:var(--input);border:1px solid var(--line2);border-radius:6px;padding:6px 9px}
 .obj-title b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .obj-info{display:block;font-size:11.5px;color:var(--muted);font-family:"IBM Plex Mono",monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:6px}
-.obj-kinds{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}
+.obj-kinds{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}
 .obj-kinds button{border:1px solid var(--line);background:var(--panel2);padding:6px 4px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted)}
 .obj-kinds button.on{background:var(--chip);color:var(--text);border-color:var(--line2);box-shadow:inset 0 0 0 1px var(--line2)}
 .obj-kinds button:disabled{opacity:.38;cursor:default}
@@ -2050,6 +2050,7 @@ html.admin-boot #adminPage{display:block}
           <button type="button" data-objkind="truss">Truss</button>
           <button type="button" data-objkind="light">Light</button>
           <button type="button" data-objkind="prop">Prop</button>
+          <button type="button" data-objkind="scaffold">Scaffold</button>
         </div>
         <p class="nosel-note" id="objEmpty" hidden><b>Nothing selected.</b></p>
 
@@ -2169,7 +2170,7 @@ html.admin-boot #adminPage{display:block}
             <optgroup label="Stage structure">
               <option value="stage">Stage Settings — design the stage platform (boxes, steps, round shapes)</option>
               <option value="truss">Truss — LED wall support system (flown / goalpost / ground-stacked)</option>
-              <option value="scaffold">Scaffolding — Layher Allround bays, lifts, decks &amp; guardrails</option>
+              <option value="scaffold">Scaffolding — Layher Allround / Ringlock / Cuplock / Tube &amp; Coupler: bays, lifts, decks &amp; guardrails</option>
               <option value="speakers">Speakers — line arrays, left &amp; right</option>
             </optgroup>
             <optgroup label="Lighting &amp; atmosphere">
@@ -8844,10 +8845,51 @@ function attach3DPointer(el){
       if(mmU&&mmU.type!=="stage"&&stageEditOn())return null; /* stage editing ON: only stage pieces answer — everything else is locked */
       if(mmU&&mmU.type==="crowd"&&crowdToolArmed!==mmU.id)return null; /* crowd handles answer only while Crowd editing is ON for that Crowd modifier */
       if(mmU&&mmU.type!=="crowd"&&crowdEditOn())return null; /* crowd editing ON: only crowd packs answer — everything else is locked */
-      if(mmU&&mmU.type==="scaffold"&&scaffoldToolArmed!==mmU.id)return null; /* scaffold handles answer only while Scaffolding editing is ON for that Scaffolding modifier */
+      if(mmU&&mmU.type==="scaffold"){
+        /* Scaffold gates: the unit's own gizmo / body handles
+           (scel / scgizmo) answer while Scaffolding editing is ON
+           for it — armed by its Edit button or by clicking the
+           unit (below). The always-on SELECTION box (scsel) is how
+           that click lands: it answers whenever no OTHER section's
+           edit mode is on and no other scaffolding is armed, and
+           the pointer handler turns the grab into select + arm +
+           drag in one gesture, exactly like grabbing a screen. */
+        if(meU.kind==="scsel"){
+          if(trussEditOn()||lightEditOn()||propEditOn()||stageEditOn()||crowdEditOn())return null;
+          if(scaffoldToolArmed&&scaffoldToolArmed!==mmU.id)return null;
+          /* Occlusion: a screen IN FRONT of the unit owns the
+             click — the selection box only answers when nothing
+             display-shaped is nearer the camera on this ray, so
+             selecting a screen through / in front of a scaffold
+             keeps working exactly as before. */
+          var dhS=ray.intersectObjects(T3.hitMeshes||[],false);
+          if(dhS.length&&dhS[0].distance<pick.distance-0.05)return null;
+        }else{
+          if(scaffoldToolArmed!==mmU.id)return null;
+        }
+      }
       if(mmU&&mmU.type!=="scaffold"&&scaffoldEditOn())return null; /* scaffolding editing ON: only the scaffolding answers — everything else is locked */
     }
     return meU;
+  }
+  /* Scaffold selection pick for VIEW mode — clicking a scaffolding
+     unit selects it there too (its panel + Object tab open on it),
+     like clicking a screen selects the screen. Returns the
+     modifier id, or null. Edit mode uses pickMod instead. */
+  function pickScaffoldSel(ev){
+    if(!T3.modHit||!T3.modHit.length)return null;
+    setRay(ev);
+    var hits=ray.intersectObjects(T3.modHit,false);
+    var dhV=ray.intersectObjects(T3.hitMeshes||[],false);
+    var dDispV=dhV.length?dhV[0].distance:Infinity;
+    for(var hi2=0;hi2<hits.length;hi2++){
+      var hk2=hits[hi2].object.userData.modEdit;
+      if(hk2&&(hk2.kind==="scsel"||hk2.kind==="scel")){
+        if(hits[hi2].distance>dDispV+0.05)return null; /* a screen is in front — the click selects the screen */
+        return hk2.mid;
+      }
+    }
+    return null;
   }
   var AX3={x:new THREE.Vector3(1,0,0),y:new THREE.Vector3(0,1,0),z:new THREE.Vector3(0,0,1)};
   function pickGizmo(ev){
@@ -9063,6 +9105,24 @@ function attach3DPointer(el){
       if(miP){
         var mmP=modById(miP.mid);
         if(mmP){
+          if(miP.kind==="scsel"){
+            /* DIRECT SELECT — clicking a scaffolding unit in the
+               3D view selects it, like clicking a screen: the
+               modifier becomes the selected one, Scaffolding
+               editing arms for it (every other section's edit mode
+               ends, as with its Edit button), and THIS grab
+               continues as a normal body drag of the now-selected
+               unit, so click-and-drag moves it in one gesture. A
+               plain click (no drag) just selects + arms, leaving
+               the Move / Rotate / Scale gizmo on it. */
+            selModId=mmP.id;
+            trussToolArmed=null; trussDraw=null; lightToolArmed=null; propToolArmed=null; stageToolArmed=null; crowdToolArmed=null;
+            scaffoldToolArmed=mmP.id;
+            miP={kind:"scel",mid:mmP.id,idx:0};
+            syncModifierPanel();
+            if(T3&&view3dOpen)rebuildModGroup(mmP);
+            updateV3Readout("Scaffolding selected — "+escapeHtml(mmP.name)+" ("+escapeHtml(scaffoldCalc(mmP).typeLabel)+"). Drag to move it, or use the Move / Rotate / Scale gizmo buttons; its panel and the Object tab now edit this unit.");
+          }
           var planeP=null, okP=true;
           if(miP.kind==="end"){
             var sgP=mmP.params.segs[miP.idx];
@@ -9143,7 +9203,7 @@ function attach3DPointer(el){
                plane, the body / centre ball the horizontal plane at
                that height. */
             var scSC=scaffoldCalc(mmP);
-            var cenSC=new THREE.Vector3(+mmP.params.x||0,(+mmP.params.y||0)+Math.max(0.02,scSC.H*(+mmP.params.us||1))/2,+mmP.params.z||0);
+            var cenSC=new THREE.Vector3(+mmP.params.x||0,(+mmP.params.y||0)+Math.max(0.02,scSC.H)/2,+mmP.params.z||0);
             if(miP.sub==="axis"){
               var AgSC=AX3[miP.axis], cdSC=new THREE.Vector3(); T3.camera.getWorldDirection(cdSC);
               var nSC=new THREE.Vector3().crossVectors(AgSC,new THREE.Vector3().crossVectors(cdSC,AgSC));
@@ -9520,7 +9580,7 @@ function attach3DPointer(el){
               :miP.kind==="scgizmo"?(miP.sub==="rot"
                 ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo rotate ring: dragging turns the unit about its centre (magnet snaps "+rotStepDeg()+"°). Its position never changes in Rotate mode."
                 :miP.sub==="scale"
-                ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo scale cube: drag away from the centre to grow the whole unit, towards it to shrink it — it resizes uniformly about its base. Bay sizes stay the datasheet sizes in its panel."
+                ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo scale cube: drag away from the centre to grow the whole unit, towards it to shrink it — an exact-ratio scale about its base: bay / lift sizes snap to the datasheet list and the tube stays 48.3 mm."
                 :miP.sub==="axis"
                 ?"Scaffolding — "+escapeHtml(mmP.name)+": gizmo "+miP.axis.toUpperCase()+" arrow: dragging moves the unit along the "+miP.axis.toUpperCase()+" axis only"+(miP.axis==="y"?" (raise / lower its base)":"")+"."
                 :"Scaffolding — "+escapeHtml(mmP.name)+": gizmo centre ball: dragging moves the unit freely across the floor plane. Its base height stays — move it up / down with the green Y arrow.")
@@ -9789,14 +9849,19 @@ function attach3DPointer(el){
         return;
       }
       if(md.info.kind==="scel"&&state.gizmoMode==="scale"){
-        /* Scale gizmo on a scaffold unit body: drag distance
-           resizes the whole unit uniformly about its base — bay
-           sizes stay the datasheet sizes in the panel. */
-        var ppS=mm2.params;
-        var nSC2=clamp((+md.scafStart.us||1)*(1+((ev.clientX-md.sx)-(ev.clientY-md.sy))/220),0.25,4);
-        ppS.us=Math.round(nSC2*100)/100;
-        rebuildModGroup(mm2);
-        updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": unit scale ×"+ppS.us.toFixed(2)+". Release to keep it.");
+        /* Scale gizmo on a scaffold unit body: drag distance scales
+           the whole unit by an exact ratio about its base — the
+           ratio is applied to the drag-start bays / lifts and each
+           size SNAPS to the type's datasheet list (scaffoldSetScale
+           with the drag-start build as the base), so the tube stays
+           the real 48.3 mm and no non-datasheet bay is ever built.
+           Its position never changes in Scale mode. */
+        var ppS=mm2.params, stSS=md.scafStart;
+        var fSS=clamp(1+((ev.clientX-md.sx)-(ev.clientY-md.sy))/220,0.25,4);
+        ppS.sclL=+stSS.bayL||2.07; ppS.sclW=+stSS.bayW||2.07; ppS.sclH=+stSS.liftH||2;
+        var cSS=scaffoldSetScale(mm2,fSS);
+        rebuildModGroup(mm2); syncModifierPanel();
+        updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": scale ×"+cSS.scale.toFixed(2)+" — bays "+cSS.bayL.toFixed(2)+" × "+cSS.bayW.toFixed(2)+" m · overall "+escapeHtml(scaffoldOverallText(mm2))+". Release to keep it.");
         return;
       }
       if(md.info.kind==="crowd"&&state.gizmoMode==="rotate"){
@@ -10223,14 +10288,18 @@ function attach3DPointer(el){
         }else if(md.info.kind==="scgizmo"&&md.info.sub==="scale"&&md.propCen){
           /* Scaffold gizmo scale cube: the pointer's distance from
              the unit's centre against its distance at the grab is
-             the uniform unit-scale factor. Position never changes. */
+             the exact-ratio scale factor, applied to the drag-start
+             build as the base and SNAPPED to the type's datasheet
+             bay / lift sizes — the tube never scales. Position
+             never changes. */
           var ppQ4=mm2.params, stSC4=md.scafStart;
           var d0SC=Math.hypot(md.p0.x-md.propCen.x,md.p0.y-md.propCen.y,md.p0.z-md.propCen.z);
           var d1SC=Math.hypot(ptM.x-md.propCen.x,ptM.y-md.propCen.y,ptM.z-md.propCen.z);
-          var fSC4=d0SC>0.05?clamp(d1SC/d0SC,0.05,20):1;
-          ppQ4.us=Math.round(clamp((+stSC4.us||1)*fSC4,0.25,4)*100)/100;
-          rebuildModGroup(mm2);
-          updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": unit scale ×"+ppQ4.us.toFixed(2)+". Release to keep it.");
+          var fSC4=d0SC>0.05?clamp(d1SC/d0SC,0.25,4):1;
+          ppQ4.sclL=+stSC4.bayL||2.07; ppQ4.sclW=+stSC4.bayW||2.07; ppQ4.sclH=+stSC4.liftH||2;
+          var cSC4=scaffoldSetScale(mm2,fSC4);
+          rebuildModGroup(mm2); syncModifierPanel();
+          updateV3Readout("Scaffolding — "+escapeHtml(mm2.name)+": scale ×"+cSC4.scale.toFixed(2)+" — bays "+cSC4.bayL.toFixed(2)+" × "+cSC4.bayW.toFixed(2)+" m · overall "+escapeHtml(scaffoldOverallText(mm2))+". Release to keep it.");
         }else if(md.info.kind==="scgizmo"&&md.info.sub==="axis"){
           /* Scaffold gizmo axis arrow: the unit travels along that
              one world axis from its drag-start position. */
@@ -10692,7 +10761,7 @@ function attach3DPointer(el){
         if(elT2)toast("Stage piece — "+elT2.name+": "+stageShapeLabel(elT2)+" · "+stageElDims(elT2)+" · at ("+(+elT2.x||0).toFixed(1)+", "+(+elT2.y||0).toFixed(1)+", "+(+elT2.z||0).toFixed(1)+") m · rot Y "+Math.round(+elT2.ry||0)+"°. Saved with the layout; Undo steps it back.");
       }else if(mdF.info.kind==="scel"||mdF.info.kind==="scgizmo"){
         var ppT=mmF.params, scT2=scaffoldCalc(mmF);
-        toast("Scaffolding — "+mmF.name+": "+(scT2.empty?"empty (zero bays)":(scT2.nx+" × "+scT2.nz+" bays · "+fmtMeasure(scT2.H)+" high"))+" · at ("+(+ppT.x||0).toFixed(1)+", "+(+ppT.y||0).toFixed(1)+", "+(+ppT.z||0).toFixed(1)+") m · rot Y "+Math.round(+ppT.ry||0)+"° · scale ×"+(+ppT.us||1).toFixed(2)+". Saved with the layout; Undo steps it back.");
+        toast("Scaffolding — "+mmF.name+": "+(scT2.empty?"empty (zero bays)":(scT2.typeLabel+" · "+scT2.nx+" × "+scT2.nz+" bays · overall "+scaffoldOverallText(mmF)))+" · at ("+(+ppT.x||0).toFixed(1)+", "+(+ppT.y||0).toFixed(1)+", "+(+ppT.z||0).toFixed(1)+") m · rot Y "+Math.round(+ppT.ry||0)+"° · scale ×"+scT2.scale.toFixed(2)+". Saved with the layout; Undo steps it back.");
       }else{
         var sgT=mmF.params.segs[mdF.info.idx];
         toast("Truss segment "+(mdF.info.idx+1)+" — "+fmtMeasure(segLen(sgT))+" · ("+measureNum(sgT.ax)+", "+measureNum(sgT.ay)+", "+measureNum(sgT.az)+") → ("+measureNum(sgT.bx)+", "+measureNum(sgT.by)+", "+measureNum(sgT.bz)+") "+measureUnit()+". Custom truss: "+mmF.params.segs.length+" segments, "+fmtMeasure(trussCalc(mmF).customLen)+" total.");
@@ -10815,8 +10884,20 @@ function attach3DPointer(el){
         updateV3Readout("Nothing selected — the canvas click cleared the truss selection. Click a truss bar to select it again.");
       }
     }else if(dragMode==="orbit"&&moved<6&&state.vmode==="view"){
-      var id=pickDisp(ev);
-      if(id&&id!==state.selId){state.selId=id; state.selCab=null; render()}
+      /* A click in View mode selects what it lands on: a
+         scaffolding unit selects that Scaffolding modifier (its
+         panel + the Object tab open on it — switch to Edit mode
+         for its gizmo), ahead of the screens behind it; otherwise
+         a screen selects as before. */
+      var scmV=pickScaffoldSel(ev);
+      if(scmV){
+        if(scmV!==selModId){selModId=scmV; render()}
+        var mmV=modById(scmV);
+        if(mmV)updateV3Readout("Scaffolding selected — "+escapeHtml(mmV.name)+" ("+escapeHtml(scaffoldCalc(mmV).typeLabel)+", "+escapeHtml(scaffoldOverallText(mmV))+"). Switch to Edit mode to move / rotate / scale it with the gizmo.");
+      }else{
+        var id=pickDisp(ev);
+        if(id&&id!==state.selId){state.selId=id; state.selCab=null; render()}
+      }
     }
     if(!Object.keys(pointers).length){dragMode=null; dragDisp=null}
   }
@@ -12069,10 +12150,11 @@ function objScreenSel(){var d=selOpt(); return d?{kind:"screen",disp:d}:null}
 function objTrussSel(){var m=modById(selModId); if(!m||m.type!=="truss"||!m.enabled)return null; var segs=m.params.segs||[]; if(!segs.length)return null; var i=(modSelSeg>=0&&modSelSeg<segs.length)?modSelSeg:0; return {kind:"truss",mod:m,seg:segs[i],idx:i}}
 function objLightSel(){var m=modById(selModId); if(!m||m.type!=="light"||!m.enabled)return null; var fx=m.params.fixtures||[]; if(!fx.length)return null; var i=(modSelFix>=0&&modSelFix<fx.length)?modSelFix:0; return {kind:"light",mod:m,fix:fx[i],idx:i}}
 function objPropSel(){var m=modById(selModId); if(!m||m.type!=="props"||!m.enabled)return null; var it=m.params.items||[]; if(!it.length)return null; var i=(modSelProp>=0&&modSelProp<it.length)?modSelProp:0; return {kind:"prop",mod:m,item:it[i],idx:i}}
-function objSelOf(kind){return kind==="truss"?objTrussSel():kind==="light"?objLightSel():kind==="prop"?objPropSel():objScreenSel()}
+function objScaffoldSel(){var m=modById(selModId); if(!m||m.type!=="scaffold"||!m.enabled)return null; return {kind:"scaffold",mod:m,idx:0}}
+function objSelOf(kind){return kind==="truss"?objTrussSel():kind==="light"?objLightSel():kind==="prop"?objPropSel():kind==="scaffold"?objScaffoldSel():objScreenSel()}
 function currentObject(){
   var o=objSelOf(objFocusKind); if(o)return o;
-  var order=["screen","truss","light","prop"];
+  var order=["screen","truss","light","prop","scaffold"];
   for(var i=0;i<order.length;i++){if(order[i]===objFocusKind)continue; var c=objSelOf(order[i]); if(c)return c}
   return null;
 }
@@ -12123,6 +12205,14 @@ function objView(o){
       note:""+measureUnit()+" — "+(fullRotO?"typing a new position places it freely: battens and matrix panels can sit on any surface — the stage, a truss, a prop or a screen wall — and the position saves with the layout.":"typing a new position puts it on the bar nearest that point, so a light stays on a bar.")+(batO?" Rotation is in degrees: X tilts, Y turns and Z rolls — an LED batten has all three, all about the base, which stays on its mounting surface, so it can stand vertical, lie horizontal, or sit at any angle in between. Set X, Y and Z here or in the batten's card — its 3D gizmo shows all three rings. All three rotations save with the layout and show in the 3D view, Render and client view.":" Rotation is in degrees: X tilts and Y turns, both about the base, which stays on its mounting surface; Z is locked at 0° — no roll, for any light. Set X and Y here or in the light's card — the 3D gizmo rotates Y only. Both rotations save with the layout and show in the 3D view, Render and client view.")+" Scale is the fixture's size, the same on all three axes.",
       t:{px:r2(rp.x), py:r2(rp.y), pz:r2(rp.z), rx:Math.round(fixtureRotX(f)), ry:Math.round(fixtureRotY(f)), rz:batO?Math.round(fixtureRotZ(f)):0, sx:sz2, sy:sz2, sz:sz2},
       lock:batO?{}:{rz:1}, slab:["Scale X · size ×","Scale Y · size ×","Scale Z · size ×"]};
+  }
+  if(o.kind==="scaffold"){
+    var sm=o.mod, sp=sm.params, scf=scaffoldCalc(sm);
+    return {badge:"Scaffolding", name:sm.name,
+      info:scf.typeLabel+" · "+(scf.empty?"empty — zero bays":(scf.nx+" × "+scf.nz+" bays · overall "+scaffoldOverallText(sm))),
+      note:""+measureUnit()+" — X across, Y the height of the unit's base, Z depth. Rotation is in degrees: Y is the unit's facing; X / Z are locked at 0° — a scaffolding unit never tilts. Scale is the unit's exact ratio, the same on all three axes: it multiplies the base build and snaps every bay length and lift height to the nearest "+scf.typeLabel+" datasheet size, so the sizes built are always real datasheet sizes and the tube stays "+scf.type.tubeOD.toFixed(1)+" mm. The same Scale control, with the live overall size, is in the Scaffolding panel.",
+      t:{px:r2(sp.x), py:r2(sp.y), pz:r2(sp.z), rx:0, ry:Math.round(+sp.ry||0), rz:0, sx:scf.scale, sy:scf.scale, sz:scf.scale},
+      lock:{rx:1, rz:1}, slab:["Scale X · size ×","Scale Y · size ×","Scale Z · size ×"]};
   }
   var it=o.item, sc=clamp(+it.s||1,0.02,50);
   return {badge:"Prop", name:it.name,
@@ -12211,6 +12301,15 @@ function applyObjField(o,key,v){
     if(key==="sx"||key==="sy"||key==="sz"){f.size=clamp(r2(v),0.4,2.5); return}
     return;
   }
+  if(o.kind==="scaffold"){
+    var spp=o.mod.params;
+    if(key==="px")spp.x=r2(clamp(v,-60,60));
+    else if(key==="py")spp.y=r2(clamp(v,0,15));
+    else if(key==="pz")spp.z=r2(clamp(v,-60,60));
+    else if(key==="ry")spp.ry=Math.round(normDeg180(v));
+    else if(key==="sx"||key==="sy"||key==="sz")scaffoldSetScale(o.mod,v); /* exact ratio — snaps bays / lifts to the type's datasheet sizes */
+    return;
+  }
   var it2=o.item;
   if(key==="px")it2.x=r2(clamp(v,-60,60));
   else if(key==="py")it2.y=r2(clamp(v,0,15));
@@ -12263,10 +12362,10 @@ function syncObjectPanel(){
   if(!$("tab-object"))return;
   /* Focus follows the last selection made — see the block comment. */
   var mSel=modById(selModId);
-  var sig={sel:state.selId, mod:selModId, seg:modSelSeg, fix:modSelFix, prop:modSelProp, arm:trussToolArmed||lightToolArmed||propToolArmed||""};
+  var sig={sel:state.selId, mod:selModId, seg:modSelSeg, fix:modSelFix, prop:modSelProp, arm:trussToolArmed||lightToolArmed||propToolArmed||scaffoldToolArmed||""};
   if(objPrevSig){
-    if(sig.arm&&sig.arm!==objPrevSig.arm){var am=modById(sig.arm); if(am)objFocusKind=am.type==="truss"?"truss":am.type==="light"?"light":am.type==="props"?"prop":objFocusKind}
-    else if(sig.mod!==objPrevSig.mod&&mSel){if(mSel.type==="truss")objFocusKind="truss"; else if(mSel.type==="light")objFocusKind="light"; else if(mSel.type==="props")objFocusKind="prop"}
+    if(sig.arm&&sig.arm!==objPrevSig.arm){var am=modById(sig.arm); if(am)objFocusKind=am.type==="truss"?"truss":am.type==="light"?"light":am.type==="props"?"prop":am.type==="scaffold"?"scaffold":objFocusKind}
+    else if(sig.mod!==objPrevSig.mod&&mSel){if(mSel.type==="truss")objFocusKind="truss"; else if(mSel.type==="light")objFocusKind="light"; else if(mSel.type==="props")objFocusKind="prop"; else if(mSel.type==="scaffold")objFocusKind="scaffold"}
     else if(sig.seg!==objPrevSig.seg&&mSel&&mSel.type==="truss")objFocusKind="truss";
     else if(sig.fix!==objPrevSig.fix&&mSel&&mSel.type==="light")objFocusKind="light";
     else if(sig.prop!==objPrevSig.prop&&mSel&&mSel.type==="props")objFocusKind="prop";
@@ -13692,25 +13791,28 @@ function downloadBriefPDF(){
     ["TOTAL Length:", fmtMetres(btLen), "TOTAL Segments:", String(btSegs)],
     ["TOTAL Truss Weight:", fmt(Math.round(btKg*10)/10)+" kg", "Systems:", String(bomTruss.length)]
   ]);
-  /* Scaffolding — Layher Allround part counts (Calculated from the
-     layout; the load figures are the Datasheet values) */
+  /* Scaffolding — part counts per system type (Calculated from
+     the layout; the load figures are the type's Datasheet values,
+     or "Not listed" where its datasheet gives no single figure) */
   var bomScaf=state.modifiers.filter(function(m){return m.type==="scaffold"});
   var bsStd=0, bsLed=0, bsTra=0, bsBra=0, bsDeck=0, bsJack=0, bsGuard=0, bsToe=0, bsKg=0, bsArea=0;
-  subHead("Scaffolding — "+bomScaf.length+" system(s) · Layher Allround");
+  subHead("Scaffolding — "+bomScaf.length+" system(s)"+(bomScaf.length?(" · "+bomScaf.map(function(m){return scaffoldCalc(m).typeLabel}).filter(function(v,i,a){return a.indexOf(v)===i}).join(" · ")):""));
   if(!bomScaf.length)noteLine("No scaffolding in this layout.");
   bomScaf.forEach(function(m){
     var p=m.params, c=scaffoldCalc(m);
     bsStd+=c.standards; bsLed+=c.ledgers; bsTra+=c.transoms; bsBra+=c.braces; bsDeck+=c.decks; bsJack+=c.baseJacks; bsGuard+=c.guardrails; bsToe+=c.toeboards; bsKg+=c.tubeKg; bsArea+=c.deckArea;
     detailsTable([
-      ["System:", m.name+" — Layher Allround", "Status:", m.enabled?"On stage":"Hidden"],
-      ["Build:", c.empty?"Empty — zero bays":(c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)), "Footprint:", c.empty?"—":(fmtMeasure(c.L)+" × "+fmtMeasure(c.W))],
+      ["System:", m.name+" — "+c.typeLabel, "Status:", m.enabled?"On stage":"Hidden"],
+      ["Tube (Datasheet):", c.type.tubeText+" · "+c.type.steelText, "Connection (Datasheet):", c.type.connection],
+      ["Build:", c.empty?"Empty — zero bays":(c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)), "Overall (W × D × H):", c.empty?"—":scaffoldOverallText(m)],
+      ["Scale:", "×"+c.scale.toFixed(2)+" — exact ratio, bays / lifts snapped to the "+c.typeLabel+" datasheet sizes; tube stays "+c.type.tubeOD.toFixed(1)+" mm", "Footprint:", c.empty?"—":(fmtMeasure(c.L)+" × "+fmtMeasure(c.W))],
       ["Lifts:", c.lifts+" × "+fmtMeasure(c.liftH), "Total Height:", fmtMetres(c.H)],
       ["Access:", p.access==="stair"?("Stair — "+c.stairs+" flight(s)"):p.access==="ladder"?"Ladder":"None", "Load Class:", "Class "+(+p.loadClass||3)+" — "+c.classLoad.toFixed(1)+" kN/m² (EN 12811-1, Datasheet)"],
       ["Standards:", String(c.standards), "Ledgers:", String(c.ledgers)],
       ["Transoms:", String(c.transoms), "Diagonal Braces:", String(c.braces)],
       ["Steel Decks:", String(c.decks)+" ("+c.deckedLifts+" decked lift(s))", "Base Jacks:", String(c.baseJacks)],
       ["Guardrails:", String(c.guardrails), "Toeboards:", String(c.toeboards)],
-      ["Permissible Load (Datasheet):", c.stdLoad!==null?(c.stdLoad+" kN per standard at "+c.liftH+" m lift"):"Not listed at "+c.liftH+" m lift", "Steel Deck Load (Datasheet):", c.deckLoad!==null?(c.deckLoad.toFixed(1)+" kN/m² at "+c.bayL+" m bay"):"Not listed at "+c.bayL+" m bay"],
+      ["Permissible Load (Datasheet):", !c.type.stdLoad?("Not listed for "+c.typeLabel):(c.stdLoad!==null?(c.stdLoad+" kN per standard at "+c.liftH+" m lift"):"Not listed at "+c.liftH+" m lift"), "Steel Deck Load (Datasheet):", !c.type.deckLoad?("Not listed for "+c.typeLabel):(c.deckLoad!==null?(c.deckLoad.toFixed(1)+" kN/m² at "+c.bayL+" m bay"):"Not listed at "+c.bayL+" m bay")],
       ["Tube Steel Weight (Calculated):", fmt(Math.round(c.tubeKg*10)/10)+" kg — tube only", "Deck Area (Calculated):", fmtAreaM2(c.deckArea)]
     ]);
   });
@@ -18866,7 +18968,7 @@ var MOD_DEFS={
   stage:{label:"Stage Settings",icon:ICO_STAGE,defaults:{els:[],groups:[]}},
   light:{label:"Lighting",icon:ICO_BULB,defaults:{count:6,height:7,angle:16,color:"#ffb45e",opacity:32,animate:true,sweep:35,speed:40,custom:false,fixtures:[],groups:[],ltype:"beam",setX:0,setY:0,setZ:0,beamEndless:true,beamLen:12}},
   truss:{label:"Truss",icon:ICO_TRUSS,defaults:{height:6.5,span:0,support:"goalpost",depth:0,method:"goalpost",trussType:"box",section:290,selfKgM:6,hoists:2,hoistWll:500,rigKg:40,ballast:250,baseDepth:1.2,clampEvery:1,env:"indoor",wind:0,custom:false,segs:[],groups:[],drawH:6,bendDeg:0,category:"straight",straightLength:10,ringRadius:0,circularKind:"full",arcDeg:360}},
-  scaffold:{label:"Scaffolding",icon:ICO_TRUSS,defaults:{system:"layher",bayL:2.07,bayW:2.07,baysX:0,baysZ:0,lifts:2,liftH:2,decks:[true,true],guardrail:true,bracing:true,access:"ladder",loadClass:3,x:0,y:0,z:0,ry:0,us:1}},
+  scaffold:{label:"Scaffolding",icon:ICO_TRUSS,defaults:{system:"layher",bayL:2.07,bayW:2.07,baysX:0,baysZ:0,lifts:2,liftH:2,decks:[true,true],guardrail:true,bracing:true,access:"ladder",loadClass:3,x:0,y:0,z:0,ry:0,us:1,scale:1,sclL:2.07,sclW:2.07,sclH:2}},
   speakers:{label:"Speakers",icon:ICO_SPK,defaults:{cabs:6,height:6,gap:0.8}},
   haze:{label:"Haze",icon:ICO_WIND,defaults:{density:45}},
   props:{label:"Props",icon:ICO_PROP,defaults:{items:[],groups:[]}}
@@ -20291,19 +20393,41 @@ function sanitizeModifier(o){
        A fixture with neither field keeps the historic 35° Y turn. */
     p.fixtures=Array.isArray(p.fixtures)?p.fixtures.filter(function(f){return f&&isFinite(f.x)&&isFinite(f.y)&&isFinite(f.z)}).map(function(f){var mdl=(f.model&&FIXTURE_MODELS[f.model])?f.model:null; var rotY=(f.pan!==undefined&&isFinite(+f.pan))?normDeg180(+f.pan):(f.tilt===undefined?35:0); var rotX=isFinite(+f.tilt)?normDeg180(+f.tilt):0; return {x:+f.x,y:+f.y,z:+f.z,pan:Math.round(rotY),tilt:Math.round(rotX),roll:(mdl==="batten"&&isFinite(+f.roll))?Math.round(normDeg180(+f.roll)):0,size:isFinite(+f.size)?clamp(+f.size,0.4,2.5):1,bang:isFinite(+f.bang)?clamp(+f.bang,4,60):null,bstr:isFinite(+f.bstr)?clamp(+f.bstr,5,100):null,blen:(f.blen===null||f.blen===undefined||!isFinite(+f.blen))?null:clamp(+f.blen,1,60),seg:(mdl==="batten"||mdl==="matrix")?null:(f.seg===undefined?null:f.seg),tm:(mdl==="batten"||mdl==="matrix")?null:(f.tm||null),t:+f.t||0,type:(f.type==="spot"||f.type==="wash"||f.type==="beam"||f.type==="bsw")?f.type:((p.ltype==="spot"||p.ltype==="wash"||p.ltype==="bsw")?p.ltype:"beam"),mount:(mdl==="batten"||mdl==="matrix")?null:((f.mount==="top"||f.mount==="stage"||f.mount==="screen")?f.mount:null),model:mdl,fx:mdl?sanitizeFx(mdl,f.fx):null,color:(typeof f.color==="string"&&/^#[0-9a-fA-F]{6}$/.test(f.color))?f.color:null,on:f.on!==false,group:(f.group&&gids[f.group])?f.group:null}}):[];
   }
-  /* Scaffolding: validate the Layher Allround build — bay sizes
-     from the datasheet list only, bay counts, lifts and lift
-     height, the per-lift deck switches, guardrail / bracing /
-     access / load class, and the unit's place on the stage. */
+  /* Scaffolding: validate the build against ITS TYPE — bay sizes
+     snap to the type's own datasheet list, bay counts, lifts and
+     lift height snap to the type's lift sizes, the per-lift deck
+     switches, guardrail / bracing / access / load class, the
+     exact-ratio scale state, and the unit's place on the stage.
+     A layout saved by the old build carried a free unit scale
+     (us) that stretched the whole unit including its tube: it is
+     migrated ONCE here into the exact-ratio scale — the bays /
+     lifts snap to the datasheet sizes nearest the old stretched
+     size, the tube returns to the type's real 48.3 mm, and us is
+     retired to 1 (kept in the file only so older builds can still
+     open the layout). */
   if(o.type==="scaffold"){
-    var SCA_BAYS=[0.73,1.09,1.4,1.57,2.07,2.57,3.07];
-    function scaBay(v,dv){v=+v; for(var bi=0;bi<SCA_BAYS.length;bi++)if(Math.abs(SCA_BAYS[bi]-v)<0.005)return SCA_BAYS[bi]; return dv}
-    p.system="layher";
-    p.bayL=scaBay(p.bayL,2.07); p.bayW=scaBay(p.bayW,2.07);
+    var sct=(typeof SCAFFOLD_TYPES!=="undefined"&&SCAFFOLD_TYPES[p.system])?SCAFFOLD_TYPES[p.system]:((typeof SCAFFOLD_TYPES!=="undefined")?SCAFFOLD_TYPES.layher:null);
+    if(sct){
+      p.system=SCAFFOLD_TYPES[p.system]?p.system:"layher";
+      function scaSnap(list,v,dv){v=+v; if(!isFinite(v))return dv; var bs=list[0],bd=1e9; for(var bi=0;bi<list.length;bi++){var dd=Math.abs(list[bi]-v); if(dd<bd){bd=dd; bs=list[bi]}} return bs}
+      p.bayL=scaSnap(sct.bays,p.bayL,2.07); p.bayW=scaSnap(sct.bays,p.bayW,2.07);
+      p.liftH=scaSnap(sct.lifts,p.liftH,2);
+      p.scale=isFinite(+p.scale)?clamp(Math.round(+p.scale*100)/100,0.25,4):1;
+      function scaBase(v,cur){v=+v; return (isFinite(v)&&v>0.05)?Math.round(v*1000)/1000:(Math.round((cur/p.scale)*1000)/1000)}
+      p.sclL=scaBase(p.sclL,p.bayL); p.sclW=scaBase(p.sclW,p.bayW); p.sclH=scaBase(p.sclH,p.liftH);
+      var legacyUs=isFinite(+p.us)?clamp(+p.us,0.25,4):1;
+      if(Math.abs(legacyUs-1)>0.001){
+        var lbL=p.bayL, lbW=p.bayW, lbH=p.liftH;
+        p.sclL=lbL; p.sclW=lbW; p.sclH=lbH; p.scale=Math.round(legacyUs*100)/100;
+        p.bayL=scaSnap(sct.bays,lbL*legacyUs); p.bayW=scaSnap(sct.bays,lbW*legacyUs); p.liftH=scaSnap(sct.lifts,lbH*legacyUs);
+      }
+    }else{
+      p.system="layher"; p.scale=1;
+    }
+    p.us=1;
     p.baysX=isFinite(+p.baysX)?clamp(Math.round(+p.baysX),0,12):0;
     p.baysZ=isFinite(+p.baysZ)?clamp(Math.round(+p.baysZ),0,12):0;
     p.lifts=isFinite(+p.lifts)?clamp(Math.round(+p.lifts),1,6):2;
-    p.liftH=[0.5,1,1.5,2].indexOf(+p.liftH)>=0?+p.liftH:2;
     var dk=Array.isArray(p.decks)?p.decks:[];
     p.decks=[]; for(var di=0;di<p.lifts;di++)p.decks.push(dk[di]!==false);
     p.guardrail=p.guardrail!==false;
@@ -20314,7 +20438,6 @@ function sanitizeModifier(o){
     p.y=isFinite(+p.y)?clamp(+p.y,0,15):0;
     p.z=isFinite(+p.z)?clamp(+p.z,-60,60):0;
     p.ry=isFinite(+p.ry)?Math.round(normDeg180(+p.ry)):0;
-    p.us=isFinite(+p.us)?clamp(+p.us,0.25,4):1;
   }
   /* Props: validate each imported model entry. The embedded model
      data is kept only as a plausible data URL within the embed
@@ -20380,30 +20503,117 @@ function sanitizeModifier(o){
   }
   return {id:o.id||uid(),type:o.type,name:o.name||def.label,enabled:o.enabled!==false,params:p};
 }
-/* ══════════ SCAFFOLDING — Layher Allround (Datasheet) ══════════
-   Datasheet figures (Layher Allround, as supplied for this build —
-   labelled "Datasheet" wherever they are shown):
-   • Tube 48.3 mm OD × 3.2 mm wall, yield stress 320 N/mm²,
-     DIN EN 10219-1. Rosettes every 500 mm, up to 8 connections.
-   • Bay lengths 0.73 / 1.09 / 1.40 / 1.57 / 2.07 / 2.57 / 3.07 m,
-     max bay 4.144 m.
-   • Permissible vertical load per standard: 45 kN at a 2.0 m lift,
-     60 kN at 1.5 m, 70 kN at 1.0 m.
-   • Steel deck load: 18.0 kN/m² at 1.57 m bay, 11.4 at 2.07 m,
-     7.5 at 2.57 m, 5.0 at 3.07 m, 2.0 at 4.14 m.
-   • Load classes EN 12811-1: Class 3 = 2.0 kN/m², Class 4 = 3.0.
-   • Guardrail 99 cm, toeboard 15 cm. Layher event podiums on the
-     same kit: up to 7.5 kN/m², height up to 10 m.
+/* ══════════ SCAFFOLDING — system types (Datasheet) ══════════
+   Four real scaffolding system types, each with its own tube,
+   connection, bay lengths, lift (node) heights and load figures.
+   Figures are labelled "Datasheet" wherever they are shown, and a
+   field a type's datasheet does not give as a single figure is
+   shown as "not listed" — never invented:
+   • Layher Allround (datasheet figures as supplied for this app):
+     tube 48.3 mm OD × 3.2 mm wall, yield stress 320 N/mm²,
+     DIN EN 10219-1; rosettes every 500 mm, up to 8 connections;
+     bays 0.73 / 1.09 / 1.40 / 1.57 / 2.07 / 2.57 / 3.07 m, max bay
+     4.144 m; per-standard load 45 kN at a 2.0 m lift, 60 at 1.5 m,
+     70 at 1.0 m; steel deck 18.0 kN/m² at 1.57 m bay, 11.4 at
+     2.07 m, 7.5 at 2.57 m, 5.0 at 3.07 m, 2.0 at 4.14 m; guardrail
+     99 cm, toeboard 15 cm; event podiums up to 7.5 kN/m², 10 m.
+   • Ringlock (system description, e.g. Doka Ringlock / EN 12810):
+     tube 48.3 mm OD; rosette rings every 500 mm with 8 holes,
+     ledger / brace wedge heads lock into the rosette; modular
+     ledger (bay) lengths 0.65 / 1.00 / 1.50 / 2.00 / 2.50 / 3.00 m.
+     Loads are published per configuration, not as one figure —
+     per-standard and deck loads: not listed.
+   • Cuplock (system description, original Cuplock pattern):
+     tube 48.3 mm OD; fixed bottom cups + sliding top cups every
+     500 mm on the standard, ledger blade ends lock in the cup
+     joint; modular ledger (bay) lengths 0.60 / 0.90 / 1.20 / 1.50 /
+     1.80 / 2.50 m. Loads are published per configuration —
+     per-standard and deck loads: not listed.
+   • Tube & Coupler (BS EN 39 tube + BS EN 74 couplers): tube
+     48.3 mm OD × 3.2 mm wall, S235 steel; forged right-angle /
+     swivel / sleeve couplers clamp at the joints — there is NO
+     fixed bay list: tube is cut to size, so the bay lengths in
+     the panel are build choices, and lifts are set by the design.
+     Loads come from the scaffold design (EN 12811 / TG20) —
+     per-standard and deck loads: not listed.
+   Load classes EN 12811-1 apply to every type: Class 3 =
+   2.0 kN/m², Class 4 = 3.0 kN/m² (the standard, labelled as such).
    Anything worked out from the layout (part counts, tube length,
-   tube steel weight, deck area) is labelled "Calculated". The tube
-   steel weight uses 3.56 kg/m, itself calculated from the
-   datasheet tube section (48.3 × 3.2 mm at 7 850 kg/m³). */
-var SCAFFOLD_BAY_LENGTHS=[0.73,1.09,1.4,1.57,2.07,2.57,3.07];
-var SCAFFOLD_STD_LOAD={ "2":45, "1.5":60, "1":70 }; /* kN per standard, by lift height (m) — Datasheet */
-var SCAFFOLD_DECK_LOAD={ "1.57":18.0, "2.07":11.4, "2.57":7.5, "3.07":5.0, "4.14":2.0 }; /* kN/m², by bay length (m) — Datasheet */
-var SCAFFOLD_TUBE_KGM=3.56; /* Calculated from the datasheet tube section */
-function scaffoldCalc(m){
+   tube steel weight, deck area, the scaled overall size) is
+   labelled "Calculated". Tube steel weight is calculated from
+   the tube section at 7 850 kg/m³ (48.3 × 3.2 mm → 3.56 kg/m).
+   EXACT-RATIO SCALE: the unit's Scale (params.scale, typed to two
+   decimals) is absolute against a stored base build (params
+   sclL / sclW / sclH — the bay / lift sizes at scale 1.00).
+   Applying a scale multiplies the base sizes and SNAPS each one
+   to the nearest size on the type's own datasheet list, so the
+   built bays and lifts are always real datasheet sizes, the part
+   counts follow the snapped sizes, and the tube diameter NEVER
+   scales — the 3D build always draws the type's real tube. */
+var SCAFFOLD_TYPES={
+  layher:{label:"Layher Allround",tubeOD:48.3,tubeWall:3.2,tubeText:"48.3 mm OD × 3.2 mm wall",steelText:"Yield stress 320 N/mm² · DIN EN 10219-1",
+    connection:"Rosette — up to 8 connections per rosette; rosettes every 500 mm on the standard",nodeKind:"rosette",nodeEvery:0.5,
+    bays:[0.73,1.09,1.4,1.57,2.07,2.57,3.07],baysNote:"Datasheet list · max bay 4.144 m",lifts:[0.5,1,1.5,2],
+    stdLoad:{"2":45,"1.5":60,"1":70},deckLoad:{"1.57":18.0,"2.07":11.4,"2.57":7.5,"3.07":5.0,"4.14":2.0},
+    guardrailCm:99,toeboardCm:15,extra:"Layher event podiums on the same kit: permissible load up to 7.5 kN/m², height up to 10 m.",
+    source:"Layher Allround datasheet figures, as supplied for this app."},
+  ringlock:{label:"Ringlock",tubeOD:48.3,tubeWall:3.2,tubeText:"48.3 mm OD × 3.2 mm wall",steelText:"Steel tube to EN 12810",
+    connection:"Rosette ring — ledger / brace wedge heads lock into the rosette (8 holes); rosettes every 500 mm on the standard",nodeKind:"rosette",nodeEvery:0.5,
+    bays:[0.65,1,1.5,2,2.5,3],baysNote:"Modular ledger lengths (system description)",lifts:[0.5,1,1.5,2],
+    stdLoad:null,deckLoad:null,guardrailCm:null,toeboardCm:null,extra:"",
+    source:"Ringlock system description (e.g. Doka Ringlock, EN 12810). Loads are published per configuration, not as a single figure."},
+  cuplock:{label:"Cuplock",tubeOD:48.3,tubeWall:3.2,tubeText:"48.3 mm OD × 3.2 mm wall",steelText:"Steel tube, cup-joint system",
+    connection:"Cup joint — fixed bottom cup + sliding top cup every 500 mm on the standard; ledger blade ends lock in the cup",nodeKind:"cup",nodeEvery:0.5,
+    bays:[0.6,0.9,1.2,1.5,1.8,2.5],baysNote:"Modular ledger lengths (system description)",lifts:[0.5,1,1.5,2],
+    stdLoad:null,deckLoad:null,guardrailCm:null,toeboardCm:null,extra:"",
+    source:"Cuplock system description (original Cuplock pattern). Loads are published per configuration, not as a single figure."},
+  tubecoupler:{label:"Tube & Coupler",tubeOD:48.3,tubeWall:3.2,tubeText:"48.3 mm OD × 3.2 mm wall",steelText:"S235 steel · BS EN 39",
+    connection:"Forged couplers to BS EN 74 — right-angle, swivel and sleeve couplers clamp the tubes at the joints; no fixed nodes",nodeKind:"coupler",nodeEvery:0,
+    bays:[1,1.5,2,2.5,3,3.5,4],baysNote:"No fixed bay list — tube is cut to size; these are build choices",lifts:[0.5,1,1.5,2,2.5],
+    stdLoad:null,deckLoad:null,guardrailCm:null,toeboardCm:null,extra:"",
+    source:"BS EN 39 (tube) + BS EN 74 (couplers). Loads come from the scaffold design (EN 12811 / TG20), not a single figure."}
+};
+function scaffoldTypeOf(p){return SCAFFOLD_TYPES[p&&p.system]||SCAFFOLD_TYPES.layher}
+function scaffoldTypeKey(p){return SCAFFOLD_TYPES[p&&p.system]?p.system:"layher"}
+function scaffoldNearest(list,v){var best=list[0],bd=1e9; for(var i=0;i<list.length;i++){var d=Math.abs(list[i]-v); if(d<bd){bd=d; best=list[i]}} return best}
+function scaffoldTubeKgM(t){var od=t.tubeOD, id=od-2*t.tubeWall; return Math.round((Math.PI/4*(od*od-id*id))*7850/1e6*100)/100} /* kg/m — Calculated from the tube section */
+/* The scale state: sclL / sclW / sclH are the base bay / lift sizes
+   at scale 1.00. Missing or invalid bases are derived from the
+   current build, so a layout saved before Scale existed (or by
+   hand) still scales from what is on stage. */
+function scaffoldScaleBase(p){
+  var s=clamp(+p.scale||1,0.25,4);
+  function base(v,cur){v=+v; return (isFinite(v)&&v>0.05)?v:(Math.round((cur/s)*1000)/1000)}
+  return {L:base(p.sclL,+p.bayL||2.07), W:base(p.sclW,+p.bayW||2.07), H:base(p.sclH,+p.liftH||2)};
+}
+/* Apply an exact-ratio scale: base sizes × factor, each SNAPPED to
+   the nearest size on the type's datasheet list. Writes the snapped
+   bayL / bayW / liftH (so the panel, scaffoldCalc, the 3D build,
+   the spec sheet and the PDF BOM all read the same real sizes),
+   stores the factor (two decimals) and the base it came from.
+   The tube diameter is never touched — it is the type's real tube. */
+function scaffoldSetScale(m,f){
+  var p=m.params, t=scaffoldTypeOf(p), base=scaffoldScaleBase(p);
+  var fac=clamp(Math.round((+f||1)*100)/100,0.25,4);
+  p.scale=fac; p.sclL=base.L; p.sclW=base.W; p.sclH=base.H;
+  p.bayL=scaffoldNearest(t.bays,base.L*fac);
+  p.bayW=scaffoldNearest(t.bays,base.W*fac);
+  p.liftH=scaffoldNearest(t.lifts,base.H*fac);
+  return scaffoldCalc(m);
+}
+/* A direct edit of a bay / lift size (or a type switch) is a new
+   base build: the scale resets to 1.00× and the base becomes the
+   sizes now chosen, so a later scale multiplies THESE sizes. */
+function scaffoldRebase(m){
   var p=m.params;
+  p.scale=1; p.sclL=+p.bayL||2.07; p.sclW=+p.bayW||2.07; p.sclH=+p.liftH||2;
+}
+var SCAFFOLD_BAY_LENGTHS=SCAFFOLD_TYPES.layher.bays;
+var SCAFFOLD_STD_LOAD=SCAFFOLD_TYPES.layher.stdLoad;
+var SCAFFOLD_DECK_LOAD=SCAFFOLD_TYPES.layher.deckLoad;
+var SCAFFOLD_TUBE_KGM=scaffoldTubeKgM(SCAFFOLD_TYPES.layher);
+function scaffoldCalc(m){
+  var p=m.params, ty=scaffoldTypeOf(p);
   var nx=clamp(Math.round(+p.baysX||0),0,12), nz=clamp(Math.round(+p.baysZ||0),0,12);
   var lifts=clamp(Math.round(+p.lifts||1),1,6), liftH=+p.liftH||2;
   var bayL=+p.bayL||2.07, bayW=+p.bayW||2.07;
@@ -20426,34 +20636,74 @@ function scaffoldCalc(m){
   var deckArea=Math.round(deckedLifts*L*W*100)/100;
   var diagLen=Math.sqrt(Math.pow((bayL+bayW)/2,2)+Math.pow(liftH,2));
   var tubeLen=standards*H + ledgers*bayL + transoms*bayW + braces*diagLen + guardrails*((bayL+bayW)/2);
-  var tubeKg=tubeLen*SCAFFOLD_TUBE_KGM;
-  var stdLoad=(SCAFFOLD_STD_LOAD[String(liftH)]!==undefined)?SCAFFOLD_STD_LOAD[String(liftH)]:null;
-  var deckLoad=(SCAFFOLD_DECK_LOAD[String(bayL)]!==undefined)?SCAFFOLD_DECK_LOAD[String(bayL)]:null;
+  var tubeKgM=scaffoldTubeKgM(ty);
+  var tubeKg=tubeLen*tubeKgM;
+  var stdLoad=(ty.stdLoad&&ty.stdLoad[String(liftH)]!==undefined)?ty.stdLoad[String(liftH)]:null;
+  var deckLoad=(ty.deckLoad&&ty.deckLoad[String(bayL)]!==undefined)?ty.deckLoad[String(bayL)]:null;
   var classLoad=(+p.loadClass===4)?3.0:2.0;
   return {empty:empty,nx:nx,nz:nz,lifts:lifts,liftH:liftH,bayL:bayL,bayW:bayW,H:H,L:L,W:W,
+    type:ty,typeLabel:ty.label,scale:clamp(+p.scale||1,0.25,4),tubeKgM:tubeKgM,
     standards:standards,baseJacks:standards,ledgers:ledgers,transoms:transoms,braces:braces,
     decks:decks,deckedLifts:deckedLifts,guardrails:guardrails,toeboards:toeboards,
     ladders:ladders,stairs:stairs,deckArea:deckArea,tubeLen:Math.round(tubeLen*10)/10,
     tubeKg:Math.round(tubeKg*10)/10,stdLoad:stdLoad,deckLoad:deckLoad,classLoad:classLoad};
 }
-function scaffoldStatusText(m){
+/* The exact overall size of a unit — width × depth × height, in the
+   Preferences unit — read from the same calc the 3D build uses, so
+   the panel, the 3D view, the spec sheet and the PDF all agree. */
+function scaffoldOverallText(m){
   var c=scaffoldCalc(m);
+  if(c.empty)return "no bays — "+fmtMeasure(0)+" × "+fmtMeasure(0)+" × "+fmtMeasure(c.H);
+  return fmtMeasureDims(c.L,c.W,c.H);
+}
+function scaffoldScaleText(m){
+  var c=scaffoldCalc(m);
+  return "Scale ×"+c.scale.toFixed(2)+" — overall "+scaffoldOverallText(m)+" (width × depth × height). Bays "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)+" · lifts "+fmtMeasure(c.liftH)+" — snapped to the "+c.typeLabel+" datasheet sizes; tube stays "+scaffoldTypeOf(m.params).tubeOD.toFixed(1)+" mm.";
+}
+function scaffoldStatusText(m){
+  var c=scaffoldCalc(m), ty=c.type;
   if(c.empty)return "Empty container — zero bays. Set the bays along length / width to build the scaffold.";
-  return "Datasheet: permissible vertical load per standard "+(c.stdLoad!==null?(c.stdLoad+" kN at a "+c.liftH+" m lift"):"not listed for a "+c.liftH+" m lift (70 kN at 1.0 m · 60 kN at 1.5 m · 45 kN at 2.0 m)")+" · steel deck load "+(c.deckLoad!==null?(c.deckLoad.toFixed(1)+" kN/m² at a "+c.bayL+" m bay"):"not listed for a "+c.bayL+" m bay")+" · Load Class "+(+m.params.loadClass||3)+" = "+c.classLoad.toFixed(1)+" kN/m² (EN 12811-1).";
+  var stdTxt;
+  if(!ty.stdLoad)stdTxt="permissible vertical load per standard not listed for "+ty.label+" (its datasheet publishes loads per configuration, not one figure)";
+  else if(c.stdLoad!==null)stdTxt="permissible vertical load per standard "+c.stdLoad+" kN at a "+c.liftH+" m lift";
+  else stdTxt="permissible vertical load per standard not listed for a "+c.liftH+" m lift ("+Object.keys(ty.stdLoad).map(function(k){return ty.stdLoad[k]+" kN at "+k+" m"}).join(" · ")+")";
+  var deckTxt;
+  if(!ty.deckLoad)deckTxt="steel deck load not listed for "+ty.label;
+  else if(c.deckLoad!==null)deckTxt="steel deck load "+c.deckLoad.toFixed(1)+" kN/m² at a "+c.bayL+" m bay";
+  else deckTxt="steel deck load not listed for a "+c.bayL+" m bay";
+  return "Datasheet ("+ty.label+"): "+stdTxt+" · "+deckTxt+" · Load Class "+(+m.params.loadClass||3)+" = "+c.classLoad.toFixed(1)+" kN/m² (EN 12811-1).";
+}
+function scaffoldTypeInfoHtml(p){
+  var t=scaffoldTypeOf(p);
+  function rowS(k,v){return '<div class="rig-row"><span class="rig-k">'+k+'</span><b>'+v+'</b></div>'}
+  var stdTxt=!t.stdLoad?"not listed":Object.keys(t.stdLoad).map(function(k){return t.stdLoad[k]+" kN at "+k+" m lift"}).join(" · ");
+  var deckTxt=!t.deckLoad?"not listed":Object.keys(t.deckLoad).map(function(k){return t.deckLoad[k].toFixed(1)+" kN/m² at "+k+" m bay"}).join(" · ");
+  return '<div class="rig-rows">'
+    +rowS("Tube (Datasheet)",t.tubeText+" · "+t.steelText)
+    +rowS("Connection (Datasheet)",t.connection)
+    +rowS("Bay lengths",t.bays.map(function(b){return b.toFixed(2)}).join(" / ")+" m — "+t.baysNote)
+    +rowS("Per-standard load (Datasheet)",stdTxt)
+    +rowS("Steel deck load (Datasheet)",deckTxt)
+    +rowS("Guardrail (Datasheet)",t.guardrailCm?(t.guardrailCm+" cm"):"not listed")
+    +rowS("Toeboard (Datasheet)",t.toeboardCm?(t.toeboardCm+" cm"):"not listed")
+    +(t.extra?rowS("Also (Datasheet)",t.extra):"")
+    +rowS("Source",t.source)
+    +'</div>'
+    +'<p class="mod-note">Switching type rebuilds the 3D geometry and the part counts for that type, and saves with the layout. Totals worked out from the build (part counts, weights, areas) are labelled Calculated.</p>';
 }
 function scaffoldSizeText(m){
   var c=scaffoldCalc(m);
   if(c.empty)return "Footprint: no bays yet — total height "+(Math.round(c.H*100)/100)+" m of lifts with no footprint.";
-  return "Footprint "+fmtMeasure(c.L)+" × "+fmtMeasure(c.W)+" · total height "+fmtMeasure(c.H)+" ("+c.lifts+" lift"+(c.lifts===1?"":"s")+" × "+fmtMeasure(c.liftH)+") · parts (Calculated): "+c.standards+" standards · "+c.ledgers+" ledgers · "+c.transoms+" transoms · "+c.braces+" braces · "+c.decks+" decks · "+c.baseJacks+" base jacks · "+c.guardrails+" guardrails · "+c.toeboards+" toeboards · deck area "+fmtAreaM2(c.deckArea)+" · tube steel "+c.tubeKg+" kg.";
+  return "Overall "+scaffoldOverallText(m)+" (width × depth × height) · scale ×"+c.scale.toFixed(2)+" · "+c.lifts+" lift"+(c.lifts===1?"":"s")+" × "+fmtMeasure(c.liftH)+" · parts (Calculated): "+c.standards+" standards · "+c.ledgers+" ledgers · "+c.transoms+" transoms · "+c.braces+" braces · "+c.decks+" decks · "+c.baseJacks+" base jacks · "+c.guardrails+" guardrails · "+c.toeboards+" toeboards · deck area "+fmtAreaM2(c.deckArea)+" · tube steel "+c.tubeKg+" kg.";
 }
 function scaffoldSpecLines(m){
-  var p=m.params, c=scaffoldCalc(m), out=[];
-  out.push("  Scaffolding — LAYHER ALLROUND (Datasheet: tube 48.3 mm OD × 3.2 mm wall, yield stress 320 N/mm², DIN EN 10219-1; rosettes every 500 mm, up to 8 connections per rosette; guardrail 99 cm, toeboard 15 cm):");
+  var p=m.params, c=scaffoldCalc(m), ty=c.type, out=[];
+  out.push("  Scaffolding — "+ty.label.toUpperCase()+" (Datasheet: tube "+ty.tubeText+", "+ty.steelText+"; "+ty.connection+(ty.guardrailCm?("; guardrail "+ty.guardrailCm+" cm"):"")+(ty.toeboardCm?(", toeboard "+ty.toeboardCm+" cm"):"")+"). Source: "+ty.source);
   if(c.empty){out.push("  Empty container — zero bays. Set the bays along length / width in its panel to build the scaffold."); return out}
-  out.push("  Build: "+c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)+" — footprint "+fmtMeasure(c.L)+" × "+fmtMeasure(c.W)+" · "+c.lifts+" lift(s) of "+fmtMeasure(c.liftH)+" · total height "+fmtMeasure(c.H)+" · access: "+(p.access==="stair"?"stair tower (1 flight per lift)":p.access==="ladder"?"ladder":"none")+" · load class "+(+p.loadClass||3)+" (EN 12811-1: "+c.classLoad.toFixed(1)+" kN/m², Datasheet)");
-  out.push("  Datasheet permissible loads: "+(c.stdLoad!==null?("vertical load per standard "+c.stdLoad+" kN at a "+c.liftH+" m lift"):"no per-standard figure listed for a "+c.liftH+" m lift (Datasheet lists 70 kN at 1.0 m, 60 kN at 1.5 m, 45 kN at 2.0 m)")+" · "+(c.deckLoad!==null?("steel deck "+c.deckLoad.toFixed(1)+" kN/m² at a "+c.bayL+" m bay"):"no steel-deck figure listed for a "+c.bayL+" m bay (Datasheet lists 18.0 kN/m² at 1.57 m, 11.4 at 2.07 m, 7.5 at 2.57 m, 5.0 at 3.07 m, 2.0 at 4.14 m)"));
+  out.push("  Build: "+c.nx+" × "+c.nz+" bays of "+fmtMeasure(c.bayL)+" × "+fmtMeasure(c.bayW)+" — footprint "+fmtMeasure(c.L)+" × "+fmtMeasure(c.W)+" · "+c.lifts+" lift(s) of "+fmtMeasure(c.liftH)+" · total height "+fmtMeasure(c.H)+" · overall (width × depth × height) "+scaffoldOverallText(m)+" · scale ×"+c.scale.toFixed(2)+" (exact ratio — bays / lifts snapped to the "+ty.label+" datasheet sizes; tube stays "+ty.tubeOD.toFixed(1)+" mm) · access: "+(p.access==="stair"?"stair tower (1 flight per lift)":p.access==="ladder"?"ladder":"none")+" · load class "+(+p.loadClass||3)+" (EN 12811-1: "+c.classLoad.toFixed(1)+" kN/m², Datasheet)");
+  out.push("  Datasheet permissible loads: "+(!ty.stdLoad?("per-standard load not listed for "+ty.label):(c.stdLoad!==null?("vertical load per standard "+c.stdLoad+" kN at a "+c.liftH+" m lift"):"no per-standard figure listed for a "+c.liftH+" m lift (Datasheet lists "+Object.keys(ty.stdLoad).map(function(k){return ty.stdLoad[k]+" kN at "+k+" m"}).join(", ")+")"))+" · "+(!ty.deckLoad?("steel deck load not listed for "+ty.label):(c.deckLoad!==null?("steel deck "+c.deckLoad.toFixed(1)+" kN/m² at a "+c.bayL+" m bay"):"no steel-deck figure listed for a "+c.bayL+" m bay (Datasheet lists "+Object.keys(ty.deckLoad).map(function(k){return ty.deckLoad[k].toFixed(1)+" kN/m² at "+k+" m"}).join(", ")+")")));
   out.push("  Parts (Calculated): "+c.standards+" standards · "+c.ledgers+" ledgers · "+c.transoms+" transoms · "+c.braces+" diagonal braces · "+c.decks+" steel decks ("+c.deckedLifts+" decked lift(s)) · "+c.baseJacks+" base jacks · "+c.guardrails+" guardrails · "+c.toeboards+" toeboards"+(c.ladders?" · 1 ladder":"")+(c.stairs?" · "+c.stairs+" stair flight(s)":""));
-  out.push("  Totals (Calculated): tube steel weight "+c.tubeKg+" kg (tube only, "+SCAFFOLD_TUBE_KGM+" kg/m from the datasheet tube section — decks and fittings excluded) · total deck area "+fmtAreaM2(c.deckArea));
+  out.push("  Totals (Calculated): tube steel weight "+c.tubeKg+" kg (tube only, "+c.tubeKgM+" kg/m calculated from the datasheet tube section — decks and fittings excluded) · total deck area "+fmtAreaM2(c.deckArea));
   out.push("  Note: these are permissible loads for the component, not a guarantee for the whole stage — a qualified designer must check the full structure, bracing and ground on site.");
   return out;
 }
@@ -20462,7 +20712,7 @@ function modSubLabel(m){
   if(m.type==="crowd"){var cps=crowdPacks(m); return cps.length+" pack"+(cps.length===1?"":"s")+" · "+crowdTotalPeople(m)+" people"}
   if(m.type==="light")return (p.custom?("Custom · "+(p.fixtures||[]).length+" fixtures"):Math.round(+p.count||0)+" × "+lightTypeLabel(p.ltype))+" · "+(p.beamEndless===false?("beams "+(+p.beamLen||12)+" m"):"beams endless");
   if(m.type==="truss")return p.custom?("Custom · "+(p.segs||[]).length+" seg · "+(p.trussType==="tri"?"Triangular":p.trussType==="ladder"?"Ladder":"Box")+" "+(+p.section||290)):trussMethodName(p.method)+" · "+(p.trussType==="tri"?"Triangular":p.trussType==="ladder"?"Ladder":"Box")+" "+(+p.section||290);
-  if(m.type==="scaffold"){var scL=scaffoldCalc(m); return scL.empty?"Layher Allround · 0 bays (empty)":("Layher Allround · "+scL.nx+" × "+scL.nz+" bays · "+scL.lifts+" lift"+(scL.lifts===1?"":"s")+" · H "+fmtMeasure(scL.H))}
+  if(m.type==="scaffold"){var scL=scaffoldCalc(m); return scL.empty?(scL.typeLabel+" · 0 bays (empty)"):(scL.typeLabel+" · "+scL.nx+" × "+scL.nz+" bays · "+scL.lifts+" lift"+(scL.lifts===1?"":"s")+" · H "+fmtMeasure(scL.H)+(scL.scale!==1?" · ×"+scL.scale.toFixed(2):""))}
   if(m.type==="speakers")return Math.round(+p.cabs||0)+" / side";
   if(m.type==="haze")return Math.round(+p.density||0)+"%";
   if(m.type==="props")return (p.items||[]).length+" prop"+((p.items||[]).length===1?"":"s")+" · 3D only";
@@ -20479,7 +20729,7 @@ function modSummary(m){
     if(p.method==="stacked")return tn+" · ground-stacked behind the wall · base "+fmtMeasure(+p.baseDepth||0)+" deep · ballast "+Math.round(+p.ballast||0)+" kg/base · wall "+Math.round(tc.cabWeight)+" kg to the floor";
     return tn+" · "+trussMethodName(p.method).toLowerCase()+" · underside "+fmtMeasure(+p.height||0)+" · "+(tc.span>0?fmtMeasure(tc.span)+" span":"auto span")+" · "+Math.round(tc.total)+" kg on "+Math.round(+p.hoists||0)+" hoist(s)";
   }
-  if(m.type==="scaffold"){var scS=scaffoldCalc(m); return scS.empty?"Layher Allround scaffolding · empty container (zero bays) — 3D view only":("Layher Allround scaffolding · "+scS.nx+" × "+scS.nz+" bays ("+fmtMeasure(scS.bayL)+" × "+fmtMeasure(scS.bayW)+") · "+scS.lifts+" lift(s) × "+fmtMeasure(scS.liftH)+" = "+fmtMeasure(scS.H)+" high · "+scS.standards+" standards · "+scS.ledgers+" ledgers · "+scS.transoms+" transoms · "+scS.braces+" braces · "+scS.decks+" steel decks · "+scS.baseJacks+" base jacks · "+scS.guardrails+" guardrails · "+scS.toeboards+" toeboards · deck area "+fmtAreaM2(scS.deckArea)+" (Calculated) · tube steel "+scS.tubeKg+" kg (Calculated) — 3D view only")}
+  if(m.type==="scaffold"){var scS=scaffoldCalc(m); return scS.empty?(scS.typeLabel+" scaffolding · empty container (zero bays) — 3D view only"):(scS.typeLabel+" scaffolding · "+scS.nx+" × "+scS.nz+" bays ("+fmtMeasure(scS.bayL)+" × "+fmtMeasure(scS.bayW)+") · "+scS.lifts+" lift(s) × "+fmtMeasure(scS.liftH)+" = "+fmtMeasure(scS.H)+" high · overall "+scaffoldOverallText(m)+" · scale ×"+scS.scale.toFixed(2)+" · "+scS.standards+" standards · "+scS.ledgers+" ledgers · "+scS.transoms+" transoms · "+scS.braces+" braces · "+scS.decks+" steel decks · "+scS.baseJacks+" base jacks · "+scS.guardrails+" guardrails · "+scS.toeboards+" toeboards · deck area "+fmtAreaM2(scS.deckArea)+" (Calculated) · tube steel "+scS.tubeKg+" kg (Calculated) — 3D view only")}
   if(m.type==="speakers")return "line arrays · "+Math.round(+p.cabs||0)+" cabinets per side · hung at "+fmtMeasure(+p.height||0);
   if(m.type==="haze")return "atmosphere haze · density "+Math.round(+p.density||0)+"%";
   if(m.type==="props")return "imported 3D props on the stage (3D view only — never in the 2D layout, screen tables or exports): "+((p.items||[]).map(function(it){return it.name}).join(", ")||"none yet");
@@ -21076,12 +21326,13 @@ var scaffoldSuggestion=null;
    and this is on, the suggested build previews as an amber ghost. */
 var scaffoldPreviewOn=false;
 function scaffoldSuggestedParams(sg){
-  return {system:"layher",bayL:sg.bayL,bayW:sg.bayW,baysX:sg.baysX,baysZ:sg.baysZ,lifts:sg.lifts,liftH:sg.liftH,
-    decks:sg.decks.slice(),guardrail:true,bracing:true,access:sg.access,loadClass:3,x:sg.x,y:0,z:sg.z,ry:0,us:1};
+  return {system:sg.system,bayL:sg.bayL,bayW:sg.bayW,baysX:sg.baysX,baysZ:sg.baysZ,lifts:sg.lifts,liftH:sg.liftH,
+    decks:sg.decks.slice(),guardrail:true,bracing:true,access:sg.access,loadClass:3,x:sg.x,y:0,z:sg.z,ry:0,us:1,scale:1,sclL:sg.bayL,sclW:sg.bayW,sclH:sg.liftH};
 }
 function suggestScaffoldSystem(m){
   var wm=wallMetrics(), bb=sceneBBox3D();
-  var bayL=2.07, bayW=2.07, liftH=2;
+  var tyS=scaffoldTypeOf(m.params), sysS=scaffoldTypeKey(m.params);
+  var bayL=scaffoldNearest(tyS.bays,2.07), bayW=bayL, liftH=scaffoldNearest(tyS.lifts,2);
   var baysX=clamp(Math.ceil(Math.max(1,wm.width)/bayL),1,12);
   var baysZ=1;
   var lifts=clamp(Math.ceil(Math.max(1,wm.top)/liftH),1,5);
@@ -21094,7 +21345,7 @@ function suggestScaffoldSystem(m){
   reasons.push("A working platform BEHIND the wall: "+baysX+" bays of "+fmtMeasure(bayL)+" cover the "+fmtMeasure(wm.width)+" wall width, one bay ("+fmtMeasure(bayW)+") deep, standing "+fmtMeasure(0.5)+" clear of the wall's back face — the crew's side for hanging, cabling and servicing the cabinets.");
   reasons.push(lifts+" lift"+(lifts===1?"":"s")+" of "+fmtMeasure(liftH)+" bring the top deck to "+fmtMeasure(H)+" — at or above the "+fmtMeasure(wm.top)+" wall top, so the top row of cabinets can be reached from the deck. Steel decks on every lift, guardrails + toeboards on, diagonal bracing on.");
   reasons.push(access==="stair"?"A stair flight per lift — carrying cabinets up stairs is safer than up a ladder.":"One lift only, so a ladder is enough for access.");
-  var sg={mid:m.id,sig:trussLayoutSig(),screens:state.displays.length,cabs:wm.cabs,weight:wm.cabWeight,width:wm.width,top:wm.top,
+  var sg={mid:m.id,sig:trussLayoutSig(),screens:state.displays.length,cabs:wm.cabs,weight:wm.cabWeight,width:wm.width,top:wm.top,system:sysS,typeLabel:tyS.label,
     bayL:bayL,bayW:bayW,baysX:baysX,baysZ:baysZ,lifts:lifts,liftH:liftH,H:H,L:L,W:W,decks:decks,access:access,x:cx,z:z,reasons:reasons};
   sg.parts=scaffoldCalc({params:scaffoldSuggestedParams(sg)});
   return sg;
@@ -21312,7 +21563,7 @@ function addModifier(type){
   state.modifiers.push(m); selModId=m.id;
   render();
   toast(type==="scaffold"
-    ? name+" added — a suggested Layher Allround build for this layout is already placed behind the wall ("+scafAddNote+"), so it shows in the 3D view now. Build your own with the bays / lifts in its panel, press Suggest scaffolding for a fresh read of the layout, or press Edit to move it."
+    ? name+" added — a suggested build for this layout is already placed behind the wall ("+scafAddNote+"), so it shows in the 3D view now. Click it in the 3D view to select it and use the Move / Rotate / Scale gizmo, build your own with the bays / lifts in its panel, or press Suggest scaffolding for a fresh read of the layout."
     : type==="truss"
     ? name+" added — an empty truss container: no truss system is placed yet. Add one with Suggest truss, Add segment or Draw path in its panel below."
     : type==="stage"
@@ -21474,28 +21725,40 @@ function buildModParams(m){
             +'<div style="margin-top:8px">'+mNum("ballast","Ballast · kg per base (system calc)",0,5000,25)+'</div>')):"");
   }else if(m.type==="scaffold"){
     var scfOn=scaffoldToolArmed===m.id;
-    var bayOptsS=function(cur){return SCAFFOLD_BAY_LENGTHS.map(function(b){return '<option value="'+b+'"'+(Math.abs(b-cur)<0.005?" selected":"")+'>'+b.toFixed(2)+" m</option>"}).join("")};
+    var tyP=scaffoldTypeOf(p);
+    var bayOptsS=function(cur){return tyP.bays.map(function(b){return '<option value="'+b+'"'+(Math.abs(b-cur)<0.005?" selected":"")+'>'+b.toFixed(2)+" m</option>"}).join("")};
+    var typeOptsS=Object.keys(SCAFFOLD_TYPES).map(function(tk){return '<option value="'+tk+'"'+(scaffoldTypeKey(p)===tk?" selected":"")+'>'+SCAFFOLD_TYPES[tk].label+'</option>'}).join("");
     var deckTogS="";
     for(var dliS=0;dliS<(clamp(Math.round(+p.lifts||1),1,6));dliS++){var dOnS=!(p.decks&&p.decks[dliS]===false); deckTogS+='<div class="pref-row"><div class="pr-t"><b>Steel deck — lift '+(dliS+1)+'</b></div><button type="button" class="tgl'+(dOnS?" on":"")+'" data-scafdeck="'+dliS+'">'+(dOnS?"On":"Off")+'</button></div>'}
     h+='<button type="button" class="btn btn-create'+(scfOn?" on":"")+'" data-modbtn="editScaffold" aria-pressed="'+(scfOn?"true":"false")+'">Edit</button>'
       +'<p class="mod-note" data-scafedit-status>'+(scfOn
         ? "Scaffolding editing is ON — screens are locked."
-        : "Scaffolding editing is OFF — the scaffolding is locked.")+'</p>'
+        : "Scaffolding editing is OFF — press Edit, or click the scaffolding in the 3D view, to move / rotate / scale it.")+'</p>'
+      +'<p class="mod-note">In the 3D view you can also click the scaffolding itself to select it — it gets the same Move / Rotate / Scale gizmo as a screen.</p>'
       +mRoll(m,"suggestSc","Suggest scaffolding — for this layout",
         '<button type="button" class="btn primary block" data-modbtn="suggestScaffold">Suggest scaffolding for this layout</button>'
         +'<div id="scaffoldSuggest"></div>')
-      +mRoll(m,"system","System — Layher Allround",
-        '<div class="field"><span>System</span><input type="text" value="Layher Allround" disabled></div>'
-        +'<p class="mod-note">Datasheet: tube 48.3 mm OD × 3.2 mm wall · yield stress 320 N/mm² · DIN EN 10219-1 · rosettes every 500 mm on the standard, up to 8 connections per rosette · bay lengths 0.73 / 1.09 / 1.40 / 1.57 / 2.07 / 2.57 / 3.07 m, max bay 4.144 m · guardrail 99 cm · toeboard 15 cm · Layher event podiums on the same kit: permissible load up to 7.5 kN/m², height up to 10 m.</p>')
+      +mRoll(m,"system","Type — scaffolding system",
+        '<div class="field"><span>Type</span><select data-mparam="system">'+typeOptsS+'</select></div>'
+        +'<div style="margin-top:8px">'+scaffoldTypeInfoHtml(p)+'</div>')
       +mRoll(m,"bays","Bays & lifts",
-        '<div class="grid2"><div class="field"><span>Bay length · m (Datasheet list)</span><select data-mparam="bayL">'+bayOptsS(+p.bayL)+'</select></div><div class="field"><span>Bay width · m (Datasheet list)</span><select data-mparam="bayW">'+bayOptsS(+p.bayW)+'</select></div></div>'
+        '<div class="grid2"><div class="field"><span>Bay length · m ('+escapeHtml(tyP.label)+' list)</span><select data-mparam="bayL">'+bayOptsS(+p.bayL)+'</select></div><div class="field"><span>Bay width · m ('+escapeHtml(tyP.label)+' list)</span><select data-mparam="bayW">'+bayOptsS(+p.bayW)+'</select></div></div>'
         +'<div class="grid2" style="margin-top:8px">'+mNum("baysX","Bays along length",0,12,1)+mNum("baysZ","Bays along width",0,12,1)+'</div>'
-        +'<div style="margin-top:8px">'+mLab("Lift height · m")+mSeg("liftH",[["0.5","0.5 m"],["1","1.0 m"],["1.5","1.5 m"],["2","2.0 m"]])+'</div>'
+        +'<div style="margin-top:8px">'+mLab("Lift height · m")+mSeg("liftH",tyP.lifts.map(function(lh){return [String(lh),lh.toFixed(1)+" m"]}))+'</div>'
         +'<div style="margin-top:8px">'+mNum("lifts","Number of lifts",1,6,1)+'</div>'
         +'<div class="grid2" style="margin-top:8px"><button type="button" class="btn" data-modbtn="addBayX">+ Bay along length</button><button type="button" class="btn" data-modbtn="addBayZ">+ Bay along width</button></div>'
         +'<div class="grid2" style="margin-top:8px"><button type="button" class="btn" data-modbtn="addLiftScaf">+ Lift</button><button type="button" class="btn" data-modbtn="clearScafBays">Clear all bays</button></div>'
         +'<p class="mod-note">Build your own piece by piece — add bays and lifts here, or type the counts above. A unit with zero bays shows nothing in the 3D view.</p>'
         +'<p class="mod-note" data-scafsize>'+escapeHtml(scaffoldSizeText(m))+'</p>')
+      +mRoll(m,"scale","Scale — exact ratio",
+        '<div class="grid2"><div class="field"><span>Scale factor · × (two decimals)</span><input type="number" data-scafscale="num" min="0.25" max="4" step="0.01" value="'+(clamp(+p.scale||1,0.25,4)).toFixed(2)+'"></div>'
+        +'<div class="field"><span>Overall · width × depth × height</span><input type="text" data-scafscale-size value="'+escapeHtml(scaffoldOverallText(m))+'" disabled></div></div>'
+        +'<div class="zoomrow" style="margin-top:8px"><span style="font-size:11px;color:var(--muted);min-width:44px;flex:none">Scale</span><input type="range" data-scafscale="range" min="0.25" max="3" step="0.05" value="'+clamp(+p.scale||1,0.25,3)+'" aria-label="Scale factor — updates the scaffolding live"><output data-scafscale-out>×'+(clamp(+p.scale||1,0.25,4)).toFixed(2)+'</output></div>'
+        +'<div class="presets" style="margin-top:8px">'
+        +[1,1.25,1.5,2].map(function(pv){return '<button type="button" class="chip" data-scafscale-preset="'+pv.toFixed(2)+'">×'+pv.toFixed(2)+'</button>'}).join("")
+        +'</div>'
+        +'<p class="mod-note" data-scafscale-note>'+escapeHtml(scaffoldScaleText(m))+'</p>'
+        +'<p class="mod-note">The scale is an exact ratio of the whole system, applied uniformly so proportions stay exact. Each bay length and lift height is snapped to the nearest size on the '+escapeHtml(tyP.label)+' datasheet list — a non-datasheet size is never built — and the tube stays '+tyP.tubeOD.toFixed(1)+' mm: scaling never stretches the tube. The overall size shown is the exact snapped size, and the part counts follow it. Picking a bay / lift size by hand resets the scale to ×1.00 on those sizes.</p>')
       +mRoll(m,"deck","Decks, guardrails & access",
         deckTogS
         +mToggle("guardrail","Guardrails + toeboards","")
@@ -21647,9 +21910,17 @@ function syncModParamValues(m){
     var es7=box.querySelector("[data-scafedit-status]");
     if(es7)es7.textContent=scfOn2
       ? "Scaffolding editing is ON — screens are locked."
-      : "Scaffolding editing is OFF — the scaffolding is locked.";
+      : "Scaffolding editing is OFF — press Edit, or click the scaffolding in the 3D view, to move / rotate / scale it.";
     var ss7=box.querySelector("[data-scafstatus]"); if(ss7)ss7.textContent=scaffoldStatusText(m);
     var sz7=box.querySelector("[data-scafsize]"); if(sz7)sz7.textContent=scaffoldSizeText(m);
+    /* Scale controls follow the params (gizmo drags, Object tab,
+       Undo) without a panel rebuild — a field being typed in is
+       never rewritten mid-keystroke. */
+    var scN7=box.querySelector('[data-scafscale="num"]'); if(scN7&&document.activeElement!==scN7)scN7.value=(clamp(+m.params.scale||1,0.25,4)).toFixed(2);
+    var scR7=box.querySelector('[data-scafscale="range"]'); if(scR7&&document.activeElement!==scR7)scR7.value=clamp(+m.params.scale||1,0.25,3);
+    var scO7=box.querySelector("[data-scafscale-out]"); if(scO7)scO7.textContent="×"+(clamp(+m.params.scale||1,0.25,4)).toFixed(2);
+    var scS7=box.querySelector("[data-scafscale-size]"); if(scS7)scS7.value=scaffoldOverallText(m);
+    var scT7=box.querySelector("[data-scafscale-note]"); if(scT7)scT7.textContent=scaffoldScaleText(m);
     box.querySelectorAll("[data-scafdeck]").forEach(function(tb){
       var dOn7=!(m.params.decks&&m.params.decks[+tb.getAttribute("data-scafdeck")]===false);
       tb.classList.toggle("on",dOn7); tb.textContent=dOn7?"On":"Off";
@@ -22210,7 +22481,7 @@ function syncScaffoldPanel(m){
       var sh='<div class="rig-rows" style="margin-top:8px">'
         +rigRow("Your layout",sgS.screens+" screen"+(sgS.screens===1?"":"s")+" · "+sgS.cabs+" cabinets · "+Math.round(sgS.weight)+" kg")
         +rigRow("Wall size",fmtMeasure(sgS.width)+" wide · top "+fmtMeasure(sgS.top))
-        +rigRow("Suggested scaffold","Layher Allround · "+sgS.baysX+" × "+sgS.baysZ+" bays · "+sgS.lifts+" lift"+(sgS.lifts===1?"":"s")+" × "+fmtMeasure(sgS.liftH))
+        +rigRow("Suggested scaffold",(sgS.typeLabel||"Layher Allround")+" · "+sgS.baysX+" × "+sgS.baysZ+" bays · "+sgS.lifts+" lift"+(sgS.lifts===1?"":"s")+" × "+fmtMeasure(sgS.liftH))
         +rigRow("Footprint",fmtMeasure(sgS.L)+" × "+fmtMeasure(sgS.W)+" · "+fmtMeasure(sgS.H)+" high · behind the wall")
         +rigRow("Parts (Calculated)",pc.standards+" standards · "+pc.ledgers+" ledgers · "+pc.transoms+" transoms · "+pc.braces+" braces · "+pc.decks+" decks · "+pc.baseJacks+" base jacks")
         +'</div>';
@@ -22285,7 +22556,7 @@ function syncModifierPanel(){
   var sig=state.modifiers.map(function(m){return m.id+":"+(m.enabled?1:0)+":"+m.name+":"+modSubLabel(m)}).join("|")+"#"+(selModId||"");
   if(sig!==syncModifierPanel._ss){syncModifierPanel._ss=sig; buildModStack()}
   var m=modById(selModId);
-  var key=m?(m.id+":"+m.type+":"+(m.params.sim||"")+":"+(m.params.method||"")+":"+(m.params.env||"")+":"+(m.params.custom?1:0)+":"+(m.params.ltype||"")+":"+(m.params.category||"")+":"+(m.params.lifts!=null?m.params.lifts:"")+":"+(trussDraw&&trussDraw.mid===m.id?"D":"")):"none";
+  var key=m?(m.id+":"+m.type+":"+(m.params.sim||"")+":"+(m.params.method||"")+":"+(m.params.env||"")+":"+(m.params.custom?1:0)+":"+(m.params.ltype||"")+":"+(m.params.category||"")+":"+(m.params.lifts!=null?m.params.lifts:"")+":"+(m.params.system||"")+":"+(trussDraw&&trussDraw.mid===m.id?"D":"")):"none";
   if(key!==syncModifierPanel._pk){syncModifierPanel._pk=key; buildModParams(m)}
   else if(m)syncModParamValues(m);
 }
@@ -22534,7 +22805,7 @@ function modBtnAction(m,act){
       scaffoldSuggestion=suggestScaffoldSystem(m);
       scaffoldPreviewOn=true;
       render();
-      toast("Suggested for this layout: Layher Allround "+scaffoldSuggestion.baysX+" × "+scaffoldSuggestion.baysZ+" bays · "+scaffoldSuggestion.lifts+" lift"+(scaffoldSuggestion.lifts===1?"":"s")+" · "+fmtMeasure(scaffoldSuggestion.H)+" high, behind the wall — it is previewing in the 3D view now. Press Apply suggestion to use it.");
+      toast("Suggested for this layout: "+(scaffoldSuggestion.typeLabel||"Layher Allround")+" "+scaffoldSuggestion.baysX+" × "+scaffoldSuggestion.baysZ+" bays · "+scaffoldSuggestion.lifts+" lift"+(scaffoldSuggestion.lifts===1?"":"s")+" · "+fmtMeasure(scaffoldSuggestion.H)+" high, behind the wall — it is previewing in the 3D view now. Press Apply suggestion to use it.");
       return;
     }
     if(act==="toggleScaffoldPreview"){
@@ -22548,7 +22819,7 @@ function modBtnAction(m,act){
       var sgAS=applyScaffoldSuggestion(m);
       if(!sgAS){toast("No suggestion yet — press Suggest scaffolding first, and it will work one out from the current layout."); return}
       render();
-      toast("Suggestion applied — the Layher Allround scaffold is now "+sgAS.baysX+" × "+sgAS.baysZ+" bays · "+sgAS.lifts+" lift"+(sgAS.lifts===1?"":"s")+" · "+fmtMeasure(sgAS.H)+" high, behind the wall. Change the bays / lifts in its panel to make it your own, or press Edit to move it in the 3D view.");
+      toast("Suggestion applied — the "+(sgAS.typeLabel||"Layher Allround")+" scaffold is now "+sgAS.baysX+" × "+sgAS.baysZ+" bays · "+sgAS.lifts+" lift"+(sgAS.lifts===1?"":"s")+" · "+fmtMeasure(sgAS.H)+" high, behind the wall. Change the bays / lifts in its panel to make it your own, or press Edit to move it in the 3D view.");
       return;
     }
     if(act==="addBayX"||act==="addBayZ"||act==="addLiftScaf"||act==="clearScafBays"){
@@ -23525,6 +23796,29 @@ function modParamEvent(ev){
     if(k==="baysX"||k==="baysZ")m.params[k]=clamp(Math.round(+m.params[k]||0),0,12);
     if(k==="lifts"){m.params[k]=clamp(Math.round(+m.params[k]||1),1,6); if(!Array.isArray(m.params.decks))m.params.decks=[]; while(m.params.decks.length<m.params[k])m.params.decks.push(true); m.params.decks.length=m.params[k]}
     if(k==="ry")m.params[k]=Math.round(normDeg180(+m.params[k]||0));
+    if(k==="system"){
+      /* TYPE SWITCH: the new type's own datasheet list governs —
+         bays / lifts snap to its nearest sizes, the scale state
+         rebases onto the snapped build (×1.00), and the panel
+         rebuilds with the new type's lists (the panel key carries
+         the system). Geometry and BOM counts follow from the same
+         params, so the 3D build and the counts switch together. */
+      if(!SCAFFOLD_TYPES[m.params.system])m.params.system="layher";
+      var tyW=scaffoldTypeOf(m.params);
+      m.params.bayL=scaffoldNearest(tyW.bays,+m.params.bayL||2.07);
+      m.params.bayW=scaffoldNearest(tyW.bays,+m.params.bayW||2.07);
+      m.params.liftH=scaffoldNearest(tyW.lifts,+m.params.liftH||2);
+      scaffoldRebase(m);
+      var mmW=m; setTimeout(function(){toast("Scaffolding type: "+tyW.label+" — bays / lifts snapped to its datasheet list ("+mmW.params.bayL.toFixed(2)+" × "+mmW.params.bayW.toFixed(2)+" m bays, "+mmW.params.liftH.toFixed(1)+" m lifts). The 3D geometry and part counts are rebuilt for this type.")},0);
+    }
+    if(k==="bayL"||k==="bayW"||k==="liftH"){
+      /* A hand-picked bay / lift size is a new base build: the
+         exact-ratio scale resets to ×1.00 on the sizes now chosen,
+         so the scale factor shown always matches the sizes built. */
+      var scNow=clamp(+m.params.scale||1,0.25,4);
+      if(Math.abs(scNow-1)>0.001)setTimeout(function(){toast("Bay / lift size picked by hand — the scale is back to ×1.00 on these sizes. Use Scale to grow the whole system by an exact ratio from here.")},0);
+      scaffoldRebase(m);
+    }
   }
   if(m.type==="truss"&&k==="method")m.params.support=m.params.method==="flown"?"flown":"goalpost";
   /* Create Truss: Straight is a plain straight system (any old
@@ -23619,7 +23913,31 @@ $("modParams").addEventListener("change",function(ev){
   var sl=ev.target.closest?ev.target.closest("select[data-mparam]"):null; if(!sl)return;
   var m=modById(selModId); if(!m||m.type!=="scaffold")return;
   var k=sl.getAttribute("data-mparam");
-  if(k==="bayL"||k==="bayW"){m.params[k]=parseFloat(sl.value); render()}
+  if(k==="bayL"||k==="bayW"){m.params[k]=parseFloat(sl.value); scaffoldRebase(m); render()}
+  if(k==="system"&&SCAFFOLD_TYPES[sl.value]){m.params.system=sl.value; var tyC=scaffoldTypeOf(m.params); m.params.bayL=scaffoldNearest(tyC.bays,+m.params.bayL||2.07); m.params.bayW=scaffoldNearest(tyC.bays,+m.params.bayW||2.07); m.params.liftH=scaffoldNearest(tyC.lifts,+m.params.liftH||2); scaffoldRebase(m); render()}
+});
+/* Scaffolding Scale controls — the exact-ratio factor: the number
+   field (typed to two decimals), the slider and the preset chips
+   all write through scaffoldSetScale, which snaps every bay /
+   lift size to the type's datasheet list, so the panel readout,
+   the 3D build and the counts can never disagree. Live on input,
+   like the ring Radius / Arc controls. */
+function scaffoldScaleEvent(ev){
+  var el=ev.target.closest?ev.target.closest("[data-scafscale],[data-scafscale-preset]"):null; if(!el)return false;
+  var m=modById(selModId); if(!m||m.type!=="scaffold")return false;
+  var v=el.hasAttribute("data-scafscale-preset")?parseFloat(el.getAttribute("data-scafscale-preset")):parseFloat(el.value);
+  if(isNaN(v))return true;
+  scaffoldSetScale(m,v);
+  render();
+  return true;
+}
+$("modParams").addEventListener("input",function(ev){scaffoldScaleEvent(ev)});
+$("modParams").addEventListener("click",function(ev){if(scaffoldScaleEvent(ev))ev.preventDefault()});
+$("modParams").addEventListener("change",function(ev){
+  var el=ev.target.closest?ev.target.closest('[data-scafscale="num"]'):null; if(!el)return;
+  var m=modById(selModId); if(!m||m.type!=="scaffold")return;
+  var c=scaffoldCalc(m);
+  toast("Scaffolding scale ×"+c.scale.toFixed(2)+" — bays "+c.bayL.toFixed(2)+" × "+c.bayW.toFixed(2)+" m, lifts "+c.liftH.toFixed(1)+" m (snapped to the "+c.typeLabel+" datasheet sizes) · overall "+scaffoldOverallText(m)+". Tube stays "+c.type.tubeOD.toFixed(1)+" mm.");
 });
 $("modParams").addEventListener("input",modParamEvent);
 $("modParams").addEventListener("click",modParamEvent);
@@ -26012,18 +26330,29 @@ function buildScaffoldPreviewGroup(m,bb){
   return g;
 }
 /* ── Scaffolding ─────────────────────────────────────────────────
-   A Layher Allround unit built from REAL parts in the stage frame:
-   base jacks (plate + stem), vertical standards with a rosette
-   collar every 500 mm (Datasheet), horizontal ledgers and transoms
-   at every lift level, diagonal braces across every perimeter bay
-   of every lift, steel decks on the lifts whose deck switch is on,
-   guardrails at 0.5 m and 0.99 m (Datasheet) with 15 cm toeboards
-   (Datasheet) around the top deck, and a ladder or stair access.
-   One modifier = one unit: it stands at its params x / y / z, turns
-   on ry and scales on us. Only while Scaffolding editing is ON does
-   the unit get a hit box (kind "scel") and the scaffold gizmo (kind
-   "scgizmo"), on the stage-piece pattern. 3D only — nothing here is
-   read by the 2D layout, ports, cabling or PNG export. */
+   A scaffolding unit of its chosen TYPE (Layher Allround /
+   Ringlock / Cuplock / Tube & Coupler) built from REAL parts in
+   the stage frame: base jacks (plate + stem), vertical standards
+   with the type's connection at its real spacing (rosette collars
+   every 500 mm for Layher / Ringlock, cup joints every 500 mm for
+   Cuplock, coupler clamps at the joints for Tube & Coupler),
+   horizontal ledgers and transoms at every lift level, diagonal
+   braces across every perimeter bay of every lift, steel decks
+   on the lifts whose deck switch is on, guardrails (0.5 m mid
+   rail + top rail; the 0.99 m top rail is the Layher Datasheet
+   figure) with 15 cm toeboards around the top deck, and a ladder
+   or stair access. One modifier = one unit: it stands at its
+   params x / y / z and turns on ry. Its SIZE comes only from its
+   bays / lifts — the exact-ratio Scale snaps those to the type's
+   datasheet sizes (scaffoldSetScale), so the tube is ALWAYS the
+   type's real tube (48.3 mm OD) and never stretches with scale.
+   SELECTION, like a screen: the unit ALWAYS carries a selection
+   hit box (kind "scsel") in the 3D view — clicking it selects the
+   modifier and arms Scaffolding editing, so the unit gets the
+   same Move / Rotate / Scale gizmo a screen uses (kinds "scel" /
+   "scgizmo", on the stage-piece construction). The panel Edit
+   button arms the same mode. 3D only — nothing here is read by
+   the 2D layout, ports, cabling or PNG export. */
 var scafDeckMat=null, scafToeMat=null;
 function buildScaffoldGroup(m,bb){
   ensureModMats();
@@ -26031,29 +26360,36 @@ function buildScaffoldGroup(m,bb){
     scafDeckMat=new THREE.MeshStandardMaterial({color:0x707a88,roughness:0.55,metalness:0.7});
     scafToeMat=new THREE.MeshStandardMaterial({color:0x8a6b46,roughness:0.9,metalness:0});
   }
-  var p=m.params, c=scaffoldCalc(m);
+  var p=m.params, c=scaffoldCalc(m), ty=c.type;
   var g=new THREE.Group();
   if(c.empty)return g;
-  var us=clamp(+p.us||1,0.25,4);
   var pivot=new THREE.Group();
   pivot.position.set(+p.x||0,+p.y||0,+p.z||0);
   pivot.rotation.y=(+p.ry||0)*Math.PI/180;
-  pivot.scale.setScalar(us);
   g.add(pivot);
-  var R=0.02415; /* 48.3 mm OD tube (Datasheet) */
+  var R=ty.tubeOD/2000; /* the type's real tube radius in m — 48.3 mm OD (Datasheet); scaling never changes it */
   var x0=-c.L/2, z0=-c.W/2;
   function tube(ax,ay,az,bx,by,bz,r,mat){cylBetween(v3(ax,ay,az),v3(bx,by,bz),r||R,mat||trussMat,pivot)}
   var i,j,lf;
-  /* Base jacks + standards, with a rosette collar every 500 mm */
+  /* Base jacks + standards, with the type's connection collars */
   for(i=0;i<=c.nx;i++)for(j=0;j<=c.nz;j++){
     var sx=x0+i*c.bayL, sz=z0+j*c.bayW;
     var plate=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.02,0.15),ballastMat);
     plate.position.set(sx,0.01,sz); plate.userData.ownGeo=true; pivot.add(plate);
     tube(sx,0,sz,sx,0.35,sz,0.017,barMat); /* base jack stem */
     tube(sx,0,sz,sx,c.H,sz); /* standard */
-    for(var rsy=0.5;rsy<c.H-0.01;rsy+=0.5){
-      var ros=new THREE.Mesh(new THREE.CylinderGeometry(0.062,0.062,0.028,12),barMat);
-      ros.position.set(sx,rsy,sz); ros.userData.ownGeo=true; pivot.add(ros);
+    if(ty.nodeKind==="rosette"){
+      for(var rsy=0.5;rsy<c.H-0.01;rsy+=0.5){
+        var ros=new THREE.Mesh(new THREE.CylinderGeometry(0.062,0.062,0.028,12),barMat);
+        ros.position.set(sx,rsy,sz); ros.userData.ownGeo=true; pivot.add(ros);
+      }
+    }else if(ty.nodeKind==="cup"){
+      for(var csy=0.5;csy<c.H-0.01;csy+=0.5){
+        var cup=new THREE.Mesh(new THREE.CylinderGeometry(0.058,0.042,0.055,12),barMat);
+        cup.position.set(sx,csy,sz); cup.userData.ownGeo=true; pivot.add(cup);
+        var cupT=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.02,12),barMat);
+        cupT.position.set(sx,csy+0.045,sz); cupT.userData.ownGeo=true; pivot.add(cupT);
+      }
     }
   }
   /* Ledgers + transoms at every lift level; steel decks per lift */
@@ -26061,6 +26397,14 @@ function buildScaffoldGroup(m,bb){
     var ly=lf*c.liftH;
     for(j=0;j<=c.nz;j++)for(i=0;i<c.nx;i++)tube(x0+i*c.bayL,ly,z0+j*c.bayW,x0+(i+1)*c.bayL,ly,z0+j*c.bayW); /* ledgers */
     for(i=0;i<=c.nx;i++)for(j=0;j<c.nz;j++)tube(x0+i*c.bayL,ly,z0+j*c.bayW,x0+i*c.bayL,ly,z0+(j+1)*c.bayW); /* transoms */
+    if(ty.nodeKind==="coupler"){
+      /* Tube & Coupler: a forged coupler clamp at every joint where
+         a ledger / transom meets a standard at this lift level. */
+      for(i=0;i<=c.nx;i++)for(j=0;j<=c.nz;j++){
+        var cp=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1),barMat);
+        cp.position.set(x0+i*c.bayL,ly,z0+j*c.bayW); cp.userData.ownGeo=true; pivot.add(cp);
+      }
+    }
     if(!(p.decks&&p.decks[lf-1]===false)){
       for(i=0;i<c.nx;i++)for(j=0;j<c.nz;j++){
         var dk=new THREE.Mesh(new THREE.BoxGeometry(c.bayL*0.96,0.045,c.bayW*0.96),scafDeckMat);
@@ -26074,13 +26418,16 @@ function buildScaffoldGroup(m,bb){
       for(j=0;j<c.nz;j++){tube(x0,yb,z0+j*c.bayW,x0,ly,z0+(j+1)*c.bayW); tube(x0+c.L,yb,z0+j*c.bayW,x0+c.L,ly,z0+(j+1)*c.bayW)}
     }
   }
-  /* Guardrails (mid rail + 99 cm top rail, Datasheet) on posts above
-     the top deck, and 15 cm toeboards (Datasheet) around it */
+  /* Guardrails (mid rail + top rail — 99 cm for Layher, its
+     Datasheet figure; 1.0 m for the other types, whose datasheets
+     list no single guardrail height here) on posts above the top
+     deck, and 15 cm toeboards around it */
   if(p.guardrail){
+    var grH=ty.guardrailCm?ty.guardrailCm/100:1;
     var ty=c.H;
-    for(i=0;i<=c.nx;i++){tube(x0+i*c.bayL,ty,z0,x0+i*c.bayL,ty+0.99,z0); tube(x0+i*c.bayL,ty,z0+c.W,x0+i*c.bayL,ty+0.99,z0+c.W)}
-    for(j=1;j<c.nz;j++){tube(x0,ty,z0+j*c.bayW,x0,ty+0.99,z0+j*c.bayW); tube(x0+c.L,ty,z0+j*c.bayW,x0+c.L,ty+0.99,z0+j*c.bayW)}
-    [0.5,0.99].forEach(function(go){
+    for(i=0;i<=c.nx;i++){tube(x0+i*c.bayL,ty,z0,x0+i*c.bayL,ty+grH,z0); tube(x0+i*c.bayL,ty,z0+c.W,x0+i*c.bayL,ty+grH,z0+c.W)}
+    for(j=1;j<c.nz;j++){tube(x0,ty,z0+j*c.bayW,x0,ty+grH,z0+j*c.bayW); tube(x0+c.L,ty,z0+j*c.bayW,x0+c.L,ty+grH,z0+j*c.bayW)}
+    [0.5,grH].forEach(function(go){
       for(var i6=0;i6<c.nx;i6++){tube(x0+i6*c.bayL,ty+go,z0,x0+(i6+1)*c.bayL,ty+go,z0); tube(x0+i6*c.bayL,ty+go,z0+c.W,x0+(i6+1)*c.bayL,ty+go,z0+c.W)}
       for(var j6=0;j6<c.nz;j6++){tube(x0,ty+go,z0+j6*c.bayW,x0,ty+go,z0+(j6+1)*c.bayW); tube(x0+c.L,ty+go,z0+j6*c.bayW,x0+c.L,ty+go,z0+(j6+1)*c.bayW)}
     });
@@ -26103,12 +26450,13 @@ function buildScaffoldGroup(m,bb){
       }
     }
   }
-  /* Edit handles — only while Scaffolding editing is ON for this
-     modifier: an invisible hit box over the whole unit, and the
-     scaffold gizmo on the stage-piece construction. */
+  /* Edit handles — while Scaffolding editing is ON for this
+     modifier (armed by its Edit button OR by clicking the unit in
+     the 3D view): an invisible hit box over the whole unit, and
+     the scaffold gizmo on the stage-piece construction. */
   var editHandles=T3&&!T3._ghostBuild&&state.vmode==="edit"&&selModId===m.id&&scaffoldToolArmed===m.id;
   if(editHandles){
-    var hw=Math.max(0.3,c.L*us), hh=Math.max(0.15,c.H*us), hd=Math.max(0.3,c.W*us);
+    var hw=Math.max(0.3,c.L), hh=Math.max(0.15,c.H), hd=Math.max(0.3,c.W);
     var cyC=(+p.y||0)+hh/2, ryR=(+p.ry||0)*Math.PI/180;
     var hb=new THREE.Mesh(new THREE.BoxGeometry(hw,hh,hd),modHitMat);
     hb.userData.ownGeo=true; hb.userData.measureSkip=true;
@@ -26151,6 +26499,26 @@ function buildScaffoldGroup(m,bb){
       regSC(new THREE.Mesh(new THREE.SphereGeometry(0.14,14,10),gizmoMat(0xffffff)),"free","");
     }
     g.add(sgg);
+  }
+  /* Selection hit box — ALWAYS present in the 3D view (View and
+     Edit modes, never in Render and never on the Suggest ghost),
+     so the unit can be clicked to select it exactly like a screen:
+     the click selects this modifier and arms Scaffolding editing
+     (see the pointer handlers), which builds the gizmo handles
+     above. When this unit is the selected one its outline shows,
+     so the selection reads in View mode too. */
+  if(T3&&!T3._ghostBuild&&!editHandles&&typeof renderMode!=="undefined"&&!renderMode){
+    var hw2=Math.max(0.3,c.L), hh2=Math.max(0.15,c.H), hd2=Math.max(0.3,c.W);
+    var cyS=(+p.y||0)+hh2/2, ryS=(+p.ry||0)*Math.PI/180;
+    var sb=new THREE.Mesh(new THREE.BoxGeometry(hw2,hh2,hd2),modHitMat);
+    sb.userData.ownGeo=true; sb.userData.measureSkip=true;
+    sb.position.set(+p.x||0,cyS,+p.z||0); sb.rotation.y=ryS; sb.renderOrder=998;
+    sb.userData.modEdit={kind:"scsel",mid:m.id,idx:0};
+    g.add(sb); T3.modHit.push(sb);
+    if(selModId===m.id){
+      var hl2=new THREE.Mesh(new THREE.BoxGeometry(hw2,hh2,hd2),new THREE.MeshBasicMaterial({color:0xf59e0b,wireframe:true}));
+      hl2.userData.ownGeo=true; hl2.userData.measureSkip=true; hl2.position.copy(sb.position); hl2.rotation.copy(sb.rotation); g.add(hl2);
+    }
   }
   return g;
 }
