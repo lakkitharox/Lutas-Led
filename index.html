@@ -1548,6 +1548,7 @@ html.admin-boot #adminPage{display:block}
       <div class="menu" id="settingsMenu">
         <button id="mUndo" disabled><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/></svg><span id="undoLab">Undo</span><span class="mi-key">Ctrl+Z</span></button>
         <button id="mRedo" disabled><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5 5.5 5.5 0 0 0 9.5 20H13"/></svg><span id="redoLab">Redo</span><span class="mi-key">Ctrl+Y</span></button>
+        <button id="mMirror" title="Mirror left–right across the stage centre (X = 0 in 3D, the layout centre in 2D) — mirrors the selected element, or every stage element when nothing is selected: screens, truss, lights, scaffolding, crowd, props, stage pieces and speakers. Position and facing flip; the image / text inside a screen does not. One Mirror is one Undo step"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18" stroke-dasharray="3.5 3"/><path d="M8.5 7.5 3.5 12l5 4.5v-9Z" fill="currentColor" stroke="none"/><path d="M15.5 7.5 20.5 12l-5 4.5v-9Z" fill="currentColor" stroke="none"/></svg>Mirror left–right</button>
         <div class="sep"></div>
         <button data-set="numbers"><span class="chk">✓</span>Cabinet numbers</button>
         <button data-set="ports"><span class="chk">✓</span>Port colours</button>
@@ -1697,6 +1698,7 @@ html.admin-boot #adminPage{display:block}
         <div class="v3d-bar">
           <div class="v3d-modewrap"><div class="v3d-group"><span class="cap">Mode</span><button data-vmode="view" class="on">View</button><button data-vmode="edit">Edit</button></div><button type="button" class="v3d-editchip" id="v3EditChip" title="No section edit mode is on — in 3D Edit mode the screens edit. Press the Edit button in a Truss, Lighting, Props, Stage Settings or Crowd section to edit that section instead.">No edit mode</button></div>
           <div class="v3d-group v3d-gizmo-group"><button data-gmode="move" class="on iconly" title="Move gizmo — red X · green Y (height) · blue Z (depth) arrows + plane squares" aria-label="Move gizmo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></button><button data-gmode="rotate" class="iconly" title="Rotate gizmo — coloured axis rings. The red X and blue Z rings are 3D-only tilts; the green Y ring follows Layout Link (3D tab): the wall's own 3D facing in Independent mode, the shared 2D degree in Linked mode" aria-label="Rotate gizmo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button><button data-gmode="scale" class="iconly" title="Scale gizmo — axis cubes like Blender: X = width, Y = height, Z = uniform (whole cabinets), blue square = width + height, white cube = uniform. With a custom Truss / Lighting modifier selected, the gizmo modes drive its segments / fixtures instead" aria-label="Scale gizmo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="v3Snap" class="iconly" aria-pressed="false" title="Snap (magnet) — the 3D view's snap tool: press it and 3D snapping turns on and the Magnet strength popup opens — the strength bands (weak / medium / strong / max) set the angle and metre steps that screens, truss segments, lights and props snap to while they move in the 3D view. Press it again to turn snapping off" aria-label="Snap (magnet) — 3D snapping with strength popup"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><g transform="rotate(45 12 12)"><path d="M5 8v3a7 7 0 0 0 14 0V8h-4.5v3a2.5 2.5 0 0 1-5 0V8H5z"/><rect x="5" y="2.6" width="4.5" height="3.6" rx="0.9"/><rect x="14.5" y="2.6" width="4.5" height="3.6" rx="0.9"/></g></svg></button></div>
+          <div class="v3d-group"><span class="cap">Mirror</span><button id="v3Mirror" class="iconly" title="Mirror left–right across the stage centre (X = 0) — mirrors the selected element, or every stage element when nothing is selected: screens, truss, lights, scaffolding, crowd, props, stage pieces and speakers. Position and facing flip; the image / text inside a screen does not. One Mirror is one Undo step" aria-label="Mirror left–right across the stage centre"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18" stroke-dasharray="3.5 3"/><path d="M8.5 7.5 3.5 12l5 4.5v-9Z" fill="currentColor" stroke="none"/><path d="M15.5 7.5 20.5 12l-5 4.5v-9Z" fill="currentColor" stroke="none"/></svg></button></div>
           <div class="v3d-group"><span class="cap">Display</span><button data-shade="shaded" class="on iconly" title="Shaded — the normal lit view: smooth shading, shadows and screen glow, each screen in its chosen colour as a colour / lighter-colour chessboard" aria-label="Shaded display mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6a8.4 8.4 0 0 1 0 16.8Z" fill="currentColor" fill-opacity="0.45" stroke="none"/><path d="M16.5 4.91a8.4 8.4 0 0 1 0 14.18Z" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8.4"/></svg></button><button data-shade="flat" class="iconly" title="Flat — the signal / port map: every cabinet in its flat, unshaded port colour with its port number on it; the rest of the stage in flat tones" aria-label="Flat display mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.6" y="4.6" width="14.8" height="14.8" rx="1.4" fill="currentColor" stroke="none"/></svg></button><button data-shade="wireframe" class="iconly" title="Wireframe — edges only: the stage drawn as a wireframe model, no filled faces" aria-label="Wireframe display mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M9.33 4v16M14.67 4v16M4 9.33h16M4 14.67h16"/></svg></button></div>
           <div class="v3d-group"><span class="cap">Orientation</span><select class="v3d-orient" id="v3Orient" aria-label="Transform orientation — Global, Local or Parent" title="Transform Orientation — the axes the 3D gizmo uses for the object selected in 3D: Global = the world axes · Local = the selected object's own axes · Parent = its parent's axes (the stage frame for screens, props and lights)"><option value="global" selected>Global</option><option value="local">Local</option><option value="parent">Parent</option></select></div>
           <div class="v3d-viewpoint"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg><select id="v3Viewpoint" aria-label="Viewpoint — choose the 3D camera view" title="Viewpoint — choose the camera view. Stays in sync with the view cube in the corner"><option value="front">Front</option><option value="back">Back</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="iso" selected>Isometric</option><option value="free">Free</option></select></div>
@@ -5898,6 +5900,197 @@ function doRedo(){
 }
 $("mUndo").addEventListener("click",function(){closeMenus(); doUndo()});
 $("mRedo").addEventListener("click",function(){closeMenus(); doRedo()});
+/* ══════════ MIRROR — left–right across the stage centre ══════════
+   One Mirror press flips POSITION and FACING across the stage
+   centre — X = 0 in the 3D stage frame (for a screen written to
+   the 2D layout, the layout centre, layoutBBox().cx). It works two
+   ways: with an element selected (the Object panel's current
+   object — a screen, a truss segment, a light fixture, a prop, a
+   scaffolding layer — or a selected crowd pack / stage piece, or a
+   whole selected modifier) it mirrors ONLY that element; with
+   nothing selected it mirrors EVERY stage element at once.
+   Elements mirrored, each through its own stored fields (so the
+   mirror saves / loads with the layout like any other change):
+   • Screens — through the Layout Link rule, exactly like a 3D
+     move: Independent mirrors the wall's private 3D arrangement
+     only (x3 → −x3, facing rotY3d → −rotY3d, roll rotZ3d →
+     −rotZ3d; the pitch rotX3d is unchanged — a left–right flip
+     keeps a tilt) and the 2D layout, panel counts, ports, cabling
+     and PNG export do NOT change; Linked mirrors the shared
+     fields about the layout centre (x → 2·cx − x, rotation →
+     −rotation), so the 2D layout mirrors too. A bent wall's pivot
+     flips end-for-end (bendPivot → 1 − bendPivot) and a
+     column-section rotation's angles reverse order and negate,
+     so the shape mirrors with the wall. Screen CONTENT is never
+     flipped — only the wall's place and facing: the preview /
+     simulator texture keeps its own orientation (see the note in
+     doMirror when content is showing).
+   • Truss — a custom segment's endpoints flip X (a ring segment's
+     roll tiltZ negates; tiltX is a pitch and stays); a preset
+     (non-custom) truss is built symmetric about the wall from the
+     layout itself, so it follows the mirrored walls — only its
+     plan bend (bendDeg) negates.
+   • Lights — the whole set offset (setX) negates and every custom
+     fixture's position flips X with its aim: pan (Rotation Y)
+     negates so a light aiming stage-left now aims stage-right,
+     tilt (Rotation X) is unchanged, and a batten's roll negates.
+     A fixture riding a truss segment follows that segment when
+     the truss is mirrored in the same press; mirrored on its own
+     it is re-mounted on the bar nearest its mirrored point, the
+     same rule the Object tab's position fields use. The automatic
+     (non-custom) rig is spread symmetric about the stage centre
+     and follows the walls; only its set offset flips.
+   • Scaffolding — every layer (unit) in the modifier flips X and
+     negates its facing (ry); the flat params stay the selected
+     layer's mirror via scaffoldMirrorSave / Load.
+   • Crowd — every pack's X offset from the stage centre negates
+     and its rotation negates. Props — X negates, ry / rz negate,
+     rx (pitch) stays. Stage pieces — X negates, ry negates.
+   • Speakers / Haze — nothing to flip: the speaker pair is built
+     one array at each front corner, symmetric about the centre by
+     construction, and haze is atmosphere (density) with no
+     position. They are part of a whole-stage mirror unchanged.
+   One press is ONE Undo step: doMirror runs inside the history
+   gesture (histBegin / histEnd), so Ctrl+Z flips everything back
+   at once, and because only ordinary layout fields change, the
+   mirror rides Save / Load and Undo / Redo like any other edit. */
+function mirrorDeg(v){return Math.round(normDeg180(-(+v||0)))}
+function negM(v){return Math.round((-(+v||0))*100)/100}
+function mirrorDisplay(d,bbCx){
+  if(layoutLinked()){
+    d.x=Math.round(2*bbCx-(+d.x||0));
+    d.rotation=mirrorDeg(d.rotation);
+    if(d.rotY3d)d.rotY3d=mirrorDeg(d.rotY3d);
+  }else{
+    ensureInd3(d);
+    d.x3=Math.round(effX3(d)*-1000)/1000;
+    d.rotY3d=mirrorDeg(d.rotY3d);
+  }
+  if(d.rotZ3d)d.rotZ3d=mirrorDeg(d.rotZ3d);
+  /* rotX3d (pitch) stays — a left–right flip keeps the tilt. */
+  d.bendPivot=Math.round((1-clamp(+d.bendPivot||0,0,1))*1000)/1000;
+  if(d.secRotAxis!=="rows"&&Array.isArray(d.secRotAngles)&&d.secRotAngles.length>1)d.secRotAngles=d.secRotAngles.slice().reverse().map(function(a){return -(+a||0)});
+}
+function mirrorSeg(s){
+  s.ax=negM(s.ax); s.bx=negM(s.bx);
+  if(s.ring&&s.tiltZ)s.tiltZ=mirrorDeg(s.tiltZ); /* tiltX is the ring's pitch — unchanged by a left–right flip */
+}
+/* Flip one fixture to the mirrored world point mw. newSetX is the
+   light set's X offset AFTER the mirror (the set's own offset
+   negates when the whole Lighting modifier is mirrored; it is the
+   current offset when a single fixture is mirrored on its own).
+   trussMirrored, when given, maps truss modifier ids mirrored in
+   the same press: a fixture riding one of those segments stays on
+   its segment (the segment itself carried it to the mirrored
+   point) and only its stored point is refreshed. */
+function mirrorFixtureApply(m,f,mw,newSetX,trussMirrored){
+  setFixtureRotY(f,-fixtureRotY(f)); /* pan negates — the aim flips left ↔ right */
+  if(fixtureModelOf(f)==="batten")setFixtureRotZ(f,-fixtureRotZ(f)); /* a batten's roll negates too; tilt (Rotation X) never changes */
+  if(f.tm){
+    if(trussMirrored&&trussMirrored[f.tm]){
+      var np=resolveFixturePos(f);
+      f.x=Math.round((np.x-newSetX)*100)/100; f.y=Math.round((np.y-(+m.params.setY||0))*100)/100; f.z=Math.round((np.z-(+m.params.setZ||0))*100)/100;
+      return;
+    }
+    var nb=mountFixtureNearest(m,f,mw); /* re-mount on the bar nearest the mirrored point, like the Object tab's position edit */
+    if(nb)return;
+    f.tm=null; f.seg=null; f.t=0; f.mount=null;
+    f.x=Math.round((mw.x-newSetX)*100)/100; f.y=Math.round((mw.y-(+m.params.setY||0))*100)/100; f.z=Math.round((mw.z-(+m.params.setZ||0))*100)/100;
+    return;
+  }
+  f.x=Math.round((mw.x-newSetX)*100)/100;
+}
+function mirrorFixtureWorld(m,f,setX){
+  var rp=resolveFixturePos(f);
+  return f.tm?{x:rp.x,y:rp.y,z:rp.z}:{x:rp.x+setX,y:rp.y+(+m.params.setY||0),z:rp.z+(+m.params.setZ||0)};
+}
+function mirrorOneFixture(m,f){
+  var setX=+m.params.setX||0, w=mirrorFixtureWorld(m,f,setX);
+  mirrorFixtureApply(m,f,{x:-w.x,y:w.y,z:w.z},setX,null);
+}
+function mirrorLightModifier(m,trussMirrored){
+  var p=m.params, oldSetX=+p.setX||0, newSetX=-oldSetX;
+  var jobs=(p.fixtures||[]).map(function(f){var w=mirrorFixtureWorld(m,f,oldSetX); return {f:f,mw:{x:-w.x,y:w.y,z:w.z}}});
+  p.setX=newSetX;
+  jobs.forEach(function(j){mirrorFixtureApply(m,j.f,j.mw,newSetX,trussMirrored)});
+}
+function mirrorModifierWhole(m,trussMirrored){
+  var p=m.params;
+  if(m.type==="crowd"){crowdPacks(m).forEach(function(pk){pk.x=negM(pk.x); pk.rot=mirrorDeg(pk.rot)}); return}
+  if(m.type==="stage"){(p.els||[]).forEach(function(el){el.x=negM(el.x); el.ry=mirrorDeg(el.ry)}); return}
+  if(m.type==="props"){(p.items||[]).forEach(function(it){it.x=negM(it.x); it.ry=mirrorDeg(it.ry); it.rz=mirrorDeg(it.rz)}); return}
+  if(m.type==="scaffold"){scaffoldMirrorSave(m); scaffoldUnits(m).forEach(function(u){u.x=negM(u.x); u.ry=mirrorDeg(u.ry)}); scaffoldMirrorLoad(m); return}
+  if(m.type==="truss"){
+    if(p.custom){(p.segs||[]).forEach(mirrorSeg); return}
+    if(+p.bendDeg)p.bendDeg=-p.bendDeg;
+    return;
+  }
+  if(m.type==="light"){mirrorLightModifier(m,trussMirrored); return}
+  /* speakers / haze: no stored left–right position to flip (see the
+     block comment above) — they mirror by construction. */
+}
+/* What one Mirror press acts on: the Object panel's current object
+   when its selection really exists (screen / truss segment / light
+   fixture / prop / scaffolding layer), then a selected crowd pack
+   or stage piece, then a selected screen, then a whole selected
+   modifier — and, when nothing is selected, the whole stage. */
+function mirrorTarget(){
+  var m=modById(selModId);
+  if(objFocusKind==="screen"&&selOpt())return {kind:"screen",disp:selOpt()};
+  if(objFocusKind==="truss"){var t=objTrussSel(); if(t)return {kind:"trussSeg",mod:t.mod,seg:t.seg,idx:t.idx}}
+  if(objFocusKind==="light"){var l=objLightSel(); if(l)return {kind:"lightFix",mod:l.mod,fix:l.fix,idx:l.idx}}
+  if(objFocusKind==="prop"){var pr=objPropSel(); if(pr)return {kind:"prop",mod:pr.mod,item:pr.item,idx:pr.idx}}
+  if(objFocusKind==="scaffold"){var sc=objScaffoldSel(); if(sc)return {kind:"scaffoldUnit",mod:sc.mod,idx:sc.idx}}
+  if(m&&m.type==="crowd"){var pks=crowdPacks(m); if(pks.length){var pi=clamp(Math.round(modSelCrowdPack||0),0,pks.length-1); return {kind:"crowdPack",mod:m,pack:pks[pi],idx:pi}}}
+  if(m&&m.type==="stage"){var els=m.params.els||[]; if(els.length){var ei=clamp(Math.round(modSelStageEl||0),0,els.length-1); return {kind:"stageEl",mod:m,el:els[ei],idx:ei}}}
+  if(selOpt())return {kind:"screen",disp:selOpt()};
+  if(m)return {kind:"modifier",mod:m};
+  return {kind:"all"};
+}
+function mirrorApply(){
+  var tgt=mirrorTarget(), screens=0, label="";
+  if(tgt.kind==="all"){
+    var bbCx=layoutBBox().cx;
+    var tmap={}; state.modifiers.forEach(function(m){if(m.type==="truss")tmap[m.id]=true});
+    /* Truss first: fixtures riding a mirrored segment resolve
+       their mirrored point from the flipped segment itself. */
+    state.modifiers.forEach(function(m){if(m.type==="truss")mirrorModifierWhole(m,tmap)});
+    state.displays.forEach(function(d){mirrorDisplay(d,bbCx); screens++});
+    state.modifiers.forEach(function(m){if(m.type!=="truss")mirrorModifierWhole(m,tmap)});
+    label="the whole stage — every screen and stage element";
+  }
+  else if(tgt.kind==="screen"){mirrorDisplay(tgt.disp,layoutBBox().cx); screens=1; label=tgt.disp.name}
+  else if(tgt.kind==="trussSeg"){mirrorSeg(tgt.seg); label="Truss "+(tgt.idx+1)}
+  else if(tgt.kind==="lightFix"){mirrorOneFixture(tgt.mod,tgt.fix); label="Light "+(tgt.idx+1)}
+  else if(tgt.kind==="prop"){var it=tgt.item; it.x=negM(it.x); it.ry=mirrorDeg(it.ry); it.rz=mirrorDeg(it.rz); label=it.name}
+  else if(tgt.kind==="scaffoldUnit"){
+    var m2=tgt.mod;
+    if(tgt.idx===scaffoldSelIdx(m2)){m2.params.x=negM(m2.params.x); m2.params.ry=mirrorDeg(m2.params.ry); scaffoldMirrorSave(m2)}
+    else{var u=scaffoldUnits(m2)[tgt.idx]; if(u){u.x=negM(u.x); u.ry=mirrorDeg(u.ry)}}
+    label="Scaffolding layer "+(tgt.idx+1);
+  }
+  else if(tgt.kind==="crowdPack"){var pk=tgt.pack; pk.x=negM(pk.x); pk.rot=mirrorDeg(pk.rot); label=pk.name}
+  else if(tgt.kind==="stageEl"){var el=tgt.el; el.x=negM(el.x); el.ry=mirrorDeg(el.ry); label=el.name}
+  else if(tgt.kind==="modifier"){mirrorModifierWhole(tgt.mod,null); label=tgt.mod.name}
+  return {label:label,screens:screens,kind:tgt.kind};
+}
+function doMirror(){
+  histBegin();
+  var before=histSnapshot();
+  var res=mirrorApply();
+  var changed=histSnapshot()!==before;
+  render();
+  histEnd();
+  if(!changed){toast("Mirror — nothing flipped: what is selected already sits on the stage centre, or is built symmetric about it (the speaker pair and haze have no left–right position to flip)."); return}
+  var msg="Mirrored "+res.label+" — left–right across the stage centre. One Undo step (Ctrl+Z) flips it back.";
+  if(res.screens){
+    msg+=layoutLinked()?" The screens were mirrored in the shared 2D layout too (Layout Link: Linked).":" The screens were mirrored in 3D only — Layout Link is Independent, so the 2D layout, panel counts, ports, cabling and PNG export are unchanged.";
+    if(typeof pv!=="undefined"&&pv&&pv.on&&pv.el)msg+=" Screen content is NOT flipped — check text and logos on the mirrored screen.";
+  }
+  toast(msg);
+}
+$("mMirror").addEventListener("click",function(){closeMenus(); doMirror()});
+$("v3Mirror").addEventListener("click",function(){doMirror()});
 document.addEventListener("keydown",function(ev){
   if(!(ev.ctrlKey||ev.metaKey)||ev.altKey)return;
   var t=ev.target;
@@ -12971,6 +13164,18 @@ function briefDimV(x,X,Y1,Y2,label,fs){
   x.font="700 "+fs+"px 'IBM Plex Mono', monospace"; x.textAlign="center"; x.textBaseline="bottom";
   x.fillText(label,0,0); x.restore();
 }
+/* Shrink a brief-drawing label's font until the text fits maxW px
+   (never grows it, never below 12 px): a display / piece / bar
+   name or caption wider than the element it labels would spill
+   sideways over the neighbouring element's labels, so the report
+   drawings fit every free-standing label to its element first.
+   Sets x.font as a side effect and returns the size used. */
+function briefFitFont(x,txt,weight,basePx,family,maxW){
+  var px=basePx;
+  x.font=weight+" "+px+"px "+family;
+  while(px>12&&x.measureText(txt).width>maxW){px-=2; x.font=weight+" "+px+"px "+family}
+  return px;
+}
 /* Front elevation — the 2D layout itself, drawn as wireframe: cabinet
    grid, cut-out cabinets crossed, per-display width dimensions and
    overall width / height dimensions in real metres. */
@@ -12996,8 +13201,9 @@ function briefFrontCanvas(){
     }
     x.lineWidth=4.5; x.strokeStyle="#e9eef5"; x.strokeRect(0,0,w,h);
     x.fillStyle="#e9eef5"; x.textAlign="left"; x.textBaseline="bottom";
-    x.font="800 "+Math.max(26,Math.round(ch*0.34))+"px Archivo, Arial";
-    x.fillText(d.name+" · "+fmt(dispW(d))+" × "+fmt(dispH(d))+" px",0,-16);
+    var nmF=d.name+" · "+fmt(dispW(d))+" × "+fmt(dispH(d))+" px";
+    briefFitFont(x,nmF,"800",Math.max(26,Math.round(ch*0.34)),"Archivo, Arial",Math.max(80,w-8));
+    x.fillText(nmF,0,-16);
     x.restore();
     /* width dimension under the display, along its own (rotated) base */
     function corner(lx,ly){return {x:C.x+(lx*co-ly*si), y:C.y+(lx*si+ly*co)}}
@@ -13093,7 +13299,8 @@ function briefTopCanvas(){
       x.lineWidth=2.6; x.strokeStyle="#e9eef5"; x.stroke();
     });
     var ctr=W2(0,0);
-    x.fillStyle="#e9eef5"; x.font="800 28px Archivo, Arial"; x.textAlign="center"; x.textBaseline="top";
+    x.fillStyle="#e9eef5"; x.textAlign="center"; x.textBaseline="top";
+    briefFitFont(x,d.name,"800",28,"Archivo, Arial",Math.max(70,effWm3(d)*s-12));
     x.fillText(d.name,ctr.x,ctr.y+14);
   });
   x.fillStyle="#93a2b5"; x.font="700 26px 'IBM Plex Mono', monospace"; x.textAlign="center"; x.textBaseline="top";
@@ -13309,6 +13516,15 @@ function briefTrussCanvas(m,view){
     x.fillText("FLOOR 0",M-70,V(0)+12);
   }
   var secPx=clamp((+p.section||290)/1000*s,4,30);
+  /* Label collision guard: every label placed on this drawing
+     registers its (approximate, rotation-aware) box, and a new
+     label takes the first candidate spot — along its bar, then
+     to either side of it — whose box is clear of every label
+     already placed. Parallel chords and side-by-side towers no
+     longer print their lengths / angles on top of each other. */
+  var placedLab=[];
+  function labBox(cx,cy,w,h){return {x0:cx-w/2,y0:cy-h/2,x1:cx+w/2,y1:cy+h/2}}
+  function labFree(b){for(var li=0;li<placedLab.length;li++){var q=placedLab[li]; if(b.x0<q.x1+6&&b.x1>q.x0-6&&b.y0<q.y1+6&&b.y1>q.y0-6)return false} return true}
   segs.forEach(function(sg,idx){
     var a2={x:U(sg.ax), y:V(view==="front"?sg.ay:sg.az)}, b2={x:U(sg.bx), y:V(view==="front"?sg.by:sg.bz)};
     x.lineCap="round";
@@ -13322,10 +13538,16 @@ function briefTrussCanvas(m,view){
       var fm=a0+arc/2, fx=ccx+Math.cos(fm)*rr, fy=ccy+Math.sin(fm)*rr;
       x.strokeStyle="#f5a623"; x.lineWidth=2.2;
       x.beginPath(); x.moveTo(ccx,ccy); x.lineTo(fx,fy); x.stroke();
-      x.fillStyle="#f5a623"; x.font="700 26px 'IBM Plex Mono', monospace"; x.textAlign="center"; x.textBaseline="bottom";
-      x.fillText("R "+fmtMeasure(segRadius(sg)),(ccx+fx)/2,(ccy+fy)/2-8);
-      x.fillStyle="#e9eef5"; x.font="800 27px Archivo, Arial"; x.textBaseline="top";
-      x.fillText("Ring "+(idx+1)+" · Ø "+fmtMeasure(segRadius(sg)*2)+" · Arc "+Math.round(segArcDeg(sg))+"° · Length "+fmtMeasure(segLen(sg)),ccx,ccy+16);
+      var rLab="R "+fmtMeasure(segRadius(sg));
+      x.fillStyle="#f5a623"; x.textAlign="center"; x.textBaseline="bottom";
+      briefFitFont(x,rLab,"700",26,"'IBM Plex Mono', monospace",Math.max(70,rr));
+      x.fillText(rLab,(ccx+fx)/2,(ccy+fy)/2-8);
+      placedLab.push(labBox((ccx+fx)/2,(ccy+fy)/2-24,x.measureText(rLab).width+12,30));
+      var ringLab="Ring "+(idx+1)+" · Ø "+fmtMeasure(segRadius(sg)*2)+" · Arc "+Math.round(segArcDeg(sg))+"° · Length "+fmtMeasure(segLen(sg));
+      x.fillStyle="#e9eef5"; x.textBaseline="top";
+      briefFitFont(x,ringLab,"800",27,"Archivo, Arial",Math.max(160,rr*2));
+      x.fillText(ringLab,ccx,ccy+16);
+      placedLab.push(labBox(ccx,ccy+32,x.measureText(ringLab).width+12,34));
       return;
     }
     x.strokeStyle="#e9eef5"; x.lineWidth=secPx;
@@ -13337,8 +13559,27 @@ function briefTrussCanvas(m,view){
     var lab=sg.ring?("Ring "+(idx+1)+" · Ø "+fmtMeasure(segRadius(sg)*2)+" · "+fmtMeasure(segLen(sg))):fmtMeasure(segLen(sg));
     var sub=sg.ring?("R "+fmtMeasure(segRadius(sg))+" · "+segAngleFull(sg)+" · "+briefSegType(m,sg))
       :(segAngleFull(sg)+" · "+briefSegType(m,sg));
-    x.save(); x.translate(mx,my);
-    if(dl>30){var an=Math.atan2(dy,dx); if(an>Math.PI/2||an<-Math.PI/2)an+=Math.PI; x.rotate(an)}
+    /* Place the two-line label at the first clear spot (see
+       placedLab above): centred on the bar, stepped along it, or
+       offset to its side — never on top of another bar's label. */
+    x.font="700 27px 'IBM Plex Mono', monospace"; var wL1=x.measureText(lab).width;
+    x.font="600 22px 'IBM Plex Mono', monospace"; var wL2=x.measureText(sub).width;
+    var lw=Math.max(wL1,wL2)+14, lh=62, an=0;
+    if(dl>30){an=Math.atan2(dy,dx); if(an>Math.PI/2||an<-Math.PI/2)an+=Math.PI}
+    var caA=Math.abs(Math.cos(an)), saA=Math.abs(Math.sin(an));
+    var aw=lw*caA+lh*saA, ah=lw*saA+lh*caA;
+    var ux=dl>1?dx/dl:1, uy=dl>1?dy/dl:0, pvx=-uy, pvy=ux;
+    var cands=[[0,0],[0,52],[0,-52],[0.32*dl,0],[-0.32*dl,0],[0.32*dl,52],[-0.32*dl,-52],[0,104],[0,-104]];
+    var spot=null;
+    for(var ci=0;ci<cands.length;ci++){
+      var sx2=mx+ux*cands[ci][0]+pvx*cands[ci][1], sy2=my+uy*cands[ci][0]+pvy*cands[ci][1];
+      var bx2=labBox(sx2,sy2,aw,ah);
+      if(labFree(bx2)){spot={x:sx2,y:sy2,box:bx2}; break}
+    }
+    if(!spot)spot={x:mx,y:my,box:labBox(mx,my,aw,ah)};
+    placedLab.push(spot.box);
+    x.save(); x.translate(spot.x,spot.y);
+    if(dl>30)x.rotate(an);
     x.textAlign="center";
     x.fillStyle="#f5a623"; x.font="700 27px 'IBM Plex Mono', monospace"; x.textBaseline="bottom";
     x.fillText(lab,0,-14);
@@ -13347,7 +13588,10 @@ function briefTrussCanvas(m,view){
     x.restore();
     if(view==="front"){
       x.fillStyle="#93a2b5"; x.font="600 21px 'IBM Plex Mono', monospace"; x.textAlign="center"; x.textBaseline="top";
-      x.fillText(measureNum(sg.ay),a2.x,Math.max(a2.y,b2.y)+34);
+      var hTxt=measureNum(sg.ay), hW=x.measureText(hTxt).width+10, hY=Math.max(a2.y,b2.y)+34, hBox=labBox(a2.x,hY+12,hW,26), hTry=0;
+      while(!labFree(hBox)&&hTry<3){hY+=30; hBox=labBox(a2.x,hY+12,hW,26); hTry++}
+      placedLab.push(hBox);
+      x.fillText(hTxt,a2.x,hY);
     }
   });
   if(view==="front"){
@@ -13418,8 +13662,10 @@ function briefStagePlanCanvas(pieces){
         for(var sk=1;sk<nS;sk++){var t1=C(-hw,-hd+sdS*sk), t2=C(hw,-hd+sdS*sk); x.beginPath(); x.moveTo(t1.x,t1.y); x.lineTo(t2.x,t2.y); x.stroke()}
         var tc0=C(0,-hd+sdS/2);
         x.save(); x.translate(tc0.x,tc0.y); x.rotate(th);
-        x.fillStyle="#f5a623"; x.font="700 21px 'IBM Plex Mono', monospace"; x.textAlign="center"; x.textBaseline="middle";
-        x.fillText("tread "+fmtMeasure(sdS),0,0); x.restore();
+        x.fillStyle="#f5a623"; x.textAlign="center"; x.textBaseline="middle";
+        var trLab="tread "+fmtMeasure(sdS);
+        briefFitFont(x,trLab,"700",21,"'IBM Plex Mono', monospace",Math.max(60,(+el.w||0)*s-12));
+        x.fillText(trLab,0,0); x.restore();
       }
       /* width on the bottom edge, depth on the right edge */
       var dn={x:-si,y:co}, P1={x:cs[3].x+dn.x*46,y:cs[3].y+dn.y*46}, P2={x:cs[2].x+dn.x*46,y:cs[2].y+dn.y*46};
@@ -13434,10 +13680,14 @@ function briefStagePlanCanvas(pieces){
       x.fillStyle="#f5a623"; x.font="700 26px 'IBM Plex Mono', monospace"; x.textAlign="center"; x.textBaseline="bottom";
       x.fillText(fmtMeasure(+el.d||0),0,-6); x.restore();
     }
-    x.fillStyle="#e9eef5"; x.font="800 27px Archivo, Arial"; x.textAlign="center"; x.textBaseline="middle";
+    var pcW=Math.max(64,(+el.w||0)*s-12);
+    x.fillStyle="#e9eef5"; x.textAlign="center"; x.textBaseline="middle";
+    briefFitFont(x,el.name,"800",27,"Archivo, Arial",pcW);
     x.fillText(el.name,U(el.x),V(el.z)-16);
-    x.fillStyle="#93a2b5"; x.font="600 22px 'IBM Plex Mono', monospace"; x.textBaseline="top";
-    x.fillText("H "+fmtMeasure(+el.h||0)+((+el.ry||0)?" · Rot Y "+Math.round(+el.ry||0)+"°":"")+(el.shape==="steps"?" · "+Math.round(+el.steps||4)+" steps":""),U(el.x),V(el.z)+8);
+    x.fillStyle="#93a2b5"; x.textBaseline="top";
+    var hLab="H "+fmtMeasure(+el.h||0)+((+el.ry||0)?" · Rot Y "+Math.round(+el.ry||0)+"°":"")+(el.shape==="steps"?" · "+Math.round(+el.steps||4)+" steps":"");
+    briefFitFont(x,hLab,"600",22,"'IBM Plex Mono', monospace",pcW);
+    x.fillText(hLab,U(el.x),V(el.z)+8);
   });
   briefDimH(x,U(mnX),U(mxX),V(mxZ)+118,"Overall stage width · "+fmtMeasure(mxX-mnX),FS);
   briefDimV(x,U(mxX)+92,V(mnZ),V(mxZ),"Overall stage depth · "+fmtMeasure(mxZ-mnZ),FS);
@@ -13477,8 +13727,10 @@ function briefStageSideCanvas(pieces){
       x.fillRect(x0,yT,x1-x0,yB-yT); x.strokeRect(x0,yT,x1-x0,yB-yT);
       x.strokeStyle="#54657c"; x.lineWidth=1.6;
       for(var sj=1;sj<n;sj++){x.beginPath(); x.moveTo(x0,yB-rh*sj); x.lineTo(x1,yB-rh*sj); x.stroke()}
-      x.fillStyle="#f5a623"; x.font="700 22px 'IBM Plex Mono', monospace"; x.textAlign="left"; x.textBaseline="bottom";
-      x.fillText("rise "+fmtMeasure(h/n)+" × "+n,x0+8,yB-6);
+      x.fillStyle="#f5a623"; x.textAlign="left"; x.textBaseline="bottom";
+      var rsLab="rise "+fmtMeasure(h/n)+" × "+n;
+      briefFitFont(x,rsLab,"700",22,"'IBM Plex Mono', monospace",Math.max(60,(x1-x0)-16));
+      x.fillText(rsLab,x0+8,yB-6);
     }else{
       x.fillRect(x0,yT,x1-x0,yB-yT); x.strokeRect(x0,yT,x1-x0,yB-yT);
       if(el.shape==="round"){
@@ -13489,7 +13741,8 @@ function briefStageSideCanvas(pieces){
     /* the height, on the piece's own height edge */
     briefDimV(x,x1+52,yT,yB,fmtMeasure(h),27);
     if(base>0.01)briefDimV(x,x0-52,Y(base),Y(0),"Base "+fmtMeasure(base),24);
-    x.fillStyle="#e9eef5"; x.font="800 26px Archivo, Arial"; x.textAlign="center"; x.textBaseline="bottom";
+    x.fillStyle="#e9eef5"; x.textAlign="center"; x.textBaseline="bottom";
+    briefFitFont(x,el.name,"800",26,"Archivo, Arial",Math.max(64,(x1-x0)-8));
     x.fillText(el.name,(x0+x1)/2,yT-44);
     briefDimH(x,x0,x1,Y(0)+86,(el.shape==="round"?"Ø ":"")+fmtMeasure(w),26);
     if(pi===pieces.length-1)briefDimV(x,W-M+96,Y(mxT),Y(0),"Overall height · "+fmtMeasure(mxT),FS);
@@ -13523,8 +13776,9 @@ function briefScreenMapCanvas(){
     }
     x.lineWidth=4.5; x.strokeStyle="#e9eef5"; x.strokeRect(0,0,w,h);
     x.fillStyle="#e9eef5"; x.textAlign="left"; x.textBaseline="bottom";
-    x.font="800 "+Math.max(26,Math.round(ch*0.34))+"px Archivo, Arial";
-    x.fillText(d.name+" · "+fmtMeasure(dispWm(d))+" × "+fmtMeasure(dispHm(d))+" · "+fmt(dispW(d))+"×"+fmt(dispH(d))+" px",0,-16);
+    var nmS=d.name+" · "+fmtMeasure(dispWm(d))+" × "+fmtMeasure(dispHm(d))+" · "+fmt(dispW(d))+"×"+fmt(dispH(d))+" px";
+    briefFitFont(x,nmS,"800",Math.max(26,Math.round(ch*0.34)),"Archivo, Arial",Math.max(80,w-8));
+    x.fillText(nmS,0,-16);
     x.restore();
     function corner(lx,ly){return {x:C.x+(lx*co-ly*si), y:C.y+(lx*si+ly*co)}}
     var BL=corner(-w/2,h/2), BR=corner(w/2,h/2), TL=corner(-w/2,-h/2);
@@ -13535,12 +13789,19 @@ function briefScreenMapCanvas(){
     x.save(); x.translate((P1.x+P2.x)/2,(P1.y+P2.y)/2); x.rotate(th);
     x.fillStyle="#f5a623"; x.font="700 "+FS+"px 'IBM Plex Mono', monospace"; x.textAlign="center"; x.textBaseline="top";
     x.fillText(fmtMeasure(dispWm(d)),0,8);
-    x.fillStyle="#93a2b5"; x.font="600 23px 'IBM Plex Mono', monospace";
-    var cap="Centre X "+fmtMeasure(effX3(d))+" · Z "+fmtMeasure(effZ3(d))+" · Bottom "+fmtMeasure(baseYOf(d))+" · Top "+fmtMeasure(baseYOf(d)+effHm3(d));
+    /* Position caption on TWO lines, each fitted to the display's
+       own width: as one line it ran wider than the screen and drew
+       over the neighbouring screens' captions. */
+    x.fillStyle="#93a2b5";
+    var capA="Centre X "+fmtMeasure(effX3(d))+" · Z "+fmtMeasure(effZ3(d));
+    var capB="Bottom "+fmtMeasure(baseYOf(d))+" · Top "+fmtMeasure(baseYOf(d)+effHm3(d));
     var rot2=((Math.round(d.rotation||0)%360)+360)%360; if(rot2>180)rot2-=360;
-    if(rot2!==0)cap+=" · Rot "+rot2+"°";
-    if((+d.rotX3d||0)||(+d.rotZ3d||0))cap+=" · Tilt X "+Math.round(+d.rotX3d||0)+"° · Z "+Math.round(+d.rotZ3d||0)+"°";
-    x.fillText(cap,0,48);
+    if(rot2!==0)capB+=" · Rot "+rot2+"°";
+    if((+d.rotX3d||0)||(+d.rotZ3d||0))capB+=" · Tilt X "+Math.round(+d.rotX3d||0)+"° · Z "+Math.round(+d.rotZ3d||0)+"°";
+    briefFitFont(x,capA,"600",23,"'IBM Plex Mono', monospace",Math.max(90,w-6));
+    x.fillText(capA,0,46);
+    briefFitFont(x,capB,"600",23,"'IBM Plex Mono', monospace",Math.max(90,w-6));
+    x.fillText(capB,0,74);
     x.restore();
     /* height on the left edge */
     var ln={x:-co,y:-si}, offL=46;
@@ -13593,37 +13854,94 @@ function downloadBriefPDF(){
   var y=0;
   function need(h){if(y+h>282)addPage()}
   function rule(){doc.setDrawColor(C_AMB[0],C_AMB[1],C_AMB[2]); doc.setLineWidth(0.5); doc.line(LM,y,RM,y); y+=6}
-  function sectionHead(name,right){
-    need(15);
-    doc.setFont("helvetica","bold"); doc.setFontSize(15); setCol(C_INK); doc.text(name,LM,y);
-    if(right){doc.setFont("helvetica","normal"); doc.setFontSize(9.5); setCol(C_AMB); doc.text(right,RM,y,{align:"right"})}
-    y+=2.6; rule();
+  /* ── NO-OVERLAP TEXT FITTING ─────────────────────────────────────
+     Every heading, label, value and table cell in this report goes
+     through wrapFit: the text is wrapped to the width of the column
+     it lives in (jsPDF's splitTextToSize breaks on spaces, but a
+     single over-long word would still draw straight over the next
+     column, so any line still too wide is broken by characters),
+     and every row / heading then takes the height of its tallest
+     wrapped cell — rows grow, headings wrap or shrink, and tables
+     paginate through need() instead of drawing over whatever
+     follows. No PDF text ever draws on top of another text. */
+  function wrapFit(txt,width){
+    var lines=doc.splitTextToSize(String(txt==null?"":txt),Math.max(8,width)), out=[];
+    lines.forEach(function(l){
+      while(l.length>1&&doc.getTextWidth(l)>width){
+        var cut=l.length-1;
+        while(cut>1&&doc.getTextWidth(l.slice(0,cut))>width)cut--;
+        out.push(l.slice(0,cut)); l=l.slice(cut);
+      }
+      out.push(l);
+    });
+    return out.length?out:[""];
   }
-  function subHead(txt){need(9); doc.setFont("helvetica","bold"); doc.setFontSize(10.5); setCol(C_AMB); doc.text(txt,LM,y); y+=6.5}
+  function sectionHead(name,right){
+    var rW=0;
+    if(right){doc.setFont("helvetica","normal"); doc.setFontSize(9.5); rW=doc.getTextWidth(right)}
+    doc.setFont("helvetica","bold");
+    var fs=15, avail=RM-LM-(rW?rW+6:0);
+    doc.setFontSize(fs);
+    while(fs>10.5&&doc.getTextWidth(name)>avail){fs-=0.5; doc.setFontSize(fs)}
+    var lines=wrapFit(name,avail);
+    need(15+(lines.length-1)*6);
+    doc.setFont("helvetica","bold"); doc.setFontSize(fs); setCol(C_INK);
+    lines.forEach(function(l,i){doc.text(l,LM,y+i*6)});
+    if(right){doc.setFont("helvetica","normal"); doc.setFontSize(9.5); setCol(C_AMB); doc.text(right,RM,y,{align:"right"})}
+    y+=(lines.length-1)*6+2.6; rule();
+  }
+  function subHead(txt){
+    doc.setFont("helvetica","bold"); doc.setFontSize(10.5);
+    var lines=wrapFit(txt,RM-LM);
+    need(9+(lines.length-1)*4.8);
+    setCol(C_AMB);
+    lines.forEach(function(l,i){doc.text(l,LM,y+i*4.8)});
+    y+=(lines.length-1)*4.8+6.5;
+  }
   /* Two-pair details table, the reference's shape: label · value ·
      label · value, one row per array entry [k1,v1,k2,v2] (k2 may be
      null for a single wide pair). */
   function detailsTable(rows){
-    var X1=LM+43, X2=LM+98, X3=LM+134;
+    var X1=LM+43, X2=LM+98, X3=LM+134, LH=4.4;
     rows.forEach(function(rw,i){
-      need(7.4);
-      if(i%2===0){doc.setFillColor(C_ROW[0],C_ROW[1],C_ROW[2]); doc.rect(LM,y-4.6,RM-LM,7.2,"F")}
+      /* Wrap every cell into its own column first (labels bold,
+         values normal — wrapFit measures with the font that will
+         draw the cell), then the row takes the tallest cell's
+         height: a long display name, a datasheet string or a
+         totals line wraps inside its column instead of drawing
+         over the next label / value or off the page edge. A row
+         with no second pair lets its value run the full width. */
       doc.setFontSize(9.5);
-      doc.setFont("helvetica","bold"); setCol(C_MUT); doc.text(rw[0],LM,y);
-      doc.setFont("helvetica","normal"); setCol(C_INK); doc.text(rw[1],X1,y);
-      if(rw[2]){doc.setFont("helvetica","bold"); setCol(C_MUT); doc.text(rw[2],X2,y); doc.setFont("helvetica","normal"); setCol(C_INK); doc.text(rw[3],X3,y)}
-      doc.setDrawColor(C_LINE[0],C_LINE[1],C_LINE[2]); doc.setLineWidth(0.25); doc.line(LM,y+2.6,RM,y+2.6);
-      y+=7.4;
+      doc.setFont("helvetica","bold"); var l1=wrapFit(rw[0],X1-LM-2);
+      doc.setFont("helvetica","normal"); var v1=wrapFit(rw[1],rw[2]?(X2-X1-4):(RM-X1-1));
+      var l2=[], v2=[];
+      if(rw[2]){doc.setFont("helvetica","bold"); l2=wrapFit(rw[2],X3-X2-3); doc.setFont("helvetica","normal"); v2=wrapFit(rw[3],RM-X3)}
+      var nL=Math.max(l1.length,v1.length,l2.length,v2.length,1);
+      var adv=(nL-1)*LH+7.4;
+      need(adv);
+      if(i%2===0){doc.setFillColor(C_ROW[0],C_ROW[1],C_ROW[2]); doc.rect(LM,y-4.6,RM-LM,(nL-1)*LH+7.2,"F")}
+      doc.setFontSize(9.5);
+      function col(lines,x,bold){doc.setFont("helvetica",bold?"bold":"normal"); setCol(bold?C_MUT:C_INK); lines.forEach(function(l,j){doc.text(l,x,y+j*LH)})}
+      col(l1,LM,true); col(v1,X1,false);
+      if(rw[2]){col(l2,X2,true); col(v2,X3,false)}
+      doc.setDrawColor(C_LINE[0],C_LINE[1],C_LINE[2]); doc.setLineWidth(0.25); doc.line(LM,y+(nL-1)*LH+2.6,RM,y+(nL-1)*LH+2.6);
+      y+=adv;
     });
     y+=3;
   }
   function specPair(k1,v1,k2,v2){
-    need(6.4);
+    doc.setFontSize(10.5); doc.setFont("helvetica","bold");
+    var x1v=LM+doc.getTextWidth(k1)+2;
+    var v1Lines=wrapFit(v1,(k2?(LM+92):RM)-x1v-3);
+    var v2Lines=[], x2v=0;
+    if(k2){x2v=LM+92+doc.getTextWidth(k2)+2; v2Lines=wrapFit(v2,RM-x2v)}
+    var LH=4.8, nL=Math.max(v1Lines.length,v2Lines.length,1);
+    need(6.4+(nL-1)*LH);
     doc.setFontSize(10.5);
     doc.setFont("helvetica","bold"); setCol(C_MUT); doc.text(k1,LM,y);
-    doc.setFont("helvetica","bold"); setCol(C_INK); doc.text(v1,LM+doc.getTextWidth(k1)+2,y);
-    if(k2){doc.setFont("helvetica","bold"); setCol(C_MUT); doc.text(k2,LM+92,y); doc.setFont("helvetica","bold"); setCol(C_INK); doc.text(v2,LM+92+doc.getTextWidth(k2)+2,y)}
-    y+=6.4;
+    setCol(C_INK); v1Lines.forEach(function(l,j){doc.text(l,x1v,y+j*LH)});
+    if(k2){doc.setFont("helvetica","bold"); setCol(C_MUT); doc.text(k2,LM+92,y); setCol(C_INK); v2Lines.forEach(function(l,j){doc.text(l,x2v,y+j*LH)})}
+    y+=6.4+(nL-1)*LH;
   }
   function drawImg(cv,wMm){
     var hMm=wMm*cv.height/cv.width, x0=(210-wMm)/2;
@@ -13636,35 +13954,46 @@ function downloadBriefPDF(){
   function noteLine(txt,amber){
     doc.setFont("helvetica",amber?"bold":"normal"); doc.setFontSize(9);
     if(amber)setCol(C_AMB); else setCol(C_MUT);
-    doc.splitTextToSize(txt,RM-LM).forEach(function(l){need(5.2); doc.text(l,LM,y); y+=5.2});
+    wrapFit(txt,RM-LM).forEach(function(l){need(5.2); doc.text(l,LM,y); y+=5.2});
     y+=1.2;
   }
   /* Truss segment table — one row per bar: its length and weight on
      its own line, both endpoints in stage coordinates (X across,
      Y height, Z depth), and its rotation angles. */
   function segTable(m,segs){
-    var CX={n:LM, l:LM+9, w:LM+30, f:LM+44, t:LM+88, a:LM+132};
+    /* Columns widened where the old ones squeezed: Weight gets
+       19 mm (a four-figure kg value no longer reaches the From
+       column) and Angles 52 mm — and every cell still wraps into
+       its column with the row growing to fit, like detailsTable,
+       so a long coordinate triple (feet / inches numbers run
+       long) or a full angle string can never touch its neighbour. */
+    var CX={n:LM, l:LM+10, w:LM+33, f:LM+52, t:LM+97, a:LM+142};
     need(8);
     doc.setFont("helvetica","bold"); doc.setFontSize(8.5); setCol(C_AMB);
     doc.text("#",CX.n,y); doc.text("Length",CX.l,y); doc.text("Weight",CX.w,y);
     doc.text("From — X, Y, Z ("+measureUnit()+")",CX.f,y); doc.text("To — X, Y, Z ("+measureUnit()+")",CX.t,y); doc.text("Angles",CX.a,y);
     y+=2.4;
     doc.setDrawColor(C_AMB[0],C_AMB[1],C_AMB[2]); doc.setLineWidth(0.4); doc.line(LM,y,RM,y); y+=5.4;
-    var kgM=Math.max(0,+m.params.selfKgM||0);
+    var kgM=Math.max(0,+m.params.selfKgM||0), LH=4.2;
     segs.forEach(function(sg,i){
-      need(6.6);
-      if(i%2===0){doc.setFillColor(C_ROW[0],C_ROW[1],C_ROW[2]); doc.rect(LM,y-4.2,RM-LM,6.4,"F")}
-      doc.setFontSize(8.5); doc.setFont("helvetica","normal"); setCol(C_INK);
       var pos=function(px,py,pz){return measureNum(px)+", "+measureNum(py)+", "+measureNum(pz)};
-      doc.text(String(i+1),CX.n,y);
-      doc.text(fmtMeasure(segLen(sg)),CX.l,y);
-      doc.text(Math.round(segLen(sg)*kgM*10)/10+" kg",CX.w,y);
+      doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
+      var cN=wrapFit(String(i+1),CX.l-CX.n-2);
+      var cL=wrapFit(fmtMeasure(segLen(sg)),CX.w-CX.l-2);
+      var cW=wrapFit(Math.round(segLen(sg)*kgM*10)/10+" kg",CX.f-CX.w-2);
       doc.setFontSize(8);
-      doc.text(pos(sg.ax,sg.ay,sg.az),CX.f,y);
-      doc.text(pos(sg.bx,sg.by,sg.bz),CX.t,y);
-      doc.text(segAngleCompact(sg),CX.a,y);
-      doc.setDrawColor(C_LINE[0],C_LINE[1],C_LINE[2]); doc.setLineWidth(0.25); doc.line(LM,y+2.2,RM,y+2.2);
-      y+=6.6;
+      var cF=wrapFit(pos(sg.ax,sg.ay,sg.az),CX.t-CX.f-3);
+      var cT=wrapFit(pos(sg.bx,sg.by,sg.bz),CX.a-CX.t-3);
+      var cA=wrapFit(segAngleCompact(sg),RM-CX.a);
+      var nL=Math.max(cN.length,cL.length,cW.length,cF.length,cT.length,cA.length,1);
+      var adv=(nL-1)*LH+6.6;
+      need(adv);
+      if(i%2===0){doc.setFillColor(C_ROW[0],C_ROW[1],C_ROW[2]); doc.rect(LM,y-4.2,RM-LM,(nL-1)*LH+6.4,"F")}
+      setCol(C_INK);
+      function col(lines,x,fs){doc.setFontSize(fs); doc.setFont("helvetica","normal"); lines.forEach(function(l,j){doc.text(l,x,y+j*LH)})}
+      col(cN,CX.n,8.5); col(cL,CX.l,8.5); col(cW,CX.w,8.5); col(cF,CX.f,8); col(cT,CX.t,8); col(cA,CX.a,8);
+      doc.setDrawColor(C_LINE[0],C_LINE[1],C_LINE[2]); doc.setLineWidth(0.25); doc.line(LM,y+(nL-1)*LH+2.2,RM,y+(nL-1)*LH+2.2);
+      y+=adv;
     });
     y+=3;
   }
@@ -13676,12 +14005,13 @@ function downloadBriefPDF(){
   y=25;
   doc.setFont("helvetica","bold"); doc.setFontSize(10); setCol(C_AMB);
   doc.text("L U T A S   L E D",LM,y); y+=10;
-  doc.setFontSize(23); setCol(C_INK);
-  doc.splitTextToSize(String(state.project||"LED Project"),RM-LM).forEach(function(l){doc.text(l,LM,y); y+=9.5});
+  doc.setFont("helvetica","bold"); doc.setFontSize(23); setCol(C_INK);
+  wrapFit(String(state.project||"LED Project"),RM-LM).forEach(function(l){doc.text(l,LM,y); y+=9.5});
   doc.setFontSize(13.5); setCol(C_INK);
   doc.text("PIXEL MAP — TECHNICAL REPORT",LM,y); y+=7.5;
   doc.setFont("helvetica","normal"); doc.setFontSize(10); setCol(C_MUT);
-  doc.text(new Date().toLocaleDateString("en-GB")+" · "+state.displays.length+" display(s) · all physical measurements in "+(MEASURE_NAMES[measureUnit()]||"Metres").toLowerCase()+" ("+measureUnit()+") unless shown in px",LM,y); y+=4;
+  wrapFit(new Date().toLocaleDateString("en-GB")+" · "+state.displays.length+" display(s) · all physical measurements in "+(MEASURE_NAMES[measureUnit()]||"Metres").toLowerCase()+" ("+measureUnit()+") unless shown in px",RM-LM).forEach(function(l){doc.text(l,LM,y); y+=5});
+  y-=1;
   rule(); y+=2;
   /* ── One section per display, in order ── */
   state.displays.forEach(function(d){
@@ -14040,9 +14370,19 @@ function downloadBriefPDF(){
   for(var pi=1;pi<=nPages;pi++){
     doc.setPage(pi);
     var ph=doc.internal.pageSize.getHeight();
-    doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(125,138,156);
-    doc.text((state.project||"LED Project")+" — Pixel Map Technical Report · LUTAS LED",14,ph-8);
-    doc.text("Page "+pi+" of "+nPages,196,ph-8,{align:"right"});
+    doc.setFont("helvetica","normal"); doc.setTextColor(125,138,156);
+    /* Footer: the project line shrinks (and, at the floor size,
+       truncates) to whatever room the right-aligned page number
+       leaves — the two can never meet in the middle. */
+    var ftrR="Page "+pi+" of "+nPages;
+    doc.setFontSize(8); var ftrMaxL=196-4-doc.getTextWidth(ftrR)-14;
+    var ftrL=(state.project||"LED Project")+" — Pixel Map Technical Report · LUTAS LED", fFs=8;
+    doc.setFontSize(fFs);
+    while(fFs>6&&doc.getTextWidth(ftrL)>ftrMaxL){fFs-=0.5; doc.setFontSize(fFs)}
+    if(doc.getTextWidth(ftrL)>ftrMaxL){var ft2=ftrL; while(ft2.length>4&&doc.getTextWidth(ft2+"…")>ftrMaxL)ft2=ft2.slice(0,-1); ftrL=ft2+"…"}
+    doc.text(ftrL,14,ph-8);
+    doc.setFontSize(8);
+    doc.text(ftrR,196,ph-8,{align:"right"});
   }
   doc.save((state.project||"led-layout").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").toLowerCase()+"-technical-report.pdf");
   toast("Technical Document downloaded — "+nPages+" pages: one section per display (dimensioned drawing + screen details), the full screen map with every screen's edges dimensioned, stage build details with sizes on every edge, full truss system details (front + plan drawings, every bar's length, weight and angles, load check), the full canvas layout with totals, and finally “What you need to build this stage” — the full setup list (screens, truss, scaffolding, lights, cables & power, stage, speakers, crowd, props).");
