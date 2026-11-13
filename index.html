@@ -1820,7 +1820,7 @@ html.admin-boot #adminPage{display:block}
               <div class="rs-slider" style="margin-top:8px"><div class="rs-row"><span class="rs-lab">Environment intensity</span><output id="rsHdriIOut">100%</output></div><input type="range" id="rsHdriI" min="0" max="200" step="5" value="100" aria-label="Environment intensity — strength of the HDRI image-based light"></div>
               <div class="rs-col"><span class="rs-lab">Backdrop</span><input type="color" id="rsBackdrop" value="#05070a" aria-label="Backdrop colour behind the stage"></div>
               <div class="rs-row" style="margin-top:8px"><span class="rs-lab">Ground — floor under the stage</span><span class="rs-fx"><button type="button" id="rsGroundBtn" class="on">On</button></span></div>
-              <p class="hint">A dark floor plane under the stage, sized to the stage's footprint and standing at the deck's base — it catches the beam pools and shadows so the stage sits on the ground instead of floating over the backdrop. Render only.</p>
+              <p class="hint">A massive dark floor plane under the whole setup, standing at the deck's base and extending past the camera's view in every direction, so no ground edge is ever visible — it catches the beam pools and shadows across the whole plane. Render only.</p>
             </div>
           </div>
           <div class="rs-sec open" data-rssec>
@@ -8352,10 +8352,11 @@ function defaultRenderSettings(){
        remain as gentle environment support, and the HDRI preset,
        its intensity and the backdrop colour are all pickable. */
     dayNight:"night",hdri:"night",hdriI:1.0,
-    /* Ground: the Render-only dark floor plane under the stage
-       (syncRenderGround) — on by default, follows the stage's
-       footprint and deck, and rides the saved Render look like
-       every other setting here. */
+    /* Ground: the Render-only massive dark floor plane under the
+       whole setup (syncRenderGround) — on by default, centred on
+       the stage and extending past every camera view so no edge
+       ever shows, and rides the saved Render look like every
+       other setting here. */
     ground:true,
     exposure:1.12,temp:0,sat:1.0,contrast:1.0,vig:0.34,backdrop:"#05070a"};
 }
@@ -8555,32 +8556,47 @@ function applyRenderSettings(){
   syncRenderGround();
 }
 /* ── Render ground — RENDER VIEW ONLY ─────────────────────────────
-   A simple dark floor plane under the stage, so the stage sits on
-   the ground in Render instead of floating over the backdrop /
-   fog. It exists ONLY while Render is open and the Ground setting
-   is on (renderSettings.ground, default on — it rides the saved
-   Render look like every Render setting): build3DScene and
+   A MASSIVE dark floor plane under the whole setup, so the stage
+   sits on the ground in Render instead of floating over the
+   backdrop / fog — with no ground edge ever visible. It exists
+   ONLY while Render is open and the Ground setting is on
+   (renderSettings.ground, default on — it rides the saved Render
+   look like every Render setting): build3DScene and
    applyRenderSettings keep it in sync, exitRender removes it, and
    the editor 3D view, the 2D view and every non-Render export
    never see it (PNG / model exports are written from layout data,
    and the client view is a Render view, so it shows the ground
    only as part of its saved Render look). The plane:
-   • follows the STAGE FOOTPRINT — the displays' scene bounds plus
-     the stage margin, unioned with every Stage Settings piece,
-     with an apron around it so beams landing in front of the
-     stage still hit floor;
+   • is MASSIVE — a fixed RENDER_GROUND_SIZE metres square
+     (1 200 m × 1 200 m), centred on the stage footprint (the
+     displays' scene bounds plus the stage margin, unioned with
+     every Stage Settings piece). That is far larger than any
+     stage footprint and extends hundreds of metres past the
+     camera in every direction: the Render cameras dolly at most
+     ~150 m from the stage and the scene fog reaches the backdrop
+     colour by ~170 m at the latest, so the plane's edges sit far
+     beyond both the camera's view and the fog — they are fully
+     fogged into the backdrop (whose colour the fog matches in
+     Render) and never show as a line in any Render camera view,
+     perspective or orthographic, at any zoom. It also completely
+     covers the editor's 160 m floor disc beneath it, so no disc
+     edge or second floor tone can show through either;
    • follows the DECK HEIGHT — it stands at the deck's base
      (y = 0, the floor the deck of state.stage3d.deck metres
      stands on) and rebuilds whenever the deck height changes, so
      a raised stage never floats and the ground never pokes
      through the deck top;
    • is a plain dark MeshStandardMaterial floor — near-black at
-     Night, a darker daylight grey by Day — receiving shadows
-     (receiveShadow) and the beam pools that land at floor level;
-     it is sized to the stage, so it never covers the stage,
-     screens, truss or crowd. It shares the editor floor disc's
-     name ("ground3d") so the viewport shading pass leaves it
-     filled and applyRenderLook gives it the ground treatment. */
+     Night, a darker daylight grey by Day, matching the Night /
+     Day HDRI look — receiving shadows (receiveShadow) and the
+     beam pools that land at floor level across the WHOLE plane,
+     so shadows and pools read anywhere they fall, not just near
+     the stage; at y = 0 it lies under everything, so it never
+     covers the stage, screens, truss or crowd. It shares the
+     editor floor disc's name ("ground3d") so the viewport
+     shading pass leaves it filled and applyRenderLook gives it
+     the ground treatment. */
+var RENDER_GROUND_SIZE=1200;
 var renderGroundSig="";
 function renderGroundFootprint(){
   var bb=sceneBBox3D();
@@ -8597,9 +8613,10 @@ function renderGroundFootprint(){
       if(z-hd<minZ)minZ=z-hd; if(z+hd>maxZ)maxZ=z+hd;
     });
   });
-  var w=maxX-minX, d=maxZ-minZ;
-  var pad=Math.max(3,Math.max(w,d)*0.3);
-  return {cx:(minX+maxX)/2,cz:(minZ+maxZ)/2,w:w+pad*2,d:d+pad*2,
+  /* The footprint now only CENTRES the plane — its size is the
+     fixed massive RENDER_GROUND_SIZE, never the footprint size,
+     so no layout, however large, can bring an edge into view. */
+  return {cx:(minX+maxX)/2,cz:(minZ+maxZ)/2,w:RENDER_GROUND_SIZE,d:RENDER_GROUND_SIZE,
     key:[minX,maxX,minZ,maxZ].map(function(v){return Math.round(v*20)/20}).join(",")};
 }
 function syncRenderGround(){
@@ -12135,7 +12152,7 @@ rsBind("rsVig",function(v){renderSettings.vig=v/100; $("rsVigOut").textContent=v
 rsBind("rsGlow",function(v){renderSettings.glow=v/100; $("rsGlowOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
 function syncBeamFxBtn(){var b=$("rsBeamFxBtn"); if(!b)return; var on=renderSettings.beamFx!==false; b.classList.toggle("on",on); b.textContent=on?"On":"Off"}
 function syncGroundBtn(){var b=$("rsGroundBtn"); if(!b)return; var on=renderSettings.ground!==false; b.classList.toggle("on",on); b.textContent=on?"On":"Off"}
-(function(){var b=$("rsGroundBtn"); if(b)b.addEventListener("click",function(){renderSettings.ground=renderSettings.ground===false?true:false; syncGroundBtn(); if(renderMode)applyRenderSettings(); toast(renderSettings.ground===false?"Render ground off — the stage floats over the backdrop again.":"Render ground on — a dark floor sits under the stage, following its footprint and deck height.")})})();
+(function(){var b=$("rsGroundBtn"); if(b)b.addEventListener("click",function(){renderSettings.ground=renderSettings.ground===false?true:false; syncGroundBtn(); if(renderMode)applyRenderSettings(); toast(renderSettings.ground===false?"Render ground off — the stage floats over the backdrop again.":"Render ground on — a massive dark floor sits under the whole setup, extending past the camera view in every direction so no edge shows.")})})();
 rsBind("rsImpact",function(v){renderSettings.beamImpact=v/100; $("rsImpactOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
 rsBind("rsFlare",function(v){renderSettings.flare=v/100; $("rsFlareOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
 rsBind("rsClearBeam",function(v){renderSettings.clearBeam=v/100; $("rsClearBeamOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
@@ -18228,7 +18245,15 @@ function payhereStartCheckout(ev){
   if(emailEl&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value)){fail("That email doesn't look complete — PayHere needs a valid email for the test payment. Nothing was sent."); return}
   var btn=$("payherePayBtn");
   if(btn){btn.disabled=true; btn.textContent="Getting secure hash from your server…"}
-  fetch(PAYHERE_CONFIG.hash_endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({merchant_id:PAYHERE_CONFIG.merchant_id,order_id:payhereOrder.orderId,amount:payhereFmtAmount(payhereOrder.amountLkr),currency:PAYHERE_CONFIG.currency})})
+  /* The hash endpoint is a Supabase Edge Function: the Supabase
+     gateway refuses any call without the project's apikey /
+     Authorization headers (401 UNAUTHORIZED_NO_AUTH_HEADER)
+     before the function code ever runs, so the hash request
+     MUST carry the app's public Supabase headers (supaHeaders —
+     the publishable key, never the Merchant Secret, which stays
+     server-side inside the function). */
+  var hashHeaders=(typeof supaHeaders==="function")?supaHeaders():{"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"};
+  fetch(PAYHERE_CONFIG.hash_endpoint,{method:"POST",headers:hashHeaders,body:JSON.stringify({merchant_id:PAYHERE_CONFIG.merchant_id,order_id:payhereOrder.orderId,amount:payhereFmtAmount(payhereOrder.amountLkr),currency:PAYHERE_CONFIG.currency})})
     .then(function(r){if(!r.ok)throw new Error("hash endpoint "+r.status); return r.json()})
     .then(function(d){
       if(!d||!d.hash)throw new Error("hash endpoint returned no hash");
@@ -18237,9 +18262,9 @@ function payhereStartCheckout(ev){
       f.action=PAYHERE_CONFIG.checkout_url;
       f.submit();
     })
-    .catch(function(){
+    .catch(function(e){
       if(btn){btn.disabled=false; btn.textContent="Continue to PayHere sandbox — "+planFmtLkr(payhereOrder.amountLkr)}
-      fail("Couldn't get a payment hash from your server hash endpoint — nothing was sent to PayHere. Check the endpoint is wired and try again.");
+      fail("Couldn't get a payment hash from your server hash endpoint — nothing was sent to PayHere. Check the endpoint is wired and try again."+((e&&e.message)?" ("+e.message+")":""));
     });
 }
 /* ── PAYHERE NOTIFY HANDLER — STUB (server-side only) ────────
