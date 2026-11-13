@@ -2649,7 +2649,7 @@ html.admin-boot #adminPage{display:block}
     <span class="admin-badge role">Admin only</span>
     <span class="plan-billnote" id="adminWho"></span>
     <button class="btn small" type="button" id="adminSignOut" hidden>Admin log out</button>
-    <span class="admin-sub">Manage subscription plans and VVIP. Changes save straight to each user's profile in Supabase and take effect on their next plan check (and immediately in this list). VVIP is granted only here or from the backend — it is never sold in Plans &amp; Upgrade. Who can log in to this page is NOT managed here: admin / team accounts are recorded only in Supabase in the public.admin_users table, each with its own email and a password hash — completely separate from regular user accounts and from Supabase Auth. While that table is empty the gate offers a one-time first-admin Sign up; once any admin exists the gate is Log in only, and after that team admins are added or reset only by the owner in Supabase — no add-admin control exists in the app.</span>
+    
   </div>
   <div class="admin-wrap">
     <!-- Access gate — what every visitor to /adminpower sees
@@ -2691,7 +2691,7 @@ html.admin-boot #adminPage{display:block}
     <div id="adminGate">
       <span class="admin-badge role">Separate admin login</span>
       <h3 id="adminGateTitle">Admin login</h3>
-      <p id="adminGateMsg">This page has its own separate admin login — it does not use the main LUTAS LED sign-in or Supabase Auth. Enter an admin / team email and password to continue. No user data is shown until an admin login is confirmed.</p>
+      <p id="adminGateMsg">Separate admin login. Enter an admin email and password to continue.</p>
       <p id="adminGateChecking" hidden>Checking whether an admin has been set up yet…</p>
       <div id="adminGateForms">
         <form id="adminLoginForm" autocomplete="off">
@@ -2706,9 +2706,7 @@ html.admin-boot #adminPage{display:block}
           </div>
         </form>
         <div id="adminForgotPanel" hidden>
-          <p><b>Admin passwords are reset only by the owner, in Supabase — there is no reset email for admin.</b></p>
-          <p>Admin accounts are a separate system: they are not Supabase Auth accounts and not regular LUTAS LED accounts, so the main app's Forgot password and any Supabase Auth recovery email do <b>not</b> apply here and will not change an admin password.</p>
-          <p>To reset an admin / team password, the owner opens the Supabase SQL editor and runs the admin password-reset SQL in <b>supabase-admin.sql</b> (it sets a new password hash for that admin email, hashed server-side — the plain password is never stored). Then log in here with the new password.</p>
+          <p><b>Admin passwords are reset only by the owner in Supabase — there is no reset email for admin.</b> Run the password-reset SQL in <b>supabase-admin.sql</b>, then log in with the new password.</p>
           <div class="admin-gate-links">
             <button class="admin-linkbtn" type="button" id="adminForgotClose">← Back to log in</button>
           </div>
@@ -2727,7 +2725,7 @@ html.admin-boot #adminPage{display:block}
           </div>
         </form>
       </div>
-      <p class="admin-gate-note" id="adminGateNote">This admin login is <b>completely separate from everything</b>: it does <b>not</b> use Supabase Auth, the main app sign-in, or regular user accounts. Admin / team accounts live only in Supabase <b>public.admin_users</b> — one row per admin / team member, each with their own email and a password stored <b>only as a hash</b>, checked inside Supabase and never shown or sent back to the browser. While that sheet is <b>empty</b>, this page shows Sign up so the first admin can create a new admin log in; once any admin exists, this page shows <b>Log in only</b>. Team admins are added <b>only by the owner in Supabase</b> — there is no add-admin control in the app. Regular LUTAS LED users — there can be more than 1000 of them — can never log in here, and an admin account can never log in to the main app.</p>
+      
       <div class="admin-gate-actions">
         <a class="btn" id="adminGateHome" href="/">← Back to LUTAS LED</a>
       </div>
@@ -2755,7 +2753,7 @@ html.admin-boot #adminPage{display:block}
     <p class="admin-note" id="adminDataNote" hidden></p>
     <div id="adminUserList"><div class="admin-empty">Loading users…</div></div>
     <h3 class="admin-h">Visitors</h3>
-    <p class="admin-note"><b>Anonymous by design.</b> This section counts everyone who opens LUTAS LED — guests and signed-in visitors alike — separately from the signed-in users above. A visitor is only an approximate, hashed identifier: <b>no name, no email and no raw IP address is ever stored</b>. The country is read from the IP address on the server (the IP itself is hashed there and discarded), and a visit is linked to an account only if that visitor signs in during the visit — otherwise it stays anonymous. Totals and the country breakdown cover the most recent visits listed below.</p>
+    
     <div class="admin-counts" style="grid-template-columns:repeat(3,1fr)" aria-label="Visitor totals">
       <div class="admin-count"><span>Total visits</span><b id="adminVisitTotal">–</b></div>
       <div class="admin-count"><span>Approx. unique visitors</span><b id="adminVisitUnique">–</b></div>
@@ -2764,7 +2762,7 @@ html.admin-boot #adminPage{display:block}
     <div class="admin-countries" id="adminVisitCountries" aria-label="Visits by country"></div>
     <div id="adminVisitList"><div class="admin-empty">Loading visitors…</div></div>
     <p class="admin-note" id="adminVisitNote" hidden></p>
-    <p class="admin-note" style="margin-top:16px"><b>What this page cannot do:</b> login history, signing a user out of their sessions, and suspending / banning accounts are not available here. Those need the Supabase Auth Admin API with a service key, which must never be put in a browser app — they stay in the Supabase dashboard itself. This page also never sees or stores passwords, passkey hashes, or card details.</p>
+    
     <div class="mrow" style="display:flex;justify-content:flex-start;margin-top:4px">
       <button class="btn" type="button" id="adminBack2">← Back to LUTAS LED editor</button>
     </div>
@@ -18582,8 +18580,20 @@ function adminLoadVisits(){
   if(!adminSession||!adminIsAdmin)return;
   var list=$("adminVisitList"); if(!list)return;
   if(!adminVisits)list.innerHTML='<div class="admin-empty">Loading visitors…</div>';
-  adminRpc("admin_dashboard_visits",{p_token:adminSession.token}).then(function(rows){
+  /* Canonical name first; on a 404 fall back to admin_list_visits
+     — the "list" naming this Supabase project actually used for
+     the users RPC (admin_list_users), tried the same way in
+     adminLoadData. A JSON-string response is parsed tolerantly:
+     some installs return the json payload as text. */
+  var asVisitRows=function(rows){
+    if(typeof rows==="string"){try{rows=JSON.parse(rows)}catch(e){rows=null}}
     if(!Array.isArray(rows))throw new Error("visits rpc");
+    return rows;
+  };
+  adminRpc("admin_dashboard_visits",{p_token:adminSession.token}).then(asVisitRows,function(err){
+    if(!adminRpcMissing(err))throw err;
+    return adminRpc("admin_list_visits",{p_token:adminSession.token}).then(asVisitRows);
+  }).then(function(rows){
     adminVisits=rows;
     adminRenderVisits();
   }).catch(function(err){
@@ -18592,7 +18602,7 @@ function adminLoadVisits(){
     var note=$("adminVisitNote");
     if(note){
       note.hidden=false;
-      note.textContent="Visits are read by the token-checked admin_dashboard_visits() check in Supabase. If it is not installed yet, run the updated supabase-admin.sql once (it adds the public.visits table, the visit_ping logger and the admin visits check), then log in to Admin again and Refresh here."+(adminRpcErrText(err)?(" Supabase said: "+adminRpcErrText(err)):"");
+      note.textContent="Visitors could not load — run the updated supabase-admin.sql once in Supabase (it fixes the visits check), then log in again and Refresh."+(adminRpcErrText(err)?(" Supabase said: "+adminRpcErrText(err)):"");
     }
   });
 }
@@ -18945,7 +18955,7 @@ function adminSyncGate(){
     if(sf)sf.hidden=false;
     if(ck)ck.hidden=true;
     if(t)t.textContent="Set up the admin account";
-    if(msg)msg.textContent="No admin exists yet — the Supabase admin sheet (public.admin_users) is empty, so this page shows Sign up for the first admin. Enter your own email and password: the separate admin system stores ONLY a password hash in Supabase (never the plain password, never returned to the browser) and signs you in to Admin. It is NOT a Supabase Auth account and NOT a regular LUTAS LED user account — the two logins stay completely separate. Whoever completes this first sign-up becomes an admin; afterwards this page shows Log in only, sign-up closes for everyone, and team admins are added only by the owner in Supabase."+(adminGateNotice?(" "+adminGateNotice):"");
+    if(msg)msg.textContent="No admin exists yet — create the first admin account. Afterwards this page shows Log in only."+(adminGateNotice?(" "+adminGateNotice):"");
     return;
   }
   /* Every other state is Log in only: "has-admin", the manual
@@ -18961,17 +18971,17 @@ function adminSyncGate(){
     if(fw)fw.hidden=true;
     if(ck)ck.hidden=false;
     if(t)t.textContent="Admin login";
-    if(msg)msg.textContent="This page has its own separate admin login — it does not use the main LUTAS LED sign-in or Supabase Auth. Checking whether an admin has been set up yet…";
+    if(msg)msg.textContent="Separate admin login. Checking whether an admin has been set up yet…";
     return;
   }
   if(ck)ck.hidden=true;
   if(t)t.textContent="Admin login";
   if(adminSheetState==="empty"){
-    if(msg)msg.textContent="No admin has been claimed yet — if you just signed up as the first admin, log in here with that same admin email and password. No user data is shown until an admin login is confirmed."+(adminGateNotice?(" "+adminGateNotice):"");
+    if(msg)msg.textContent="Log in with the admin email and password you just created."+(adminGateNotice?(" "+adminGateNotice):"");
   }else if(adminSheetState==="failed"){
-    if(msg)msg.textContent="This page has its own separate admin login — it does not use the main LUTAS LED sign-in or Supabase Auth. Enter an admin / team email and password to continue. No user data is shown until an admin login is confirmed. (The first-time Sign up check couldn't be completed — if no admin exists yet and Sign up should be showing, run the updated supabase-admin.sql once in Supabase, then reload this page.)"+(adminGateNotice?(" "+adminGateNotice):"");
+    if(msg)msg.textContent="Separate admin login. Enter an admin email and password to continue."+(adminGateNotice?(" "+adminGateNotice):"");
   }else{
-    if(msg)msg.textContent="This page has its own separate admin login — it does not use the main LUTAS LED sign-in or Supabase Auth. Signing in to the main app does not sign you in here. Enter an admin / team email and password to continue. No user data is shown until an admin login is confirmed."+(adminGateNotice?(" "+adminGateNotice):"");
+    if(msg)msg.textContent="Separate admin login. Enter an admin email and password to continue."+(adminGateNotice?(" "+adminGateNotice):"");
   }
 }
 function adminShowPage(){
@@ -18990,7 +19000,7 @@ function adminShowErr(msg){
   e.textContent=msg||""; e.hidden=!msg;
 }
 function adminRlsHint(what){
-  return "Supabase refused to "+what+" for this admin session. The separate admin setup may not be installed yet — run the updated supabase-admin.sql once in the Supabase SQL editor (it creates the hashed public.admin_users table and the token-checked dashboard checks), then log in to Admin again and Refresh here. Nothing was changed.";
+  return "Supabase refused to "+what+" for this admin session — run the updated supabase-admin.sql once in Supabase, then log in again and Refresh. Nothing was changed.";
 }
 function openAdminPage(){
   if(isClientViewRequest())return; /* never in client view */
@@ -19107,7 +19117,7 @@ function adminNoteCounts(){
   /* Counts read as — only when their table read was actually
      refused (false), never merely because nobody has rows yet. */
   if(adminDesignCounts===false||adminShareCounts===false){
-    note.textContent="Designs / shares counts are unavailable — the server-side count functions (admin_dashboard_designs / admin_dashboard_shares) are not installed in this Supabase project under those names, or returned nothing for this admin token. The users list and plan changes above are unaffected.";
+    note.textContent="Designs / shares counts are unavailable — the count functions are not installed in Supabase yet. The users list and plan changes above are unaffected.";
     note.hidden=false;
   }
 }
