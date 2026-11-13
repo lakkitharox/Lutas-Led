@@ -461,6 +461,21 @@ select option,select optgroup{color:#11151c;background-color:#fff}
 .modal .sub{font-size:12.5px;color:var(--muted);line-height:1.5;margin:0 0 6px}
 .modal .mrow{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
 .modal.wide{width:min(860px,100%)}
+/* Mirror window — diagrams + option labels only (no prose): a
+   top-view stage diagram, two mode cards (Mirror / Mirror Copy)
+   each with its own small diagram, and a scope segmented choice. */
+.mirror-diagram{display:block;width:100%;height:auto;margin:2px 0 10px}
+.mirror-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.mirror-opt{border:1px solid var(--line);background:var(--panel2);border-radius:11px;padding:9px 8px 8px;font:inherit;color:var(--text);cursor:pointer;text-align:center}
+.mirror-opt svg{display:block;width:100%;height:auto;margin-bottom:6px}
+.mirror-opt b{display:block;font-size:13px}
+.mirror-opt small{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-top:1px}
+.mirror-opt.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.mirror-opt:disabled{opacity:.45;cursor:default}
+/* Centre-line guide (2D) — an amber dashed line + label drawn in
+   the 2D world only; a view guide, never part of any export. */
+.centre-guide2d{position:absolute;pointer-events:none;z-index:6}
+.centre-guide2d .cg-lab{position:absolute;transform:translate(-50%,-100%);font-family:"Courier Prime","Courier New",monospace;font-weight:700;color:#f59e0b;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.65)}
 /* About window — professional dark card: hero with a pixel-dot
    field and radial glow, cyan LED accent and info rows.
    Scoped .about-* so no other modal changes. */
@@ -1549,6 +1564,7 @@ html.admin-boot #adminPage{display:block}
         <button id="mUndo" disabled><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/></svg><span id="undoLab">Undo</span><span class="mi-key">Ctrl+Z</span></button>
         <button id="mRedo" disabled><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5 5.5 5.5 0 0 0 9.5 20H13"/></svg><span id="redoLab">Redo</span><span class="mi-key">Ctrl+Y</span></button>
         <button id="mMirror" title="Mirror left–right across the stage centre (X = 0 in 3D, the layout centre in 2D) — mirrors the selected element, or every stage element when nothing is selected: screens, truss, lights, scaffolding, crowd, props, stage pieces and speakers. Position and facing flip; the image / text inside a screen does not. One Mirror is one Undo step"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18" stroke-dasharray="3.5 3"/><path d="M8.5 7.5 3.5 12l5 4.5v-9Z" fill="currentColor" stroke="none"/><path d="M15.5 7.5 20.5 12l-5 4.5v-9Z" fill="currentColor" stroke="none"/></svg>Mirror left–right</button>
+        <button id="mMirrorCopy" title="Mirror Copy — DUPLICATES the built side, mirrored, onto the other side of the stage centre: the originals stay exactly where they are and mirrored copies are added — screens, truss, lights, scaffolding, crowd, props and stage pieces. Mirrored screens are added to the 2D layout too, with panel counts, ports and cabling recomputed. One Mirror Copy is one Undo step"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18" stroke-dasharray="3.5 3"/><path d="M8.5 7.5 3.5 12l5 4.5v-9Z" fill="currentColor" stroke="none"/><path d="M15.5 7.5 20.5 12l-5 4.5v-9Z"/></svg>Mirror Copy</button>
         <div class="sep"></div>
         <button data-set="numbers"><span class="chk">✓</span>Cabinet numbers</button>
         <button data-set="ports"><span class="chk">✓</span>Port colours</button>
@@ -1655,7 +1671,7 @@ html.admin-boot #adminPage{display:block}
         <button class="tool-btn" data-tool="inspect" title="Inspect — click a cabinet for its port, offset, position &amp; custom pixel size" aria-label="Inspect tool"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5"/></svg></span></button>
         <button class="tool-btn" id="btnSnapScreens" aria-pressed="false" title="Snap — 2D view only: when ON, a screen you drag snaps to EVERY other screen — its edges touch or line up flush with any wall's edges, or its centre lines up with any wall's centre — and also to the centre of the layout and to X 0 / Y 0 (the origin, 0,0), with no gap. When OFF, screens move freely. Separate from the magnet, which snaps to the grid" aria-label="Snap screens to every other screen, the layout centre and X 0 / Y 0 (2D view)"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><g transform="rotate(45 12 12)"><path d="M5 8v3a7 7 0 0 0 14 0V8h-4.5v3a2.5 2.5 0 0 1-5 0V8H5z"/><rect x="5" y="2.6" width="4.5" height="3.6" rx="0.9"/><rect x="14.5" y="2.6" width="4.5" height="3.6" rx="0.9"/></g></svg></span></button>
         <button class="tool-btn add" id="btnAddScreen" title="Add screen — new LED display (or use the ＋ buttons on any side of a display)" aria-label="Add screen"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span></button>
-        <button class="tool-btn" id="btnTapeTool" aria-pressed="false" title="Tape measure — click two points to measure the distance between them, in 2D and in 3D. Points snap to display corners, centres and cabinet grid points, truss joints, lights, props and stage pieces; drag the ends to re-measure. Tapes are helpers only — they never change the layout and are not saved" aria-label="Tape measure tool"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 3.5h5v5"/><path d="M20.5 3.5 14 10"/><circle cx="9.5" cy="14.5" r="6.8"/><circle cx="9.5" cy="14.5" r="2.3"/></svg></span></button>
+        <button class="tool-btn" id="btnTapeTool" aria-pressed="false" title="Tape measure — click two points to measure the distance between them, in 2D and in 3D. Endpoints snap to the closest object point or edge — display corners, edges, centres and cabinet grid points, truss joints and segments, lights, scaffolding, crowd, props, stage pieces and speakers; drag the ends to re-measure. Tapes are helpers only — they never change the layout and are not saved" aria-label="Tape measure tool"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 3.5h5v5"/><path d="M20.5 3.5 14 10"/><circle cx="9.5" cy="14.5" r="6.8"/><circle cx="9.5" cy="14.5" r="2.3"/></svg></span></button>
       </div>
     </section>
 
@@ -1675,6 +1691,7 @@ html.admin-boot #adminPage{display:block}
       <div class="vacts">
         <button class="vact" id="btnFitView" title="Fit layout in view" aria-label="Fit layout in view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
         <button class="vact" id="btnResetShape" title="Reset shape of selected display — restore all cabinets" aria-label="Reset shape of selected display"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button class="vact" id="btnCentreGuide" aria-pressed="false" title="Centre line — show or hide the stage centre line: an amber dashed line down the middle of the stage (the layout centre in 2D, X = 0 in 3D) running the full depth of the stage, with a Centre label. A guide only — it never changes the layout, ports, cabling or the PNG export" aria-label="Centre line — show or hide the stage centre line guide"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18" stroke-dasharray="3.2 2.6"/><path d="M5 6.5h4M15 6.5h4M5 17.5h4M15 17.5h4"/></svg></button>
         <button class="vact" id="btnTestPattern" title="Test pattern colours" aria-label="Toggle test pattern colours"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/></svg></button>
       </div>
     </section>
@@ -1690,7 +1707,7 @@ html.admin-boot #adminPage{display:block}
       <div id="tapePanel" hidden>
         <div class="tape-head"><b>Tape measure</b><button id="tapeClearAll" title="Remove every tape in this view">Clear all</button></div>
         <div id="tapeList"></div>
-        <p id="tapeHint">Click a first point, move, and click the second point. Ends snap to object points; drag an end — or the tape itself — to move it.</p>
+        <p id="tapeHint">Click a first point, move, and click the second point. Ends snap to the closest object point or edge; drag an end — or the tape itself — to move it.</p>
       </div>
 
       <div id="view3d" class="vmode-view">
@@ -1698,7 +1715,8 @@ html.admin-boot #adminPage{display:block}
         <div class="v3d-bar">
           <div class="v3d-modewrap"><div class="v3d-group"><span class="cap">Mode</span><button data-vmode="view" class="on">View</button><button data-vmode="edit">Edit</button></div><button type="button" class="v3d-editchip" id="v3EditChip" title="No section edit mode is on — in 3D Edit mode the screens edit. Press the Edit button in a Truss, Lighting, Props, Stage Settings or Crowd section to edit that section instead.">No edit mode</button></div>
           <div class="v3d-group v3d-gizmo-group"><button data-gmode="move" class="on iconly" title="Move gizmo — red X · green Y (height) · blue Z (depth) arrows + plane squares" aria-label="Move gizmo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></button><button data-gmode="rotate" class="iconly" title="Rotate gizmo — coloured axis rings. The red X and blue Z rings are 3D-only tilts; the green Y ring follows Layout Link (3D tab): the wall's own 3D facing in Independent mode, the shared 2D degree in Linked mode" aria-label="Rotate gizmo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button><button data-gmode="scale" class="iconly" title="Scale gizmo — axis cubes like Blender: X = width, Y = height, Z = uniform (whole cabinets), blue square = width + height, white cube = uniform. With a custom Truss / Lighting modifier selected, the gizmo modes drive its segments / fixtures instead" aria-label="Scale gizmo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="v3Snap" class="iconly" aria-pressed="false" title="Snap (magnet) — the 3D view's snap tool: press it and 3D snapping turns on and the Magnet strength popup opens — the strength bands (weak / medium / strong / max) set the angle and metre steps that screens, truss segments, lights and props snap to while they move in the 3D view. Press it again to turn snapping off" aria-label="Snap (magnet) — 3D snapping with strength popup"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><g transform="rotate(45 12 12)"><path d="M5 8v3a7 7 0 0 0 14 0V8h-4.5v3a2.5 2.5 0 0 1-5 0V8H5z"/><rect x="5" y="2.6" width="4.5" height="3.6" rx="0.9"/><rect x="14.5" y="2.6" width="4.5" height="3.6" rx="0.9"/></g></svg></button></div>
-          <div class="v3d-group"><span class="cap">Mirror</span><button id="v3Mirror" class="iconly" title="Mirror left–right across the stage centre (X = 0) — mirrors the selected element, or every stage element when nothing is selected: screens, truss, lights, scaffolding, crowd, props, stage pieces and speakers. Position and facing flip; the image / text inside a screen does not. One Mirror is one Undo step" aria-label="Mirror left–right across the stage centre"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18" stroke-dasharray="3.5 3"/><path d="M8.5 7.5 3.5 12l5 4.5v-9Z" fill="currentColor" stroke="none"/><path d="M15.5 7.5 20.5 12l-5 4.5v-9Z" fill="currentColor" stroke="none"/></svg></button></div>
+          <div class="v3d-group"><span class="cap">Mirror</span><button id="v3Mirror" class="iconly" title="Mirror left–right across the stage centre (X = 0) — mirrors the selected element, or every stage element when nothing is selected: screens, truss, lights, scaffolding, crowd, props, stage pieces and speakers. Position and facing flip; the image / text inside a screen does not. One Mirror is one Undo step" aria-label="Mirror left–right across the stage centre"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18" stroke-dasharray="3.5 3"/><path d="M8.5 7.5 3.5 12l5 4.5v-9Z" fill="currentColor" stroke="none"/><path d="M15.5 7.5 20.5 12l-5 4.5v-9Z" fill="currentColor" stroke="none"/></svg></button><button id="v3MirrorCopy" class="iconly" title="Mirror Copy — duplicates the built side, mirrored, onto the other side of the stage centre: originals stay, mirrored copies are added (screens, truss, lights, scaffolding, crowd, props, stage pieces), and mirrored screens are added to the 2D layout too with ports and cabling recomputed. One Mirror Copy is one Undo step" aria-label="Mirror Copy — duplicate the built side, mirrored, onto the other side"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18" stroke-dasharray="3.5 3"/><path d="M8.5 7.5 3.5 12l5 4.5v-9Z" fill="currentColor" stroke="none"/><path d="M15.5 7.5 20.5 12l-5 4.5v-9Z"/></svg></button></div>
+          <div class="v3d-group"><span class="cap">View</span><button id="v3Centre" class="iconly" aria-pressed="false" title="Centre line — show or hide the stage centre line: an amber dashed line at X = 0 running the full depth of the stage, with a Centre label. A guide only — it never changes the layout and never appears in Render, client view or any export" aria-label="Centre line — show or hide the stage centre line guide"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18" stroke-dasharray="3.2 2.6"/><path d="M5 6.5h4M15 6.5h4M5 17.5h4M15 17.5h4"/></svg></button></div>
           <div class="v3d-group"><span class="cap">Display</span><button data-shade="shaded" class="on iconly" title="Shaded — the normal lit view: smooth shading, shadows and screen glow, each screen in its chosen colour as a colour / lighter-colour chessboard" aria-label="Shaded display mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6a8.4 8.4 0 0 1 0 16.8Z" fill="currentColor" fill-opacity="0.45" stroke="none"/><path d="M16.5 4.91a8.4 8.4 0 0 1 0 14.18Z" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8.4"/></svg></button><button data-shade="flat" class="iconly" title="Flat — the signal / port map: every cabinet in its flat, unshaded port colour with its port number on it; the rest of the stage in flat tones" aria-label="Flat display mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.6" y="4.6" width="14.8" height="14.8" rx="1.4" fill="currentColor" stroke="none"/></svg></button><button data-shade="wireframe" class="iconly" title="Wireframe — edges only: the stage drawn as a wireframe model, no filled faces" aria-label="Wireframe display mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M9.33 4v16M14.67 4v16M4 9.33h16M4 14.67h16"/></svg></button></div>
           <div class="v3d-group"><span class="cap">Orientation</span><select class="v3d-orient" id="v3Orient" aria-label="Transform orientation — Global, Local or Parent" title="Transform Orientation — the axes the 3D gizmo uses for the object selected in 3D: Global = the world axes · Local = the selected object's own axes · Parent = its parent's axes (the stage frame for screens, props and lights)"><option value="global" selected>Global</option><option value="local">Local</option><option value="parent">Parent</option></select></div>
           <div class="v3d-viewpoint"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4Z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/></svg><select id="v3Viewpoint" aria-label="Viewpoint — choose the 3D camera view" title="Viewpoint — choose the camera view. Stays in sync with the view cube in the corner"><option value="front">Front</option><option value="back">Back</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="iso" selected>Isometric</option><option value="free">Free</option></select></div>
@@ -3210,6 +3228,60 @@ html.admin-boot #adminPage{display:block}
 </div>
 
 <!-- OVERLAP CONFIRM — in the 2D view screens must not overlap unless the user says so -->
+<!-- MIRROR WINDOW — opened by Mirror / Mirror Copy in the 3D bar
+     and the Edit menu. Nothing builds until Submit: the window
+     shows a top-view stage diagram (built side, amber dashed
+     centre line, arrow to the mirrored side), the Mirror /
+     Mirror Copy choice (each with its own small diagram) and the
+     scope choice (selected elements only / whole stage). Diagrams
+     and option labels only — no descriptive paragraphs. Cancel
+     (or a click on the backdrop) closes it and builds nothing. -->
+<div class="modal-bg" id="mirrorModal" style="z-index:120">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mirrorTitle">
+    <h2 id="mirrorTitle">Mirror</h2>
+    <svg class="mirror-diagram" viewBox="0 0 320 150" role="img" aria-label="Diagram: the stage seen from above — the built side on the left, the amber dashed centre line down the middle, and an arrow showing it mirrored to the other side">
+      <rect x="14" y="12" width="292" height="126" rx="6" fill="none" stroke="currentColor" stroke-width="1.6" opacity="0.55"/>
+      <line x1="160" y1="8" x2="160" y2="142" stroke="#f59e0b" stroke-width="2.4" stroke-dasharray="7 5"/>
+      <text x="160" y="17" text-anchor="middle" font-size="10.5" font-weight="700" fill="#f59e0b" font-family="'Courier Prime','Courier New',monospace">Centre</text>
+      <g id="mdLeftGhost" opacity="0">
+        <rect x="44" y="44" width="52" height="26" rx="2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="4 3"/>
+        <rect x="58" y="88" width="30" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="4 3"/>
+      </g>
+      <g id="mdLeftBlocks">
+        <rect x="44" y="44" width="52" height="26" rx="2" fill="currentColor" opacity="0.85"/>
+        <rect x="58" y="88" width="30" height="20" rx="2" fill="currentColor" opacity="0.6"/>
+        <circle cx="118" cy="100" r="5" fill="currentColor" opacity="0.6"/>
+      </g>
+      <path d="M112 52 C 138 30, 182 30, 208 52" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M208 52 l-11 -1.5 M208 52 l-3.5 -10.5" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round"/>
+      <g id="mdRightBlocks">
+        <rect x="224" y="44" width="52" height="26" rx="2" fill="none" stroke="#f59e0b" stroke-width="2"/>
+        <rect x="232" y="88" width="30" height="20" rx="2" fill="none" stroke="#f59e0b" stroke-width="2"/>
+        <circle cx="202" cy="100" r="5" fill="none" stroke="#f59e0b" stroke-width="2"/>
+      </g>
+    </svg>
+    <div class="mirror-opts" role="group" aria-label="Mirror or Mirror Copy">
+      <button type="button" class="mirror-opt" id="mirrorOptFlip" aria-pressed="true">
+        <svg viewBox="0 0 120 56" aria-hidden="true"><line x1="60" y1="4" x2="60" y2="52" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 4"/><rect x="16" y="18" width="26" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 3"/><rect x="78" y="18" width="26" height="18" rx="2" fill="currentColor" opacity="0.85"/><path d="M46 12 C 54 6, 66 6, 74 12" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/><path d="M74 12 l-7 -1 M74 12 l-2 -7" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <b>Mirror</b><small>Flip — left swaps to right</small>
+      </button>
+      <button type="button" class="mirror-opt" id="mirrorOptCopy" aria-pressed="false">
+        <svg viewBox="0 0 120 56" aria-hidden="true"><line x1="60" y1="4" x2="60" y2="52" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 4"/><rect x="16" y="18" width="26" height="18" rx="2" fill="currentColor" opacity="0.85"/><rect x="78" y="18" width="26" height="18" rx="2" fill="none" stroke="#f59e0b" stroke-width="2"/><path d="M46 12 C 54 6, 66 6, 74 12" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/><path d="M74 12 l-7 -1 M74 12 l-2 -7" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <b>Mirror Copy</b><small>Duplicate — originals stay</small>
+      </button>
+    </div>
+    <label class="lab">Scope</label>
+    <div class="seg c2" id="mirrorScopeSeg">
+      <button type="button" id="mirrorScopeSel">Selected elements only</button>
+      <button type="button" id="mirrorScopeAll">Whole stage</button>
+    </div>
+    <div class="mrow">
+      <button class="btn" id="mirrorCancel">Cancel</button>
+      <button class="btn primary" id="mirrorSubmit">Submit</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="overlapModal" style="z-index:120">
   <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="overlapTitle">
     <h2 id="overlapTitle"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Screens overlap</h2>
@@ -4104,6 +4176,21 @@ function render(){
      size reads at a glance. View-only — it is a DOM overlay in the 2D
      world, never a display, and never reaches PNG / model exports. */
   if(state.show.human){var hd0=humanAnchorDisp(); if(hd0)world.appendChild(buildHumanRef2D(hd0))}
+  /* Centre line guide (View → Centre line): an amber dashed line
+     at the LAYOUT CENTRE running the full depth of the layout,
+     with a small "Centre" label at the top. A DOM overlay in the
+     2D world only — view state, never a display, and the PNG
+     export is drawn from display data on its own canvas, so the
+     guide never exports. */
+  if(centreGuideOn){
+    var bbG=layoutBBox(), cgPad=Math.max(30,bbG.h*0.08), cgW=Math.max(1.6,2.4/(view.scale||1)), cgF=Math.max(9,12.5/(view.scale||1));
+    var cg=document.createElement("div"); cg.className="centre-guide2d";
+    cg.style.cssText="left:"+(bbG.cx-cgW/2)+"px;top:"+(bbG.minY-cgPad)+"px;width:"+cgW+"px;height:"+(bbG.h+cgPad*2)+"px;background:repeating-linear-gradient(to bottom,#f59e0b 0 "+(cgW*3.2)+"px,transparent "+(cgW*3.2)+"px "+(cgW*5.4)+"px);opacity:.95";
+    var cgL=document.createElement("div"); cgL.className="cg-lab"; cgL.textContent="Centre";
+    cgL.style.cssText="left:50%;top:-"+(cgF*0.35)+"px;font-size:"+cgF+"px";
+    cg.appendChild(cgL);
+    world.appendChild(cg);
+  }
   if(pv.on&&pv.el)attachPreviewCanvas(world);
   applyView();
   renderOverlay();
@@ -6047,8 +6134,8 @@ function mirrorTarget(){
   if(m)return {kind:"modifier",mod:m};
   return {kind:"all"};
 }
-function mirrorApply(){
-  var tgt=mirrorTarget(), screens=0, label="";
+function mirrorApply(forceAll){
+  var tgt=forceAll?{kind:"all"}:mirrorTarget(), screens=0, label="";
   if(tgt.kind==="all"){
     var bbCx=layoutBBox().cx;
     var tmap={}; state.modifiers.forEach(function(m){if(m.type==="truss")tmap[m.id]=true});
@@ -6074,10 +6161,10 @@ function mirrorApply(){
   else if(tgt.kind==="modifier"){mirrorModifierWhole(tgt.mod,null); label=tgt.mod.name}
   return {label:label,screens:screens,kind:tgt.kind};
 }
-function doMirror(){
+function doMirror(forceAll){
   histBegin();
   var before=histSnapshot();
-  var res=mirrorApply();
+  var res=mirrorApply(forceAll);
   var changed=histSnapshot()!==before;
   render();
   histEnd();
@@ -6089,8 +6176,387 @@ function doMirror(){
   }
   toast(msg);
 }
-$("mMirror").addEventListener("click",function(){closeMenus(); doMirror()});
-$("v3Mirror").addEventListener("click",function(){doMirror()});
+/* ══════════ MIRROR COPY — duplicate the built side, mirrored ═══
+   Mirror Copy DUPLICATES: the originals stay exactly where they
+   are and a mirrored copy of each element is ADDED on the other
+   side of the stage centre, at the same distance from centre,
+   keeping its type, settings, size, rotation and facing (flipped
+   left–right). Build one side of the stage only, press Mirror
+   Copy, and the full setup stands.
+   • Screens ALWAYS write to the 2D layout — Mirror Copy does NOT
+     follow the Layout Link Independent rule (the user's explicit
+     choice): a copy's 2D position mirrors about the pre-copy
+     layout centre (layoutBBox().cx, computed before any copy is
+     added) and its 2D degree negates, exactly like a 2D mirror,
+     in BOTH link modes; its 3D place mirrors about X = 0
+     (x3 → −x3, facing negated, pitch kept, roll negated, bend
+     pivot flipped end-for-end, column-section angles reversed
+     and negated — the same facing rules as Mirror). The copy is
+     built through makeDisplay like a newly added screen, so
+     render()'s computeAll recomputes its panel counts, ports and
+     cabling across the layout, and the PNG export — drawn from
+     state.displays — includes it. Screen CONTENT is never
+     flipped inside the copy (see the note in doMirrorCopy).
+   • Every modifier's elements copy inside their own modifier, so
+     a copy is a normal element afterwards (selectable, movable,
+     deletable, groupable — it keeps its group): crowd packs,
+     stage pieces (a copy is never the Main deck), props (a loaded
+     model is shared with the copy, like Duplicate), scaffolding
+     layers, custom truss segments and light fixtures. A fixture
+     riding a truss segment copied in the same press rides the
+     mirrored COPY segment (its point along the bar flips to
+     1 − t); a fixture copied on its own re-mounts on the bar
+     nearest its mirrored point, exactly like Mirror. A preset
+     (non-custom) truss is built symmetric about the centre from
+     the layout and follows the mirrored walls, so it has no
+     separate elements to copy; speakers (a pair built one array
+     at each front corner) and haze (positionless atmosphere) are
+     likewise symmetric by construction — a "copy" of any of these
+     would sit exactly on top of the original, so the centre rule
+     below covers them and they gain no duplicate.
+   • Centre rule: an element sitting exactly on the centre line
+     (a screen centred on the layout centre or on X = 0, a pack /
+     piece / prop / scaffolding layer at X = 0, a truss segment
+     whose mirrored copy would coincide with itself, a fixture
+     whose world X is 0) is NOT duplicated — no double copy on
+     top of the original.
+   • Scope follows the Mirror pop-up's choice: the selected
+     element only, or the whole stage. One press is ONE Undo
+     step (histBegin / histEnd around the whole apply), and
+     because copies are ordinary layout fields and entries, they
+     save / load with the layout like any other element. */
+function mcClone(o){return JSON.parse(JSON.stringify(o))}
+function mcName(base,suffix,exists){
+  var nm=(base||"Element")+(suffix||" mirrored"), n=2;
+  while(exists&&exists(nm))nm=(base||"Element")+(suffix||" mirrored")+" "+(n++);
+  return nm;
+}
+/* One mirrored screen copy of d about the pre-copy layout centre
+   bbCx — or null when d sits on the centre line. The copy is
+   pushed by the caller (its name is minted at push time). */
+function mirrorCopyDisplay(d,bbCx){
+  if(Math.abs((+d.x||0)-bbCx)<0.6||Math.abs(effX3(d))<0.006)return null;
+  if(indMode())ensureInd3(d); /* materialize the original's 3D place so the copy's mirrors read true values — the original does not move */
+  var nd=makeDisplay({name:d.name,color:d.color,cabW:d.cabW,cabH:d.cabH,pitch:d.pitch,resX:d.resX,resY:d.resY,weight:d.weight,power:d.power,cols:d.cols,rows:d.rows,corner:d.corner,path:d.path,pmode:d.pmode,cabPerPort:d.cabPerPort,pixPerPort:d.pixPerPort,x:d.x,y:d.y,rotation:d.rotation,z:d.z,rotX3d:d.rotX3d,rotY3d:d.rotY3d,rotZ3d:d.rotZ3d,x3:d.x3,z3:d.z3,cols3:d.cols3,rows3:d.rows3,cabRes:d.cabRes,base:d.base,bend:d.bend,bendAngle:d.bendAngle,bendDir:d.bendDir,bendPivot:d.bendPivot,family:d.family,bendRadius:d.bendRadius,jointAngle:d.jointAngle,secRotAxis:d.secRotAxis,secRotCount:d.secRotCount,secRotAngles:(d.secRotAngles||[]).slice(),off:Array.from(d.off)});
+  /* 2D — ALWAYS mirrored (both link modes): position about the
+     layout centre, degree negated. */
+  nd.x=Math.round(2*bbCx-(+d.x||0));
+  nd.rotation=mirrorDeg(d.rotation);
+  /* 3D — mirrored about X = 0. In Independent mode the copy gets
+     its own materialized arrangement; in Linked mode the shared
+     fields above ARE its 3D place, so the private fields clear. */
+  if(indMode()){
+    nd.x3=Math.round(effX3(d)*-1000)/1000;
+    nd.z3=Math.round(effZ3(d)*1000)/1000;
+    nd.rotY3d=mirrorDeg(effYaw3(d));
+    nd.cols3=nd.cols; nd.rows3=nd.rows;
+  }else{
+    nd.x3=null; nd.z3=null; nd.cols3=null; nd.rows3=null;
+    nd.rotY3d=d.rotY3d?mirrorDeg(d.rotY3d):0;
+  }
+  if(nd.rotZ3d)nd.rotZ3d=mirrorDeg(nd.rotZ3d); /* roll negates; pitch (rotX3d) stays, as in Mirror */
+  nd.bendPivot=Math.round((1-clamp(+nd.bendPivot||0,0,1))*1000)/1000;
+  if(nd.secRotAxis!=="rows"&&Array.isArray(nd.secRotAngles)&&nd.secRotAngles.length>1)nd.secRotAngles=nd.secRotAngles.slice().reverse().map(function(a){return -(+a||0)});
+  return nd;
+}
+/* Copy every custom truss segment of m, mirrored, into the same
+   modifier. Returns {origIdx: copyIdx} for the segments copied
+   (fixtures use it to ride the copy segment), or null for a
+   preset truss (symmetric — follows the walls, nothing to copy). */
+/* True when a truss segment's mirrored copy would coincide with
+   the segment itself: a ring centred on X = 0, a vertical segment
+   standing on the centre line, or a segment spanning the centre
+   symmetrically (same height and depth at both ends). */
+function mcSegCoincides(s){
+  if(s.ring)return Math.abs((+s.ax||0)+(+s.bx||0))<0.01;
+  return (Math.abs(+s.ax||0)<0.005&&Math.abs(+s.bx||0)<0.005)
+    ||(Math.abs((+s.ax||0)+(+s.bx||0))<0.01&&Math.abs((+s.az||0)-(+s.bz||0))<0.01&&Math.abs((+s.ay||0)-(+s.by||0))<0.01);
+}
+function mirrorCopyTrussSegs(m){
+  var p=m.params;
+  if(!p.custom)return null;
+  var segs=p.segs||[], map={}, n=0;
+  var src=segs.slice();
+  src.forEach(function(s,i){
+    if(mcSegCoincides(s))return;
+    var c=mcClone(s); mirrorSeg(c);
+    segs.push(c); map[i]=segs.length-1; n++;
+  });
+  return n?map:null;
+}
+/* One mirrored fixture copy. segMap maps (truss modifier id →
+   {segIdx: copySegIdx}) for truss copied in the same press: a
+   fixture riding a copied segment rides its copy, its point
+   along the bar flipping to 1 − t. Otherwise it re-mounts on the
+   bar nearest its mirrored point, like Mirror. The set offset
+   never changes — the copy lives in the same Lighting modifier,
+   so its stored point is the mirrored world point minus the
+   SAME set offset. */
+function mirrorCopyFixture(m,f,segMap){
+  var setX=+m.params.setX||0, w=mirrorFixtureWorld(m,f,setX);
+  if(Math.abs(w.x)<0.005)return null;
+  var c=mcClone(f), mw={x:-w.x,y:w.y,z:w.z};
+  setFixtureRotY(c,-fixtureRotY(c)); /* pan negates — the aim flips left ↔ right */
+  if(fixtureModelOf(c)==="batten")setFixtureRotZ(c,-fixtureRotZ(c)); /* a batten's roll negates too; tilt never changes */
+  var mapped=(f.tm&&segMap&&segMap[f.tm]&&segMap[f.tm][f.seg]!==undefined)?segMap[f.tm][f.seg]:undefined;
+  if(f.tm&&mapped!==undefined){
+    c.tm=f.tm; c.seg=mapped; c.t=Math.round((1-clamp(+f.t||0,0,1))*1000)/1000;
+    var np=resolveFixturePos(c);
+    c.x=Math.round((np.x-setX)*100)/100; c.y=Math.round((np.y-(+m.params.setY||0))*100)/100; c.z=Math.round((np.z-(+m.params.setZ||0))*100)/100;
+    return c;
+  }
+  if(f.tm||!isFreeFixture(c)){
+    var nb=mountFixtureNearest(m,c,mw);
+    if(nb)return c;
+    if(f.tm){c.tm=null; c.seg=null; c.t=0; c.mount=null;
+      c.x=Math.round((mw.x-setX)*100)/100; c.y=Math.round((mw.y-(+m.params.setY||0))*100)/100; c.z=Math.round((mw.z-(+m.params.setZ||0))*100)/100;
+      return c}
+  }
+  c.x=Math.round((mw.x-setX)*100)/100; /* free fixture / no bar: only X changes, as in Mirror */
+  return c;
+}
+/* Mirror-copy the selected scaffolding LAYER (idx) of m. */
+function mirrorCopyScaffoldUnit(m,idx){
+  scaffoldMirrorSave(m);
+  var us=scaffoldUnits(m), u=us[idx]; if(!u)return 0;
+  if(Math.abs(+u.x||0)<0.005)return 0;
+  var c=mcClone(u);
+  c.x=negM(u.x); c.ry=mirrorDeg(u.ry);
+  c.name=mcName(u.name||"Scaffolding"," mirrored",function(nm){return us.some(function(x){return x.name===nm})});
+  us.push(c);
+  return 1;
+}
+/* Mirror-copy EVERY element of one modifier, inside itself.
+   segMap is the whole-press truss map (see mirrorCopyFixture);
+   a Lighting modifier copied on its own passes its own map in
+   when its truss was part of the same press, else null. Returns
+   the number of copies added. */
+function mirrorCopyModifierWhole(m,segMap){
+  var p=m.params, n=0;
+  if(m.type==="crowd"){
+    crowdPacks(m).slice().forEach(function(pk){
+      if(Math.abs(+pk.x||0)<0.005)return;
+      var c=mcClone(pk); c.id=uid(); c.name=(pk.name||"Crowd pack")+" mirrored"; c.x=negM(pk.x); c.rot=mirrorDeg(pk.rot);
+      p.packs.push(c); n++;
+    });
+    return n;
+  }
+  if(m.type==="stage"){
+    (p.els||[]).slice().forEach(function(el){
+      if(Math.abs(+el.x||0)<0.005)return;
+      var c=mcClone(el); c.id=uid(); c.name=(el.name||"Stage piece")+" mirrored"; c.x=negM(el.x); c.ry=mirrorDeg(el.ry); c.main=false; /* a copy is never the main stage */
+      p.els.push(c); n++;
+    });
+    return n;
+  }
+  if(m.type==="props"){
+    (p.items||[]).slice().forEach(function(it){
+      if(Math.abs(+it.x||0)<0.005)return;
+      var c=mcClone(it), oldId=c.id; c.id=uid(); c.name=/ mirrored$/.test(it.name||"")?it.name:(it.name||"Prop")+" mirrored";
+      c.x=negM(it.x); c.ry=mirrorDeg(it.ry); c.rz=mirrorDeg(it.rz); /* rx (pitch) stays */
+      p.items.push(c);
+      if(propCache[oldId]&&propCache[oldId].status==="ok")propCache[c.id]=propCache[oldId]; /* share the loaded model, like Duplicate */
+      n++;
+    });
+    return n;
+  }
+  if(m.type==="scaffold"){
+    scaffoldMirrorSave(m);
+    var us=scaffoldUnits(m), src=us.slice();
+    src.forEach(function(u){
+      if(Math.abs(+u.x||0)<0.005)return;
+      var c=mcClone(u); c.x=negM(u.x); c.ry=mirrorDeg(u.ry);
+      c.name=mcName(u.name||"Scaffolding"," mirrored",function(nm){return us.some(function(x){return x.name===nm})});
+      us.push(c); n++;
+    });
+    return n;
+  }
+  if(m.type==="truss"){var mp=mirrorCopyTrussSegs(m); return mp?Object.keys(mp).length:0}
+  if(m.type==="light"){
+    var fixes=(p.fixtures||[]).slice();
+    fixes.forEach(function(f){
+      var c=mirrorCopyFixture(m,f,segMap);
+      if(c){p.fixtures.push(c); n++}
+    });
+    return n;
+  }
+  /* speakers / haze: symmetric by construction / positionless —
+     a copy would sit exactly on the original (centre rule). */
+  return 0;
+}
+function mirrorCopyApply(forceAll){
+  var tgt=forceAll?{kind:"all"}:mirrorTarget(), screens=0, count=0, label="";
+  if(tgt.kind==="all"){
+    var bbCx=layoutBBox().cx; /* the pre-copy layout centre — every screen copy mirrors about THIS line */
+    var segMaps={};
+    /* Truss first: fixture copies riding a copied segment resolve
+       their place from the copy segment itself. */
+    state.modifiers.forEach(function(m){if(m.type==="truss"){var mp=mirrorCopyTrussSegs(m); if(mp)segMaps[m.id]=mp}});
+    state.displays.slice().forEach(function(d){
+      var nd=mirrorCopyDisplay(d,bbCx); if(!nd)return;
+      nd.name=nextName(d.name);
+      state.displays.push(nd); screens++; count++;
+    });
+    state.modifiers.forEach(function(m){if(m.type!=="truss")count+=mirrorCopyModifierWhole(m,segMaps)});
+    label="the whole stage — every screen and stage element";
+  }
+  else if(tgt.kind==="screen"){
+    var nd2=mirrorCopyDisplay(tgt.disp,layoutBBox().cx);
+    if(nd2){nd2.name=nextName(tgt.disp.name); state.displays.push(nd2); screens=1; count=1}
+    label=tgt.disp.name;
+  }
+  else if(tgt.kind==="trussSeg"){
+    var s0=tgt.seg;
+    if(!mcSegCoincides(s0)){
+      var cc=mcClone(s0); mirrorSeg(cc);
+      tgt.mod.params.segs.push(cc); count=1;
+    }
+    label="Truss "+(tgt.idx+1);
+  }
+  else if(tgt.kind==="lightFix"){
+    var cf=mirrorCopyFixture(tgt.mod,tgt.fix,null);
+    if(cf){tgt.mod.params.fixtures.push(cf); count=1}
+    label="Light "+(tgt.idx+1);
+  }
+  else if(tgt.kind==="prop"){
+    var it=tgt.item;
+    if(Math.abs(+it.x||0)>=0.005){
+      var cp=mcClone(it), oldP=cp.id; cp.id=uid(); cp.name=/ mirrored$/.test(it.name||"")?it.name:(it.name||"Prop")+" mirrored";
+      cp.x=negM(it.x); cp.ry=mirrorDeg(it.ry); cp.rz=mirrorDeg(it.rz);
+      tgt.mod.params.items.push(cp);
+      if(propCache[oldP]&&propCache[oldP].status==="ok")propCache[cp.id]=propCache[oldP];
+      count=1;
+    }
+    label=it.name;
+  }
+  else if(tgt.kind==="scaffoldUnit"){count=mirrorCopyScaffoldUnit(tgt.mod,tgt.idx); label="Scaffolding layer "+(tgt.idx+1)}
+  else if(tgt.kind==="crowdPack"){
+    var pk=tgt.pack;
+    if(Math.abs(+pk.x||0)>=0.005){
+      var ck=mcClone(pk); ck.id=uid(); ck.name=(pk.name||"Crowd pack")+" mirrored"; ck.x=negM(pk.x); ck.rot=mirrorDeg(pk.rot);
+      tgt.mod.params.packs.push(ck); count=1;
+    }
+    label=pk.name;
+  }
+  else if(tgt.kind==="stageEl"){
+    var el=tgt.el;
+    if(Math.abs(+el.x||0)>=0.005){
+      var ce=mcClone(el); ce.id=uid(); ce.name=(el.name||"Stage piece")+" mirrored"; ce.x=negM(el.x); ce.ry=mirrorDeg(el.ry); ce.main=false;
+      tgt.mod.params.els.push(ce); count=1;
+    }
+    label=el.name;
+  }
+  else if(tgt.kind==="modifier"){
+    count=mirrorCopyModifierWhole(tgt.mod,null); /* truss included — it copies its segments */
+    label=tgt.mod.name;
+  }
+  return {label:label,screens:screens,count:count,kind:tgt.kind};
+}
+function doMirrorCopy(forceAll){
+  histBegin();
+  var before=histSnapshot();
+  var res=mirrorCopyApply(forceAll);
+  var changed=histSnapshot()!==before;
+  render();
+  histEnd();
+  if(!changed){toast("Mirror Copy — nothing copied: what is selected already sits on the stage centre line, or is built symmetric about it (the speaker pair and haze have no left–right position to copy)."); return}
+  var msg="Mirror Copy — "+res.count+" mirrored cop"+(res.count===1?"y":"ies")+" of "+res.label+" added on the other side of the stage centre; the originals are unchanged. One Undo step (Ctrl+Z) removes the copies.";
+  if(res.screens)msg+=" The mirrored screens were added to the 2D layout too — panel counts, ports and cabling recomputed like a newly added screen, and the PNG export includes them.";
+  if(res.screens&&typeof pv!=="undefined"&&pv&&pv.on&&pv.el)msg+=" Screen content is NOT flipped — check text/logos.";
+  toast(msg);
+}
+/* ══════════ CENTRE LINE GUIDE ═══════════════════════════════════
+   One guide for both views, toggled by the Centre line buttons
+   (the View section of the left rail in 2D, the View group of the
+   3D bar in 3D): an amber dashed line down the middle of the
+   stage — the layout centre (layoutBBox().cx) in 2D, X = 0 in
+   3D, the SAME centre line the Mirror window diagrams and the
+   Mirror / Mirror Copy actions mirror about — running the full
+   depth of the stage, with a small "Centre" label at the top.
+   Session-only view state (like the 3D shading mode): it is not
+   layout data, is never in Undo history, and never reaches the
+   layout, ports, cabling, the PNG export (drawn from data), the
+   model exports (built from data), the Render view (the 3D loop
+   hides it while Render is open) or client view (never built
+   there). */
+var centreGuideOn=false;
+function syncCentreGuideBtns(){
+  [["btnCentreGuide"],["v3Centre"]].forEach(function(pair){
+    var b=$(pair[0]); if(!b)return;
+    b.classList.toggle("on",centreGuideOn);
+    b.setAttribute("aria-pressed",centreGuideOn?"true":"false");
+  });
+}
+function setCentreGuide(on){
+  centreGuideOn=!!on;
+  syncCentreGuideBtns();
+  render();
+  toast(centreGuideOn
+    ? "Centre line ON — the amber dashed line is the stage centre (X = 0 in 3D, the layout centre in 2D), the line Mirror and Mirror Copy mirror about. Guide only: it changes nothing and never exports."
+    : "Centre line OFF.");
+}
+if($("btnCentreGuide"))$("btnCentreGuide").addEventListener("click",function(){setCentreGuide(!centreGuideOn)});
+if($("v3Centre"))$("v3Centre").addEventListener("click",function(){setCentreGuide(!centreGuideOn)});
+/* The 3D centre guide group: a dashed amber line at X = 0 on the
+   floor, running past the stage's full depth, plus a small
+   "Centre" label sprite at its audience end. Built by
+   build3DScene (which owns T3.centreGuide) — never in client
+   view, and the render loop hides it while Render is open. */
+function buildCentreGuide3D(){
+  var grp=new THREE.Group(); grp.name="centreGuide";
+  var bb=sceneBBox3D(), m=1.2;
+  var geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0.03,bb.minZ-m),new THREE.Vector3(0,0.03,bb.maxZ+m)]);
+  var line=new THREE.Line(geo,new THREE.LineDashedMaterial({color:0xf59e0b,dashSize:0.38,gapSize:0.24,transparent:true,opacity:0.95,depthTest:false}));
+  line.computeLineDistances(); line.renderOrder=997; line.userData.measureSkip=true;
+  grp.add(line);
+  var lab=makeTextSprite3D("Centre",0.3,true);
+  if(lab){lab.material.color.set(0xfbbf24); lab.position.set(0,Math.max(0.35,deckTopY()+0.35),bb.maxZ+m+0.1); lab.userData.measureSkip=true; grp.add(lab)}
+  return grp;
+}
+/* ══════════ MIRROR WINDOW ═══════════════════════════════════════
+   Pressing Mirror or Mirror Copy (3D bar or Edit menu) opens
+   this window FIRST; nothing builds until Submit. The window
+   preselects the pressed action and the scope the current
+   selection implies (selected elements when something is
+   selected, whole stage otherwise — and Selected is disabled
+   when nothing is selected). Cancel / backdrop builds nothing. */
+var mirrorPop={mode:"flip",scope:"all"};
+function syncMirrorPop(){
+  var flip=mirrorPop.mode==="flip";
+  $("mirrorTitle").textContent=flip?"Mirror":"Mirror Copy";
+  $("mirrorOptFlip").classList.toggle("on",flip);
+  $("mirrorOptFlip").setAttribute("aria-pressed",flip?"true":"false");
+  $("mirrorOptCopy").classList.toggle("on",!flip);
+  $("mirrorOptCopy").setAttribute("aria-pressed",!flip?"true":"false");
+  var gl=$("mdLeftGhost"); if(gl)gl.setAttribute("opacity",flip?"1":"0");
+  $("mirrorScopeSel").classList.toggle("on",mirrorPop.scope==="sel");
+  $("mirrorScopeAll").classList.toggle("on",mirrorPop.scope==="all");
+}
+function openMirrorPop(mode){
+  mirrorPop.mode=(mode==="copy")?"copy":"flip";
+  var hasSel=mirrorTarget().kind!=="all";
+  mirrorPop.scope=hasSel?"sel":"all";
+  var selBtn=$("mirrorScopeSel");
+  if(selBtn)selBtn.disabled=!hasSel;
+  syncMirrorPop();
+  $("mirrorModal").classList.add("open");
+}
+function closeMirrorPop(){$("mirrorModal").classList.remove("open")}
+$("mirrorOptFlip").addEventListener("click",function(){mirrorPop.mode="flip"; syncMirrorPop()});
+$("mirrorOptCopy").addEventListener("click",function(){mirrorPop.mode="copy"; syncMirrorPop()});
+$("mirrorScopeSel").addEventListener("click",function(){mirrorPop.scope="sel"; syncMirrorPop()});
+$("mirrorScopeAll").addEventListener("click",function(){mirrorPop.scope="all"; syncMirrorPop()});
+$("mirrorCancel").addEventListener("click",function(){closeMirrorPop()});
+$("mirrorModal").addEventListener("click",function(ev){if(ev.target===this)closeMirrorPop()});
+$("mirrorSubmit").addEventListener("click",function(){
+  var mode=mirrorPop.mode, all=mirrorPop.scope==="all";
+  closeMirrorPop();
+  if(mode==="copy")doMirrorCopy(all); else doMirror(all);
+});
+$("mMirror").addEventListener("click",function(){closeMenus(); openMirrorPop("flip")});
+$("v3Mirror").addEventListener("click",function(){openMirrorPop("flip")});
+$("mMirrorCopy").addEventListener("click",function(){closeMenus(); openMirrorPop("copy")});
+$("v3MirrorCopy").addEventListener("click",function(){openMirrorPop("copy")});
 document.addEventListener("keydown",function(ev){
   if(!(ev.ctrlKey||ev.metaKey)||ev.altKey)return;
   var t=ev.target;
@@ -7592,6 +8058,7 @@ function build3DScene(){
   if(T3.edge){T3.scene.remove(T3.edge); T3.edge.geometry.dispose(); T3.edge=null}
   if(T3.human){T3.scene.remove(T3.human); disposeGroup3D(T3.human); T3.human=null}
   if(T3.measure){T3.scene.remove(T3.measure); disposeGroup3D(T3.measure); T3.measure=null}
+  if(T3.centreGuide){T3.scene.remove(T3.centreGuide); disposeGroup3D(T3.centreGuide); T3.centreGuide=null}
   var total=0; state.displays.forEach(function(d){total+=d._pm.order.length});
   T3.castShadows=total<=1200;
   T3.groups={}; T3.hitMeshes=[]; T3.pivotHit=[]; T3.pvTex=[];
@@ -7632,6 +8099,13 @@ function build3DScene(){
      Preferences measurement unit. Built last, after the displays,
      deck, modifiers and human are all in the scene. */
   if(state.show.measure){var msg3=buildMeasurements3D(); if(msg3){T3.scene.add(msg3); T3.measure=msg3}}
+  /* Centre line guide (View → Centre line): the amber dashed line
+     at X = 0 with its Centre label — the same centre line as the
+     2D guide and the Mirror window's diagram. Editor-only: never
+     built in client view, hidden by the render loop while Render
+     is open, and built here in the editor scene only, so it can
+     never reach a Capture, a client view or a model export. */
+  if(centreGuideOn&&!isClientViewRequest()){var cg3=buildCentreGuide3D(); if(cg3){T3.scene.add(cg3); T3.centreGuide=cg3}}
   updateSelBox3D();
   buildGizmo3D();
   buildSecRotGizmo();
@@ -9030,6 +9504,7 @@ function loop3D(){
   if(T3.suggestPreview)T3.suggestPreview.visible=!renderMode; /* the Suggest truss ghost is an editing-view preview — never in the Render view */
   if(T3.lightPreview)T3.lightPreview.visible=!renderMode; /* the Suggest lights ghost, same rule */
   if(T3.scaffoldPreview)T3.scaffoldPreview.visible=!renderMode; /* the Suggest scaffolding ghost, same rule */
+  if(T3.centreGuide)T3.centreGuide.visible=centreGuideOn&&!renderMode&&!isClientViewRequest(); /* the centre-line guide is an editor guide — never in Render or client view */
   if(renderMode){if(T3.selBox)T3.selBox.visible=false; if(T3.measure)T3.measure.visible=false; if(T3.gizmo)T3.gizmo.visible=false; (T3.nameTags||[]).forEach(function(s){s.visible=false})}
   /* The selected light's yellow selection box is an EDITOR aid:
      hidden in Render mode (and never built in client view), visible
@@ -9375,7 +9850,7 @@ function attach3DPointer(el){
               dragMode="tape3"; dragDisp=null;
               tapeDrag3={tape:tp3,end:thU.end,plane:plT,p0:{x:p0T.x,y:p0T.y,z:p0T.z},a0:{x:tp3.a.x,y:tp3.a.y,z:tp3.a.z},b0:{x:tp3.b.x,y:tp3.b.y,z:tp3.b.z},snapped:false,snapLabel:""};
               buildTapes3D(); syncTapePanel();
-              updateV3Readout(tp3.name+" — "+tapeDistText3(tp3)+". Drag to move "+(thU.end==="line"?"the whole tape":thU.end==="a"?"the first point":"the second point")+" — endpoints snap to object points.");
+              updateV3Readout(tp3.name+" — "+tapeDistText3(tp3)+". Drag to move "+(thU.end==="line"?"the whole tape":thU.end==="a"?"the first point":"the second point")+" — endpoints snap to the closest object point or edge.");
               return;
             }
           }
@@ -10110,10 +10585,12 @@ function attach3DPointer(el){
           var dlT3={x:ptT3.x-tapeDrag3.p0.x,y:ptT3.y-tapeDrag3.p0.y,z:ptT3.z-tapeDrag3.p0.z};
           tapeDrag3.tape.a={x:tapeDrag3.a0.x+dlT3.x,y:tapeDrag3.a0.y+dlT3.y,z:tapeDrag3.a0.z+dlT3.z};
           tapeDrag3.tape.b={x:tapeDrag3.b0.x+dlT3.x,y:tapeDrag3.b0.y+dlT3.y,z:tapeDrag3.b0.z+dlT3.z};
+          tapeDrag3.tape.aLab=""; tapeDrag3.tape.bLab=""; /* the whole tape moved freely — neither end is on a snap point / edge now */
           tapeDrag3.snapped=false;
         }else{
           var snT3=snapPoint3D({x:ptT3.x,y:ptT3.y,z:ptT3.z});
           tapeDrag3.tape[tapeDrag3.end]=snT3.p;
+          if(tapeDrag3.end==="a")tapeDrag3.tape.aLab=snT3.snapped?snT3.label:""; else if(tapeDrag3.end==="b")tapeDrag3.tape.bLab=snT3.snapped?snT3.label:"";
           tapeDrag3.snapped=snT3.snapped; tapeDrag3.snapLabel=snT3.label;
           tapeSnapMark3=snT3.snapped?snT3.p:null;
         }
@@ -11779,11 +12256,14 @@ function buildSecRotGizmo(){
    distance in the Preferences measurement unit (values stored in
    metres, converted at display like every other measurement — in
    2D the stored points are layout px and convert through the
-   selected display's cabinet scale). Endpoints snap to points on
-   every object — display corners / centres / cabinet grid points,
-   truss joints, light positions, prop and stage-piece points,
-   crowd-pack corners — with a snap highlight, and place freely
-   anywhere else. Both ends drag to re-measure, the tape body drags
+   selected display's cabinet scale). Endpoints snap to the
+   CLOSEST point or edge on every object — display corners /
+   edges / centres / cabinet grid points, truss joints and the
+   segments themselves, light positions, scaffolding corners,
+   prop and stage-piece points and edges, crowd-pack corners and
+   frame edges, speaker boxes — with a snap marker on the snapped
+   point and the endpoint sitting exactly on it, and place freely
+   anywhere else when no point or edge is near. Both ends drag to re-measure, the tape body drags
    to move the whole tape, tapes can be selected and deleted, and
    Clear all empties the current view. Tapes are measurement
    helpers ONLY: session-only state, never written into the layout,
@@ -11829,11 +12309,92 @@ function tapeSnapPoints2D(){
   });
   return pts;
 }
+/* ── 2D edges: every display's four outline edges. An endpoint
+   near an edge snaps to the CLOSEST POINT ON the edge (the
+   perpendicular projection, clamped to the segment), not just
+   to corners — so a tape can start or end anywhere along a
+   screen's side. ── */
+function tapeSnapEdges2D(){
+  var edges=[];
+  state.displays.forEach(function(d){
+    var cs=dispCorners(d);
+    for(var i=0;i<4;i++){
+      var a=cs[i], b=cs[(i+1)%4];
+      edges.push({ax:a.x,ay:a.y,bx:b.x,by:b.y,label:d.name+" edge"});
+    }
+  });
+  return edges;
+}
+function closestOnSeg2(px,py,e){
+  var abx=e.bx-e.ax, aby=e.by-e.ay, l2=abx*abx+aby*aby;
+  var t=l2>1e-9?clamp(((px-e.ax)*abx+(py-e.ay)*aby)/l2,0,1):0;
+  var qx=e.ax+abx*t, qy=e.ay+aby*t;
+  return {x:qx,y:qy,dist:Math.hypot(px-qx,py-qy)};
+}
+/* Snap to the closest object point OR edge, whichever is nearer
+   (a point wins a tie, so corners still read as corners); with
+   nothing near, the free clicked point is used as before. The
+   returned point IS the tape endpoint, so the live distance
+   reading measures from the snapped point. */
 function snapPoint2D(p){
   var pts=tapeSnapPoints2D(), th=14/Math.max(0.02,view.scale), best=null, bd=th;
   pts.forEach(function(q){var dd=Math.hypot(q.x-p.x,q.y-p.y); if(dd<bd){bd=dd; best=q}});
+  var eBest=null, eBd=th;
+  tapeSnapEdges2D().forEach(function(e){
+    var q=closestOnSeg2(p.x,p.y,e);
+    if(q.dist<eBd){eBd=q.dist; eBest={x:q.x,y:q.y,label:e.label}}
+  });
+  if(eBest&&(!best||eBd<bd-0.001))return {p:{x:Math.round(eBest.x*10)/10,y:Math.round(eBest.y*10)/10},snapped:true,label:eBest.label};
   if(best)return {p:{x:best.x,y:best.y},snapped:true,label:best.label};
   return {p:{x:Math.round(p.x),y:Math.round(p.y)},snapped:false,label:""};
+}
+/* Scaffolding snap boxes: every scaffolding layer's true
+   footprint box (its datasheet build L × W × H from scaffoldCalc,
+   at its place and yaw on the stage) as 8 corners — scaffolding
+   had no tape snap points before. Shared by the 3D snap points
+   and edges below. */
+function scaffoldSnapBoxes(){
+  var out=[];
+  state.modifiers.forEach(function(m){
+    if(m.type!=="scaffold"||!m.enabled)return;
+    scaffoldUnits(m).forEach(function(u,i){
+      var c=scaffoldCalc(scaffoldView(m,i));
+      if(c.empty||!(c.L>0)||!(c.W>0)||!(c.H>0))return;
+      var cx=+u.x||0, cz=+u.z||0, base=+u.y||0, ry=(+u.ry||0)*Math.PI/180, co=Math.cos(ry), si=Math.sin(ry);
+      var corners=[];
+      [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(function(s2){
+        var lx=s2[0]*c.L/2, lz=s2[1]*c.W/2;
+        var wx=cx+lx*co+lz*si, wz=cz-lx*si+lz*co;
+        corners.push({x:wx,y:base,z:wz});
+        corners.push({x:wx,y:base+c.H,z:wz});
+      });
+      out.push({corners:corners,label:"Scaffolding"});
+    });
+  });
+  return out;
+}
+/* The 12 edges of an 8-corner box: every pair of corners that
+   differs in exactly one coordinate. Works for any corner order. */
+function boxEdgesFrom8(corners,label){
+  var edges=[];
+  for(var i=0;i<corners.length;i++)for(var j=i+1;j<corners.length;j++){
+    var a=corners[i], b=corners[j], same=0;
+    if(Math.abs(a.x-b.x)<0.001)same++;
+    if(Math.abs(a.y-b.y)<0.001)same++;
+    if(Math.abs(a.z-b.z)<0.001)same++;
+    if(same===2)edges.push({a:{x:a.x,y:a.y,z:a.z},b:{x:b.x,y:b.y,z:b.z},label:label});
+  }
+  return edges;
+}
+function boxCorners3(box){
+  var mn=box.min, mx=box.max;
+  return [[mn.x,mn.y,mn.z],[mx.x,mn.y,mn.z],[mn.x,mx.y,mn.z],[mn.x,mn.y,mx.z],[mx.x,mx.y,mn.z],[mx.x,mn.y,mx.z],[mn.x,mx.y,mx.z],[mx.x,mx.y,mx.z]].map(function(c){return {x:c[0],y:c[1],z:c[2]}});
+}
+function closestOnSeg3(p,e){
+  var abx=e.b.x-e.a.x, aby=e.b.y-e.a.y, abz=e.b.z-e.a.z, l2=abx*abx+aby*aby+abz*abz;
+  var t=l2>1e-9?clamp(((p.x-e.a.x)*abx+(p.y-e.a.y)*aby+(p.z-e.a.z)*abz)/l2,0,1):0;
+  var qx=e.a.x+abx*t, qy=e.a.y+aby*t, qz=e.a.z+abz*t;
+  return {x:qx,y:qy,z:qz,dist:Math.hypot(p.x-qx,p.y-qy,p.z-qz)};
 }
 /* ── 3D snapping: points on every object in the scene, in metres. ── */
 function tapeSnapPoints3D(){
@@ -11907,6 +12468,12 @@ function tapeSnapPoints3D(){
       });
     }
   });
+  /* Scaffolding layers: footprint corners (base and top) + centre. */
+  scaffoldSnapBoxes().forEach(function(sb){
+    sb.corners.forEach(function(c){pts.push({x:c.x,y:c.y,z:c.z,label:sb.label+" corner"})});
+    var cc={x:0,y:0,z:0}; sb.corners.forEach(function(c){cc.x+=c.x/8; cc.y+=c.y/8; cc.z+=c.z/8});
+    pts.push({x:cc.x,y:cc.y,z:cc.z,label:sb.label+" centre"});
+  });
   /* Any other modifier hit-mesh (speaker arrays and the like)
      contributes its centre as a snap point too. */
   (T3.modHit||[]).forEach(function(mh){
@@ -11918,9 +12485,75 @@ function tapeSnapPoints3D(){
   });
   return pts;
 }
+/* ── 3D edges: the closest point on any object's edge — screen
+   and deck box edges, truss segments themselves, stage-piece
+   and scaffolding boxes, crowd-pack frames, prop boxes, and any
+   other modifier hit-mesh's box (speaker arrays). ── */
+function tapeSnapEdges3D(){
+  var edges=[];
+  if(!T3)return edges;
+  state.displays.forEach(function(d){
+    var g=T3.groups[d.id]; if(!g)return;
+    var body=g.getObjectByName("body"); if(!body)return;
+    var box=new THREE.Box3().setFromObject(body); if(box.isEmpty())return;
+    boxEdgesFrom8(boxCorners3(box),d.name+" edge").forEach(function(e){edges.push(e)});
+  });
+  if(T3.deck){var dbox=new THREE.Box3().setFromObject(T3.deck); if(!dbox.isEmpty())boxEdgesFrom8(boxCorners3(dbox),"Stage deck edge").forEach(function(e){edges.push(e)})}
+  state.modifiers.forEach(function(m){
+    if(!m.enabled)return;
+    if(m.type==="truss")(m.params.segs||[]).forEach(function(sg){
+      edges.push({a:{x:sg.ax,y:sg.ay,z:sg.az},b:{x:sg.bx,y:sg.by,z:sg.bz},label:"Truss edge"});
+    });
+    if(m.type==="stage")(m.params.els||[]).forEach(function(el){
+      var w=Math.max(0.05,+el.w||1), dd=Math.max(0.05,+el.d||1), hh=Math.max(0.02,+el.h||0.1), cx=+el.x||0, cy=+el.y||0, cz=+el.z||0;
+      var corners=[];
+      [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(s2){
+        corners.push({x:cx+s2[0]*w/2,y:cy,z:cz+s2[1]*dd/2});
+        corners.push({x:cx+s2[0]*w/2,y:cy+hh,z:cz+s2[1]*dd/2});
+      });
+      boxEdgesFrom8(corners,"Stage piece edge").forEach(function(e){edges.push(e)});
+    });
+    if(m.type==="crowd")crowdPacks(m).forEach(function(pk){
+      var fr=crowdPackFrame(pk,sceneBBox3D());
+      var c1={x:fr.cx-fr.W/2,y:0,z:fr.z0}, c2={x:fr.cx+fr.W/2,y:0,z:fr.z0}, c3={x:fr.cx+fr.W/2,y:0,z:fr.z0+fr.D}, c4={x:fr.cx-fr.W/2,y:0,z:fr.z0+fr.D};
+      [[c1,c2],[c2,c3],[c3,c4],[c4,c1]].forEach(function(pr){edges.push({a:pr[0],b:pr[1],label:"Crowd pack edge"})});
+    });
+    if(m.type==="props")(m.params.items||[]).forEach(function(it){
+      var sc=+it.s||1, hw=(+it.w||1)*sc/2, hd=(+it.d||1)*sc/2, hh=(+it.h||1)*sc, bx=+it.x||0, by=+it.y||0, bz=+it.z||0;
+      var corners=[];
+      [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(function(s2){
+        corners.push({x:bx+s2[0]*hw,y:by,z:bz+s2[1]*hd});
+        corners.push({x:bx+s2[0]*hw,y:by+hh,z:bz+s2[1]*hd});
+      });
+      boxEdgesFrom8(corners,"Prop edge").forEach(function(e){edges.push(e)});
+    });
+  });
+  scaffoldSnapBoxes().forEach(function(sb){
+    boxEdgesFrom8(sb.corners,sb.label+" edge").forEach(function(e){edges.push(e)});
+  });
+  (T3.modHit||[]).forEach(function(mh){
+    var u=mh.userData.modEdit;
+    if(!u||/gizmo/.test(u.kind||""))return;
+    var b=new THREE.Box3().setFromObject(mh); if(b.isEmpty())return;
+    boxEdgesFrom8(boxCorners3(b),"Object edge").forEach(function(e){edges.push(e)});
+  });
+  return edges;
+}
+/* Snap to the closest object point OR edge, whichever is nearer
+   (a point wins a tie, so corners / centres still read as
+   points); with nothing near, the free clicked point is used as
+   before. The returned point IS the tape endpoint, so the live
+   distance reading measures from the snapped point, and the
+   snap marker is drawn on it. */
 function snapPoint3D(p){
   var pts=tapeSnapPoints3D(), best=null, bd=0.45;
   pts.forEach(function(q){var dd=Math.hypot(q.x-p.x,q.y-p.y,q.z-p.z); if(dd<bd){bd=dd; best=q}});
+  var eBest=null, eBd=0.45;
+  tapeSnapEdges3D().forEach(function(e){
+    var q=closestOnSeg3(p,e);
+    if(q.dist<eBd){eBd=q.dist; eBest=q; eBest.label=e.label}
+  });
+  if(eBest&&(!best||eBd<bd-0.0001))return {p:{x:Math.round(eBest.x*100)/100,y:Math.round(eBest.y*100)/100,z:Math.round(eBest.z*100)/100},snapped:true,label:eBest.label};
   if(best)return {p:{x:best.x,y:best.y,z:best.z},snapped:true,label:best.label};
   return {p:{x:Math.round(p.x*100)/100,y:Math.round(p.y*100)/100,z:Math.round(p.z*100)/100},snapped:false,label:""};
 }
@@ -11969,8 +12602,9 @@ function renderTapes2D(ov){
     [["a",A],["b",B]].forEach(function(ep){
       if(t.placing&&ep[0]==="b"&&!tapeHover2)return;
       var hd=document.createElement("div");
-      hd.className="ov tape-pt"+(sel?" sel":"");
-      hd.title=t.name+" — drag this end to re-measure";
+      var endLab=t.placing?(ep[0]==="b"&&tapeHover2&&tapeHover2.snapped?tapeHover2.label:""):(ep[0]==="a"?(t.aLab||""):(t.bLab||""));
+      hd.className="ov tape-pt"+(sel?" sel":"")+(endLab?" snapped":"");
+      hd.title=t.name+" — drag this end to re-measure"+(endLab?" · snapped to "+endLab:"");
       hd.style.left=ep[1].x+"px"; hd.style.top=ep[1].y+"px";
       if(!t.placing){
         (function(end){
@@ -12008,11 +12642,15 @@ function buildTapes3D(){
     line.renderOrder=998; line.userData.ownGeo=true; line.userData.measureSkip=true;
     grp.add(line);
     var mid=va.clone().add(vb).multiplyScalar(0.5);
-    var lab=makeLabelSprite3D((t.placing?"":t.name+" · ")+tapeDistText3(t)+((t.placing&&tapeHover3&&tapeHover3.snapped)?" · snapped":""),0.34);
+    var lab=makeLabelSprite3D((t.placing?"":t.name+" · ")+tapeDistText3(t)+((t.placing&&tapeHover3&&tapeHover3.snapped)?" · snapped to "+tapeHover3.label:""),0.34);
     if(lab){lab.position.copy(mid); lab.position.y+=0.16; lab.userData.measureSkip=true; grp.add(lab)}
     [["a",va],["b",vb]].forEach(function(ep){
       if(t.placing&&ep[0]==="b"&&!tapeHover3)return;
-      var ball=new THREE.Mesh(new THREE.SphereGeometry(sel?0.068:0.052,16,12),new THREE.MeshBasicMaterial({color:AMB,depthTest:false}));
+      /* A snapped end reads white (the 2D dot's .snapped style):
+         the endpoint ball sits exactly on the snapped point /
+         edge, and the snap marker ring is drawn on it too. */
+      var endSnapped=t.placing?(ep[0]==="b"&&tapeHover3&&tapeHover3.snapped):(ep[0]==="a"?!!t.aLab:!!t.bLab);
+      var ball=new THREE.Mesh(new THREE.SphereGeometry(sel?0.068:0.052,16,12),new THREE.MeshBasicMaterial({color:endSnapped?0xffffff:AMB,depthTest:false}));
       ball.position.copy(ep[1]); ball.renderOrder=998; ball.userData.ownGeo=true; ball.userData.measureSkip=true;
       grp.add(ball);
       if(!t.placing){
@@ -12044,11 +12682,11 @@ function buildTapes3D(){
 }
 function placeTapePoint3D(sn){
   if(!tapePlacing||tapePlacing.view!=="3d"){
-    tapePlacing={view:"3d",a:sn.p}; tapeHover3=null;
+    tapePlacing={view:"3d",a:sn.p,aLab:sn.snapped?sn.label:""}; tapeHover3=null;
     toast("Tape measure — first point placed"+(sn.snapped?" (snapped to "+sn.label+")":"")+". Move and click the second point.");
   }else{
     tapeSeq++;
-    var t={id:tapeSeq,name:"Tape "+tapeSeq,a:tapePlacing.a,b:sn.p};
+    var t={id:tapeSeq,name:"Tape "+tapeSeq,a:tapePlacing.a,b:sn.p,aLab:tapePlacing.aLab||"",bLab:sn.snapped?sn.label:""};
     tapes3D.push(t); tapePlacing=null; tapeHover3=null; tapeSnapMark3=null; tapeSelId=t.id;
     toast(t.name+" — "+tapeDistText3(t)+(sn.snapped?" · second point snapped to "+sn.label:"")+". Drag either end to re-measure.");
   }
@@ -12092,12 +12730,12 @@ function syncTapePanel(){
   if(hint)hint.textContent=tapePlacing
     ? "First point placed — move and click the second point. Esc cancels."
     : tapeToolOn
-      ? "Click a first point, move, and click the second point. Ends snap to object points; drag an end — or the tape itself — to move it."
+      ? "Click a first point, move, and click the second point. Ends snap to the closest object point or edge; drag an end — or the tape itself — to move it."
       : "Press the Tape measure button in the Tools rail to place a tape. Tapes are session-only helpers — never saved or exported.";
 }
 $("btnTapeTool").addEventListener("click",function(){
   setTapeTool(!tapeToolOn);
-  if(tapeToolOn)toast("Tape measure — click a first point, then a second point, in "+(view3dOpen?"3D":"2D")+". Points snap to corners, centres and grid points on every object; drag the ends to re-measure.");
+  if(tapeToolOn)toast("Tape measure — click a first point, then a second point, in "+(view3dOpen?"3D":"2D")+". Endpoints snap to the closest point or edge on every object — corners, edges, centres and grid points; drag the ends to re-measure.");
 });
 $("tapeClearAll").addEventListener("click",function(){
   if(view3dOpen)tapes3D=[]; else tapes2D=[];
@@ -12117,11 +12755,11 @@ $("canvasArea").addEventListener("pointerdown",function(ev){
   var sn=snapPoint2D(screenToStage(ev.clientX,ev.clientY));
   tapeSnapMark2=sn.snapped?sn.p:null;
   if(!tapePlacing||tapePlacing.view!=="2d"){
-    tapePlacing={view:"2d",a:sn.p}; tapeHover2=null;
+    tapePlacing={view:"2d",a:sn.p,aLab:sn.snapped?sn.label:""}; tapeHover2=null;
     trEl().textContent="Tape measure — first point placed"+(sn.snapped?" · snapped to "+sn.label:"")+". Click the second point.";
   }else{
     tapeSeq++;
-    var t={id:tapeSeq,name:"Tape "+tapeSeq,a:tapePlacing.a,b:sn.p};
+    var t={id:tapeSeq,name:"Tape "+tapeSeq,a:tapePlacing.a,b:sn.p,aLab:tapePlacing.aLab||"",bLab:sn.snapped?sn.label:""};
     tapes2D.push(t); tapePlacing=null; tapeHover2=null; tapeSelId=t.id;
     trEl().textContent=t.name+" — "+tapeDistText2(t)+(sn.snapped?" · snapped to "+sn.label:"");
   }
@@ -12135,10 +12773,12 @@ window.addEventListener("pointermove",function(ev){
       var dx=st.x-tapeDrag2.start.x, dy=st.y-tapeDrag2.start.y;
       t.a={x:tapeDrag2.a0.x+dx,y:tapeDrag2.a0.y+dy};
       t.b={x:tapeDrag2.b0.x+dx,y:tapeDrag2.b0.y+dy};
+      t.aLab=""; t.bLab=""; /* the whole tape moved freely — neither end is on a snap point / edge now */
       tapeSnapMark2=null;
     }else{
       var sn=snapPoint2D(st);
       t[tapeDrag2.end]=sn.p;
+      if(tapeDrag2.end==="a")t.aLab=sn.snapped?sn.label:""; else t.bLab=sn.snapped?sn.label:"";
       tapeSnapMark2=sn.snapped?sn.p:null;
       trEl().textContent=t.name+" — "+tapeDistText2(t)+(sn.snapped?" · snapped to "+sn.label:"");
     }
