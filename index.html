@@ -1671,7 +1671,7 @@ html.admin-boot #adminPage{display:block}
         <button class="tool-btn" data-tool="inspect" title="Inspect — click a cabinet for its port, offset, position &amp; custom pixel size" aria-label="Inspect tool"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5"/></svg></span></button>
         <button class="tool-btn" id="btnSnapScreens" aria-pressed="false" title="Snap — 2D view only: when ON, a screen you drag snaps to EVERY other screen — its edges touch or line up flush with any wall's edges, or its centre lines up with any wall's centre — and also to the centre of the layout and to X 0 / Y 0 (the origin, 0,0), with no gap. When OFF, screens move freely. Separate from the magnet, which snaps to the grid" aria-label="Snap screens to every other screen, the layout centre and X 0 / Y 0 (2D view)"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><g transform="rotate(45 12 12)"><path d="M5 8v3a7 7 0 0 0 14 0V8h-4.5v3a2.5 2.5 0 0 1-5 0V8H5z"/><rect x="5" y="2.6" width="4.5" height="3.6" rx="0.9"/><rect x="14.5" y="2.6" width="4.5" height="3.6" rx="0.9"/></g></svg></span></button>
         <button class="tool-btn add" id="btnAddScreen" title="Add screen — new LED display (or use the ＋ buttons on any side of a display)" aria-label="Add screen"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span></button>
-        <button class="tool-btn" id="btnTapeTool" aria-pressed="false" title="Tape measure — click two points to measure the distance between them, in 2D and in 3D. Endpoints snap to the closest object point or edge — display corners, edges, centres and cabinet grid points, truss joints and segments, lights, scaffolding, crowd, props, stage pieces and speakers; drag the ends to re-measure. Tapes are helpers only — they never change the layout and are not saved" aria-label="Tape measure tool"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 3.5h5v5"/><path d="M20.5 3.5 14 10"/><circle cx="9.5" cy="14.5" r="6.8"/><circle cx="9.5" cy="14.5" r="2.3"/></svg></span></button>
+        <button class="tool-btn" id="btnTapeTool" aria-pressed="false" title="Tape measure — click two points to measure the distance between them, in 2D and in 3D. Every point snaps, the first one too — move over any object and the marker shows the point, vertex or edge the click will land on: display corners, edges, centres and cabinet grid points, truss joints and segments, lights, scaffolding, crowd, props, stage pieces and speakers; drag the ends to re-measure. Tapes are helpers only — they never change the layout and are not saved" aria-label="Tape measure tool"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 3.5h5v5"/><path d="M20.5 3.5 14 10"/><circle cx="9.5" cy="14.5" r="6.8"/><circle cx="9.5" cy="14.5" r="2.3"/></svg></span></button>
       </div>
     </section>
 
@@ -1707,7 +1707,7 @@ html.admin-boot #adminPage{display:block}
       <div id="tapePanel" hidden>
         <div class="tape-head"><b>Tape measure</b><button id="tapeClearAll" title="Remove every tape in this view">Clear all</button></div>
         <div id="tapeList"></div>
-        <p id="tapeHint">Click a first point, move, and click the second point. Ends snap to the closest object point or edge; drag an end — or the tape itself — to move it.</p>
+        <p id="tapeHint">Click a first point, move, and click the second point. Every point snaps — the first one too — to the closest object point, vertex or edge; drag an end — or the tape itself — to move it.</p>
       </div>
 
       <div id="view3d" class="vmode-view">
@@ -9829,10 +9829,12 @@ function attach3DPointer(el){
     /* Tape Measure (Tools rail, both views): tape endpoints and
        bodies are picked first — a grab drags that endpoint (or the
        whole tape from its body); a press anywhere else places the
-       next point of the tape being drawn, on a camera-facing plane
-       (through the stage centre for the first point, through the
-       first point for the second), with point snapping to every
-       object's points applied on top. Works in View and Edit mode
+       next point of the tape being drawn — raycast onto the real
+       surface under the cursor (camera-facing plane as fallback:
+       through the stage centre for the first point, through the
+       first point for the second), then snapped in screen pixels
+       to the closest object point, vertex or edge — the FIRST
+       point included. Works in View and Edit mode
        alike — measuring never edits. */
     if(tapeToolOn&&ev.button===0&&!ev.shiftKey){
       if(T3.tapeHit&&T3.tapeHit.length){
@@ -9860,8 +9862,18 @@ function attach3DPointer(el){
       var cdP2=new THREE.Vector3(); T3.camera.getWorldDirection(cdP2);
       var plP2=new THREE.Plane().setFromNormalAndCoplanarPoint(cdP2,new THREE.Vector3(anchT.x,anchT.y,anchT.z));
       var ptP2=rayOnPlane(ev,plP2);
-      if(ptP2){
-        placeTapePoint3D(snapPoint3D({x:ptP2.x,y:ptP2.y,z:ptP2.z}));
+      /* The raw point comes from the REAL surface under the
+         cursor when the ray hits one — the old plane-only point
+         left the FIRST point floating on a plane through the
+         stage centre, metres from the vertex under the cursor,
+         so its snap missed and the tape started at a random
+         place. Snapping then runs in screen pixels against the
+         cursor (snapPoint3DForPointer), for the first point
+         exactly as for the second. */
+      var surfT=(typeof tapeRaycastPoint3D==="function")?tapeRaycastPoint3D(ev):null;
+      var rawT=surfT||ptP2;
+      if(rawT){
+        placeTapePoint3D(snapPoint3DForPointer({x:rawT.x,y:rawT.y,z:rawT.z},ev));
         dragMode="tapeplace"; dragDisp=null;
         return;
       }
@@ -10588,7 +10600,7 @@ function attach3DPointer(el){
           tapeDrag3.tape.aLab=""; tapeDrag3.tape.bLab=""; /* the whole tape moved freely — neither end is on a snap point / edge now */
           tapeDrag3.snapped=false;
         }else{
-          var snT3=snapPoint3D({x:ptT3.x,y:ptT3.y,z:ptT3.z});
+          var snT3=snapPoint3DForPointer({x:ptT3.x,y:ptT3.y,z:ptT3.z},ev);
           tapeDrag3.tape[tapeDrag3.end]=snT3.p;
           if(tapeDrag3.end==="a")tapeDrag3.tape.aLab=snT3.snapped?snT3.label:""; else if(tapeDrag3.end==="b")tapeDrag3.tape.bLab=snT3.snapped?snT3.label:"";
           tapeDrag3.snapped=snT3.snapped; tapeDrag3.snapLabel=snT3.label;
@@ -12263,7 +12275,15 @@ function buildSecRotGizmo(){
    prop and stage-piece points and edges, crowd-pack corners and
    frame edges, speaker boxes — with a snap marker on the snapped
    point and the endpoint sitting exactly on it, and place freely
-   anywhere else when no point or edge is near. Both ends drag to re-measure, the tape body drags
+   anywhere else when no point or edge is near. The FIRST point
+   snaps exactly like every later point: in 3D the click is
+   raycast onto the real surface under the cursor and candidates
+   are compared in screen pixels (snapPoint3DForPointer), so a
+   vertex grabs the tape whenever the cursor is visually on it —
+   at any zoom, at any depth — and a hover marker previews that
+   start snap before the click, in 2D and in 3D; display vertices
+   are the wall's true oriented corners, not its axis-aligned
+   bounding box. Both ends drag to re-measure, the tape body drags
    to move the whole tape, tapes can be selected and deleted, and
    Clear all empties the current view. Tapes are measurement
    helpers ONLY: session-only state, never written into the layout,
@@ -12337,7 +12357,7 @@ function closestOnSeg2(px,py,e){
    returned point IS the tape endpoint, so the live distance
    reading measures from the snapped point. */
 function snapPoint2D(p){
-  var pts=tapeSnapPoints2D(), th=14/Math.max(0.02,view.scale), best=null, bd=th;
+  var pts=tapeSnapPoints2D(), th=20/Math.max(0.02,view.scale), best=null, bd=th;
   pts.forEach(function(q){var dd=Math.hypot(q.x-p.x,q.y-p.y); if(dd<bd){bd=dd; best=q}});
   var eBest=null, eBd=th;
   tapeSnapEdges2D().forEach(function(e){
@@ -12361,12 +12381,17 @@ function scaffoldSnapBoxes(){
       var c=scaffoldCalc(scaffoldView(m,i));
       if(c.empty||!(c.L>0)||!(c.W>0)||!(c.H>0))return;
       var cx=+u.x||0, cz=+u.z||0, base=+u.y||0, ry=(+u.ry||0)*Math.PI/180, co=Math.cos(ry), si=Math.sin(ry);
-      var corners=[];
-      [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(function(s2){
+      /* Corners in binary order (x bit, then y bit, then z bit) —
+         the order boxEdgesOrdered pairs into the 12 true edges,
+         which world-coordinate matching cannot do once the unit
+         is yawed. */
+      var corners=new Array(8);
+      [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(s2){
         var lx=s2[0]*c.L/2, lz=s2[1]*c.W/2;
         var wx=cx+lx*co+lz*si, wz=cz-lx*si+lz*co;
-        corners.push({x:wx,y:base,z:wz});
-        corners.push({x:wx,y:base+c.H,z:wz});
+        var xb=s2[0]>0?1:0, zb=s2[1]>0?1:0;
+        corners[xb+zb*4]={x:wx,y:base,z:wz};
+        corners[xb+2+zb*4]={x:wx,y:base+c.H,z:wz};
       });
       out.push({corners:corners,label:"Scaffolding"});
     });
@@ -12385,6 +12410,50 @@ function boxEdgesFrom8(corners,label){
     if(same===2)edges.push({a:{x:a.x,y:a.y,z:a.z},b:{x:b.x,y:b.y,z:b.z},label:label});
   }
   return edges;
+}
+/* The 12 edges of a box whose 8 corners are in binary order
+   (x bit, then y bit, then z bit): the pairs that differ in
+   exactly one bit. Unlike boxEdgesFrom8 (world-coordinate
+   matching, axis-aligned boxes only) this recognises the edges
+   of a ROTATED box too — a yawed scaffold or a tilted wall
+   still contributes its real edges to tape snapping. */
+var BOX_EDGE_IDX=[[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];
+function boxEdgesOrdered(corners,label){
+  var edges=[];
+  if(!corners||corners.length!==8)return edges;
+  for(var i=0;i<8;i++)if(!corners[i])return edges;
+  BOX_EDGE_IDX.forEach(function(pr){
+    var a=corners[pr[0]], b=corners[pr[1]];
+    edges.push({a:{x:a.x,y:a.y,z:a.z},b:{x:b.x,y:b.y,z:b.z},label:label});
+  });
+  return edges;
+}
+/* An object's TRUE oriented corners: its bounding box in its
+   own local frame, carried back to world by its own matrix — so
+   a rotated or tilted display contributes its real vertices.
+   (Box3.setFromObject gives the axis-aligned box AROUND the
+   object, whose corners float off a rotated wall in mid-air;
+   those were the "vertices" the tape used to snap to.) */
+function orientedCorners3(obj){
+  if(!obj||typeof THREE==="undefined")return null;
+  obj.updateWorldMatrix(true,true);
+  var inv=new THREE.Matrix4().copy(obj.matrixWorld).invert();
+  var lb=new THREE.Box3(), tmp=new THREE.Box3(), m=new THREE.Matrix4(), found=false;
+  obj.traverse(function(o){
+    if(!o.isMesh||!o.geometry||o.userData.measureSkip)return;
+    if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();
+    if(!o.geometry.boundingBox)return;
+    m.multiplyMatrices(inv,o.matrixWorld);
+    tmp.copy(o.geometry.boundingBox).applyMatrix4(m);
+    if(found)lb.union(tmp); else {lb.copy(tmp); found=true}
+  });
+  if(!found||lb.isEmpty())return null;
+  var mn=lb.min, mx=lb.max, out=[];
+  [[mn.x,mn.y,mn.z],[mx.x,mn.y,mn.z],[mn.x,mx.y,mn.z],[mx.x,mx.y,mn.z],[mn.x,mn.y,mx.z],[mx.x,mn.y,mx.z],[mn.x,mx.y,mx.z],[mx.x,mx.y,mx.z]].forEach(function(c){
+    var v=obj.localToWorld(new THREE.Vector3(c[0],c[1],c[2]));
+    out.push({x:v.x,y:v.y,z:v.z});
+  });
+  return out;
 }
 function boxCorners3(box){
   var mn=box.min, mx=box.max;
@@ -12409,7 +12478,17 @@ function tapeSnapPoints3D(){
   state.displays.forEach(function(d){
     var g=T3.groups[d.id]; if(!g)return;
     var body=g.getObjectByName("body"); if(!body)return;
-    boxPts(new THREE.Box3().setFromObject(body),d.name);
+    /* The wall's TRUE vertices (its oriented corners) + centre —
+       falling back to the axis-aligned box only if the oriented
+       box cannot be built. */
+    var ocD=orientedCorners3(body);
+    if(ocD){
+      ocD.forEach(function(c){pts.push({x:c.x,y:c.y,z:c.z,label:d.name+" corner"})});
+      var ccD={x:0,y:0,z:0}; ocD.forEach(function(c){ccD.x+=c.x/8; ccD.y+=c.y/8; ccD.z+=c.z/8});
+      pts.push({x:ccD.x,y:ccD.y,z:ccD.z,label:d.name+" centre"});
+    }else{
+      boxPts(new THREE.Box3().setFromObject(body),d.name);
+    }
     /* cabinet grid points: the chain's column joints, top and base */
     var baseY=baseYOf(d), H0=effHm3(d), gw=d.cabW/1000;
     secRotChainOf(d,effCols3(d)).secs.forEach(function(s){
@@ -12495,6 +12574,10 @@ function tapeSnapEdges3D(){
   state.displays.forEach(function(d){
     var g=T3.groups[d.id]; if(!g)return;
     var body=g.getObjectByName("body"); if(!body)return;
+    /* The wall's real outline edges from its oriented corners;
+       the axis-aligned box's edges are the fallback only. */
+    var ocE=orientedCorners3(body);
+    if(ocE){boxEdgesOrdered(ocE,d.name+" edge").forEach(function(e){edges.push(e)}); return}
     var box=new THREE.Box3().setFromObject(body); if(box.isEmpty())return;
     boxEdgesFrom8(boxCorners3(box),d.name+" edge").forEach(function(e){edges.push(e)});
   });
@@ -12529,7 +12612,10 @@ function tapeSnapEdges3D(){
     });
   });
   scaffoldSnapBoxes().forEach(function(sb){
-    boxEdgesFrom8(sb.corners,sb.label+" edge").forEach(function(e){edges.push(e)});
+    /* Ordered (binary) corners, so a yawed unit's edges are
+       recognised too — boxEdgesFrom8 could only see the
+       verticals of a rotated scaffold. */
+    boxEdgesOrdered(sb.corners,sb.label+" edge").forEach(function(e){edges.push(e)});
   });
   (T3.modHit||[]).forEach(function(mh){
     var u=mh.userData.modEdit;
@@ -12556,6 +12642,70 @@ function snapPoint3D(p){
   if(eBest&&(!best||eBd<bd-0.0001))return {p:{x:Math.round(eBest.x*100)/100,y:Math.round(eBest.y*100)/100,z:Math.round(eBest.z*100)/100},snapped:true,label:eBest.label};
   if(best)return {p:{x:best.x,y:best.y,z:best.z},snapped:true,label:best.label};
   return {p:{x:Math.round(p.x*100)/100,y:Math.round(p.y*100)/100,z:Math.round(p.z*100)/100},snapped:false,label:""};
+}
+/* ── Pointer-true snapping (the START-point fix) ─────────────────
+   snapPoint3D alone measures candidates in WORLD metres around
+   a point on an arbitrary camera-facing plane — for the FIRST
+   point that plane runs through the stage centre, so a vertex
+   the cursor is exactly over can sit metres from the plane
+   point and the 0.45 m radius misses it: the tape started at a
+   random free place. The two helpers below fix the start (and
+   every later point) the way CAD tools do it:
+   1. tapeRaycastPoint3D — the click / hover ray is intersected
+      with the REAL surfaces under the cursor (display hit
+      planes, the deck, every modifier hit mesh), so the raw
+      point lies ON the object being measured, not on a plane
+      floating in front of / behind it.
+   2. snapPoint3DForPointer — candidates are compared in SCREEN
+      pixels against the cursor, so a point or edge grabs the
+      tape whenever the cursor is visually on it, at any zoom
+      and any depth; the world-radius snap stays as a fallback. */
+function tapeProjectPx3(p,rect){
+  var v=new THREE.Vector3(p.x,p.y,p.z).project(T3.camera);
+  if(v.z>1||v.z<-1)return null;
+  return {x:(v.x*0.5+0.5)*rect.width,y:(-v.y*0.5+0.5)*rect.height};
+}
+function snapPoint3DForPointer(rawP,ev){
+  if(!T3||!T3.renderer||!T3.camera||!ev||typeof ev.clientX!=="number")return snapPoint3D(rawP);
+  var rect=T3.renderer.domElement.getBoundingClientRect();
+  if(!rect.width||!rect.height)return snapPoint3D(rawP);
+  var px=ev.clientX-rect.left, py=ev.clientY-rect.top, TH=26;
+  var best=null, bd=TH;
+  tapeSnapPoints3D().forEach(function(q){
+    var s=tapeProjectPx3(q,rect); if(!s)return;
+    var dd=Math.hypot(s.x-px,s.y-py);
+    if(dd<bd){bd=dd; best={p:{x:q.x,y:q.y,z:q.z},label:q.label}}
+  });
+  var eBest=null, eBd=TH;
+  tapeSnapEdges3D().forEach(function(e){
+    var q=closestOnSeg3(rawP,e);
+    var s=tapeProjectPx3(q,rect); if(!s)return;
+    var dd=Math.hypot(s.x-px,s.y-py);
+    if(dd<eBd){eBd=dd; eBest={p:{x:q.x,y:q.y,z:q.z},label:e.label}}
+  });
+  if(eBest&&(!best||eBd<bd-0.5))return {p:{x:Math.round(eBest.p.x*100)/100,y:Math.round(eBest.p.y*100)/100,z:Math.round(eBest.p.z*100)/100},snapped:true,label:eBest.label};
+  if(best)return {p:best.p,snapped:true,label:best.label};
+  return snapPoint3D(rawP);
+}
+function tapeRaycastPoint3D(ev){
+  if(!T3||!T3.renderer||!T3.scene||!T3.camera||!ev)return null;
+  var rect=T3.renderer.domElement.getBoundingClientRect();
+  if(!rect.width||!rect.height)return null;
+  var v=new THREE.Vector2(((ev.clientX-rect.left)/rect.width)*2-1,-((ev.clientY-rect.top)/rect.height)*2+1);
+  var rc=new THREE.Raycaster(); rc.setFromCamera(v,T3.camera);
+  var targets=[];
+  (T3.hitMeshes||[]).forEach(function(t){targets.push(t)});
+  if(T3.deck)targets.push(T3.deck);
+  (T3.modHit||[]).forEach(function(t){
+    var u=t.userData&&t.userData.modEdit;
+    if(u&&/gizmo/.test(u.kind||""))return; /* gizmo arrows are handles, not surfaces to measure */
+    targets.push(t);
+  });
+  if(!targets.length)return null;
+  var hits=rc.intersectObjects(targets,false);
+  if(!hits.length)return null;
+  var p=hits[0].point;
+  return {x:p.x,y:p.y,z:p.z};
 }
 /* ── 2D drawing: lines, handles and labels in the overlay, drawn
    from renderOverlay so pan / zoom keep them glued to the layout. ── */
@@ -12730,12 +12880,12 @@ function syncTapePanel(){
   if(hint)hint.textContent=tapePlacing
     ? "First point placed — move and click the second point. Esc cancels."
     : tapeToolOn
-      ? "Click a first point, move, and click the second point. Ends snap to the closest object point or edge; drag an end — or the tape itself — to move it."
+      ? "Click a first point, move, and click the second point. Every point snaps — the first one too — to the closest object point, vertex or edge: the marker shows where the click will land; drag an end — or the tape itself — to move it."
       : "Press the Tape measure button in the Tools rail to place a tape. Tapes are session-only helpers — never saved or exported.";
 }
 $("btnTapeTool").addEventListener("click",function(){
   setTapeTool(!tapeToolOn);
-  if(tapeToolOn)toast("Tape measure — click a first point, then a second point, in "+(view3dOpen?"3D":"2D")+". Endpoints snap to the closest point or edge on every object — corners, edges, centres and grid points; drag the ends to re-measure.");
+  if(tapeToolOn)toast("Tape measure — click a first point, then a second point, in "+(view3dOpen?"3D":"2D")+". Every point snaps, the first one too — the marker sits on the closest point, vertex or edge under the cursor before you click; drag the ends to re-measure.");
 });
 $("tapeClearAll").addEventListener("click",function(){
   if(view3dOpen)tapes3D=[]; else tapes2D=[];
@@ -12750,7 +12900,16 @@ $("tapePanel").addEventListener("pointerdown",function(ev){ev.stopPropagation()}
    never on overlay handles or panels. */
 $("canvasArea").addEventListener("pointerdown",function(ev){
   if(!tapeToolOn||view3dOpen||ev.button!==0)return;
-  if(ev.target.closest&&ev.target.closest(".ov,.canvas-chip,.canvas-foot,#tapePanel"))return;
+  /* While the tape tool is ON it owns the click — including a
+     click exactly on a vertex where the selected screen's
+     resize / rotate handle sits (those handles are .ov elements
+     ON the corners): the old blanket .ov exclusion swallowed
+     precisely the vertex clicks the tape exists for, so the
+     tape could not be started on a corner. Only the tape's own
+     endpoint dots (.tape-pt, which drag the ends) and the
+     canvas chips / panels stay excluded; stopPropagation below
+     keeps the handles from also firing. */
+  if(ev.target.closest&&ev.target.closest(".tape-pt,.canvas-chip,.canvas-foot,#tapePanel"))return;
   ev.stopPropagation(); ev.preventDefault();
   var sn=snapPoint2D(screenToStage(ev.clientX,ev.clientY));
   tapeSnapMark2=sn.snapped?sn.p:null;
@@ -12785,31 +12944,65 @@ window.addEventListener("pointermove",function(ev){
     renderOverlay();
     return;
   }
-  if(tapeToolOn&&!view3dOpen&&tapePlacing&&tapePlacing.view==="2d"){
-    tapeHover2=snapPoint2D(screenToStage(ev.clientX,ev.clientY));
-    tapeSnapMark2=tapeHover2.snapped?tapeHover2.p:null;
-    renderOverlay();
+  if(tapeToolOn&&!view3dOpen&&!tapeDrag2){
+    /* Hover snap preview — BEFORE the first point as well as
+       while placing, so the start point's snap marker is visible
+       on the vertex / edge before the click lands it. */
+    if(ev.target&&ev.target.closest&&!ev.target.closest("#canvasArea")){
+      if(!(tapePlacing&&tapePlacing.view==="2d")&&tapeSnapMark2){tapeSnapMark2=null; renderOverlay()}
+      return;
+    }
+    var hv2=snapPoint2D(screenToStage(ev.clientX,ev.clientY));
+    var mk2=hv2.snapped?hv2.p:null;
+    if(tapePlacing&&tapePlacing.view==="2d"){
+      tapeHover2=hv2; tapeSnapMark2=mk2; renderOverlay();
+    }else{
+      var ch2=(!!mk2)!==(!!tapeSnapMark2)||(mk2&&tapeSnapMark2&&(mk2.x!==tapeSnapMark2.x||mk2.y!==tapeSnapMark2.y));
+      if(ch2){tapeSnapMark2=mk2; renderOverlay()}
+    }
   }
 });
 window.addEventListener("pointerup",function(){
   if(tapeDrag2){tapeDrag2=null; tapeSnapMark2=null; renderOverlay(); syncTapePanel()}
 });
-/* 3D hover preview while placing (own raycast — the 3D canvas's
-   move handler only tracks pressed pointers). */
+/* 3D hover preview (own raycast — the 3D canvas's move handler
+   only tracks pressed pointers). Runs BEFORE the first point
+   too: the snap marker sits on the vertex / edge the first click
+   will land on, so the start of the tape is visibly snapped
+   before it is placed — not only the second point. */
 document.addEventListener("pointermove",function(ev){
   if(!tapeToolOn||!view3dOpen||!T3||!T3.renderer||ev.buttons)return;
-  if(!tapePlacing||tapePlacing.view!=="3d"||tapeDrag3)return;
+  if(tapeDrag3)return;
   var r=T3.renderer.domElement.getBoundingClientRect();
-  if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)return;
-  var v=new THREE.Vector2(((ev.clientX-r.left)/r.width)*2-1,-((ev.clientY-r.top)/r.height)*2+1);
-  var rc=new THREE.Raycaster(); rc.setFromCamera(v,T3.camera);
-  var cd=new THREE.Vector3(); T3.camera.getWorldDirection(cd);
-  var pl=new THREE.Plane().setFromNormalAndCoplanarPoint(cd,new THREE.Vector3(tapePlacing.a.x,tapePlacing.a.y,tapePlacing.a.z));
-  var pt=new THREE.Vector3();
-  if(rc.ray.intersectPlane(pl,pt)){
-    tapeHover3=snapPoint3D({x:pt.x,y:pt.y,z:pt.z});
-    tapeSnapMark3=tapeHover3.snapped?tapeHover3.p:null;
-    buildTapes3D();
+  if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom){
+    if(!tapePlacing&&tapeSnapMark3){tapeSnapMark3=null; buildTapes3D()}
+    return;
+  }
+  var surfH=tapeRaycastPoint3D(ev);
+  if(tapePlacing&&tapePlacing.view==="3d"){
+    var rawH=surfH;
+    if(!rawH){
+      var v=new THREE.Vector2(((ev.clientX-r.left)/r.width)*2-1,-((ev.clientY-r.top)/r.height)*2+1);
+      var rc=new THREE.Raycaster(); rc.setFromCamera(v,T3.camera);
+      var cd=new THREE.Vector3(); T3.camera.getWorldDirection(cd);
+      var pl=new THREE.Plane().setFromNormalAndCoplanarPoint(cd,new THREE.Vector3(tapePlacing.a.x,tapePlacing.a.y,tapePlacing.a.z));
+      var pt=new THREE.Vector3();
+      if(rc.ray.intersectPlane(pl,pt))rawH={x:pt.x,y:pt.y,z:pt.z};
+    }
+    if(rawH){
+      tapeHover3=snapPoint3DForPointer(rawH,ev);
+      tapeSnapMark3=tapeHover3.snapped?tapeHover3.p:null;
+      buildTapes3D();
+    }
+    return;
+  }
+  if(!tapePlacing){
+    /* Start-point preview: marker on the snapped start point,
+       cleared when the cursor leaves every object / snap. */
+    var mkH=null;
+    if(surfH){var snH=snapPoint3DForPointer(surfH,ev); if(snH.snapped)mkH=snH.p}
+    var chH=(!!mkH)!==(!!tapeSnapMark3)||(mkH&&tapeSnapMark3&&(Math.abs(mkH.x-tapeSnapMark3.x)>0.001||Math.abs(mkH.y-tapeSnapMark3.y)>0.001||Math.abs(mkH.z-tapeSnapMark3.z)>0.001));
+    if(chH){tapeSnapMark3=mkH; buildTapes3D()}
   }
 });
 document.addEventListener("keydown",function(ev){
@@ -14556,6 +14749,379 @@ function briefScreenMapCanvas(){
   briefDimV(x, ox+bb.minX*s-128, oy+bb.minY*s, oy+(bb.minY+bb.h)*s, "Tallest wall top · "+fmtMeasure(ext.maxTop), FS);
   return cv;
 }
+/* ══════════ TRUSS CONCEPT — full stage design concept drawing ═════
+   One isometric concept page in the reference style, generated from
+   WHATEVER custom stage is in the current layout — never a fixed
+   picture: the enclosure outline, floor, stage pieces / deck, LED
+   screens, every enabled truss system (grid bars, towers, base
+   plates, circular rings), speaker arrays, and props — with draping,
+   aerial hoop and silk outlines drawn only for props whose name in
+   the layout says they are draping / a hoop / silks. Dimensions and
+   leader labels come from the layout's own numbers in the
+   Preferences unit; a hall height is never invented (the layout
+   stores no venue height), so the enclosure is the DESIGN's own
+   bounding box, labelled indicative. All canvas text goes through
+   the same collision guard as the truss drawings: a label takes the
+   first free slot, so no text ever draws over another text. */
+function briefConceptData(){
+  computeAll();
+  var D={segs:[],rings:[],towers:[],bases:[],flown:[],props:[],drapes:[],hoops:[],silks:[],speakers:[],
+    minX:1e18,maxX:-1e18,minZ:1e18,maxZ:-1e18,maxTop:0,gridTop:0};
+  function eat(x0,x1,z0,z1,top){if(x0<D.minX)D.minX=x0; if(x1>D.maxX)D.maxX=x1; if(z0<D.minZ)D.minZ=z0; if(z1>D.maxZ)D.maxZ=z1; if(top>D.maxTop)D.maxTop=top}
+  var ext=briefExtents();
+  if(state.displays.length)eat(ext.minX,ext.maxX,ext.minZ,ext.maxZ,ext.maxTop);
+  briefStagePieces().forEach(function(el){
+    var th=(+el.ry||0)*Math.PI/180, co=Math.cos(th), si=Math.sin(th), hw=(+el.w||0)/2, hd=(+el.d||0)/2;
+    [[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]].forEach(function(c){eat(el.x+c[0]*co-c[1]*si,el.x+c[0]*co-c[1]*si,el.z+c[0]*si+c[1]*co,el.z+c[0]*si+c[1]*co,(+el.y||0)+(+el.h||0))});
+  });
+  state.modifiers.forEach(function(m){
+    if(m.type!=="truss"||!m.enabled)return;
+    var p=m.params;
+    briefTrussSegs(m).forEach(function(sg){
+      if(p.custom&&!trussSegVisible(m,sg))return;
+      D.segs.push({m:m,sg:sg});
+      if(sg.ring){
+        var r=segRadius(sg), cxr=(sg.ax+sg.bx)/2, czr=(sg.az+sg.bz)/2;
+        D.rings.push(sg); eat(cxr-r,cxr+r,czr-r,czr+r,Math.max(sg.ay,sg.by));
+        if(Math.max(sg.ay,sg.by)>D.gridTop)D.gridTop=Math.max(sg.ay,sg.by);
+      }else{
+        eat(Math.min(sg.ax,sg.bx),Math.max(sg.ax,sg.bx),Math.min(sg.az,sg.bz),Math.max(sg.az,sg.bz),Math.max(sg.ay,sg.by));
+        if(Math.max(sg.ay,sg.by)>D.gridTop)D.gridTop=Math.max(sg.ay,sg.by);
+        var dx=sg.bx-sg.ax, dy=sg.by-sg.ay, dz=sg.bz-sg.az, len=Math.hypot(dx,dy,dz);
+        if(len>0.8&&Math.hypot(dx,dz)<0.35*len){
+          var low=(sg.ay<=sg.by)?{x:sg.ax,y:sg.ay,z:sg.az}:{x:sg.bx,y:sg.by,z:sg.bz};
+          var high=(sg.ay<=sg.by)?{x:sg.bx,y:sg.by,z:sg.bz}:{x:sg.ax,y:sg.ay,z:sg.az};
+          D.towers.push({low:low,high:high});
+          if(!D.bases.some(function(b){return Math.hypot(b.x-low.x,b.z-low.z)<0.35}))D.bases.push(low);
+        }
+      }
+    });
+    if(!p.custom&&p.method==="flown")D.flown.push(m);
+  });
+  state.modifiers.forEach(function(m){
+    if(m.type!=="speakers"||!m.enabled)return;
+    var bb=sceneBBox3D(), cx=(bb.minX+bb.maxX)/2, bw=bb.maxX-bb.minX, p=m.params;
+    [-1,1].forEach(function(sign){
+      var gx=cx+sign*(bw/2+(+p.gap||0.8)+0.5), gz=bb.maxZ-0.3, hang=+p.height||6, n=clamp(Math.round(+p.cabs||6),1,14);
+      var topY=hang+0.12, botY=hang-0.17-(n-1)*0.355-0.17;
+      D.speakers.push({x:gx,z:gz,top:topY,bottom:botY,rigTop:hang+1.46});
+      eat(gx-0.5,gx+0.5,gz-0.31,gz+0.31,hang+1.46);
+    });
+  });
+  state.modifiers.forEach(function(m){
+    if(m.type!=="props"||!m.enabled)return;
+    (m.params.items||[]).forEach(function(it){
+      if(it.on===false)return;
+      var sc=clamp(+it.s||1,0.02,50), rec={it:it,x:+it.x||0,y:+it.y||0,z:+it.z||0,w:(+it.w||1)*sc,h:(+it.h||1)*sc,d:(+it.d||1)*sc,ry:(+it.ry||0)*Math.PI/180};
+      D.props.push(rec);
+      eat(rec.x-rec.w/2,rec.x+rec.w/2,rec.z-rec.d/2,rec.z+rec.d/2,rec.y+rec.h);
+      var nm=String(it.name||"").toLowerCase();
+      if(/drape|curtain|swag/.test(nm))D.drapes.push(rec);
+      else if(/lyra|hoop|aerial ring/.test(nm))D.hoops.push(rec);
+      else if(/silk|tissu|aerial fabric/.test(nm))D.silks.push(rec);
+    });
+  });
+  if(D.minX>D.maxX){D.minX=-3;D.maxX=3;D.minZ=-2;D.maxZ=2;D.maxTop=2.5}
+  if(D.maxTop<0.5)D.maxTop=0.5;
+  return D;
+}
+function briefConceptCanvas(){
+  var D=briefConceptData();
+  briefConceptCanvas._d=D;
+  var W=2480,H=1560;
+  var cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  var x=cv.getContext("2d");
+  x.fillStyle="#0c1016"; x.fillRect(0,0,W,H);
+  var c30=Math.cos(Math.PI/6), s30=Math.sin(Math.PI/6);
+  /* Fit the design's enclosure box (plus a 4% pad) into the middle
+     of the page; the margins carry dimensions and leader labels. */
+  var padX=(D.maxX-D.minX)*0.04+0.3, padZ=(D.maxZ-D.minZ)*0.04+0.3;
+  var bx0=D.minX-padX, bx1=D.maxX+padX, bz0=D.minZ-padZ, bz1=D.maxZ+padZ, bTop=D.maxTop*1.02+0.15;
+  var corners=[[bx0,0,bz0],[bx1,0,bz0],[bx1,0,bz1],[bx0,0,bz1],[bx0,bTop,bz0],[bx1,bTop,bz0],[bx1,bTop,bz1],[bx0,bTop,bz1]];
+  var mnx=1e18,mxx=-1e18,mny=1e18,mxy=-1e18;
+  corners.forEach(function(p){var qx=(p[0]-p[2])*c30, qy=(p[0]+p[2])*s30-p[1]; if(qx<mnx)mnx=qx; if(qx>mxx)mxx=qx; if(qy<mny)mny=qy; if(qy>mxy)mxy=qy});
+  var s=Math.min((W-620)/Math.max(0.1,mxx-mnx),(H-560)/Math.max(0.1,mxy-mny));
+  var ox=310+((W-620)-(mxx-mnx)*s)/2, oy=250+((H-560)-(mxy-mny)*s)/2;
+  function P(wx,wy,wz){return {x:ox+((wx-wz)*c30-mnx)*s, y:oy+((wx+wz)*s30-wy-mny)*s}}
+  /* ── text collision guard (same rule as the truss drawings) ── */
+  var placed=[];
+  function labBox(cx,cy,w,h){return {x0:cx-w/2,y0:cy-h/2,x1:cx+w/2,y1:cy+h/2}}
+  function labFree(b){for(var li=0;li<placed.length;li++){var q=placed[li]; if(b.x0<q.x1+8&&b.x1>q.x0-8&&b.y0<q.y1+8&&b.y1>q.y0-8)return false} return true}
+  x.fillStyle="#93a2b5"; x.font="700 24px 'IBM Plex Mono', monospace"; x.textAlign="left"; x.textBaseline="top";
+  var capT="ISOMETRIC CONCEPT — DRAWN FROM THIS LAYOUT · NOT TO SCALE";
+  x.fillText(capT,48,34);
+  placed.push(labBox(48+x.measureText(capT).width/2,46,x.measureText(capT).width+16,30));
+  function line(a,b,col,lw,dash){x.strokeStyle=col; x.lineWidth=lw; x.setLineDash(dash||[]); x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); x.stroke(); x.setLineDash([])}
+  function poly(pts,col,lw,fill){x.beginPath(); x.moveTo(pts[0].x,pts[0].y); for(var i=1;i<pts.length;i++)x.lineTo(pts[i].x,pts[i].y); x.closePath(); if(fill){x.fillStyle=fill; x.fill()} if(col){x.strokeStyle=col; x.lineWidth=lw||2; x.stroke()}}
+  /* ── venue / design enclosure — dashed indicative box ── */
+  var EC=corners.map(function(p){return P(p[0],p[1],p[2])});
+  var EE=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  EE.forEach(function(e){line(EC[e[0]],EC[e[1]],"#54657c",1.8,[12,10])});
+  /* ── stage floor ── */
+  poly([P(bx0,0,bz0),P(bx1,0,bz0),P(bx1,0,bz1),P(bx0,0,bz1)],"#3d4c61",2,"#0e141d");
+  /* ── stage pieces / deck — flat slabs ── */
+  briefStagePieces().forEach(function(el){
+    var th=(+el.ry||0)*Math.PI/180, co=Math.cos(th), si=Math.sin(th), hw=(+el.w||0)/2, hd=(+el.d||0)/2, yb=+el.y||0, yt=yb+(+el.h||0);
+    function CC(lx,lz,yy){return P(el.x+lx*co-lz*si,yy,el.z+lx*si+lz*co)}
+    var cs=[[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]];
+    var top=cs.map(function(c){return CC(c[0],c[1],yt)}), bot=cs.map(function(c){return CC(c[0],c[1],yb)});
+    poly(top,"#8fa2b8",2.2,"#182130");
+    for(var i=0;i<4;i++)line(bot[i],top[i],"#5f728c",1.8);
+    poly(bot,"#5f728c",1.6);
+    /* Piece name through the same collision guard as every other
+       text on this page: shrunk to the piece's own projected width
+       (briefFitFont), registered in placed[], and moved to the
+       first free spot around the top face — above it, inside it,
+       or below it. If no spot is free the name is left off rather
+       than drawn over another text. */
+    var ctr=P(el.x,yt,el.z), faceW=Math.max(50,Math.abs(top[1].x-top[0].x));
+    var nPx=briefFitFont(x,el.name,"600",21,"'IBM Plex Mono', monospace",faceW);
+    var nW=x.measureText(el.name).width+10, nH=nPx+8, nSpot=null;
+    [[ctr.x,ctr.y-10-nH/2],[ctr.x,ctr.y+nH/2],[ctr.x,ctr.y-34-nH/2],[ctr.x,ctr.y+30+nH/2]].forEach(function(cd){
+      if(nSpot)return;
+      var b=labBox(cd[0],cd[1],nW,nH);
+      if(labFree(b))nSpot={x:cd[0],y:cd[1],box:b};
+    });
+    if(nSpot){
+      placed.push(nSpot.box);
+      x.fillStyle="#93a2b5"; x.font="600 "+nPx+"px 'IBM Plex Mono', monospace"; x.textAlign="center"; x.textBaseline="middle";
+      x.fillText(el.name,nSpot.x,nSpot.y);
+    }
+  });
+  /* ── LED screens — wireframe boxes with a filled front face ── */
+  (function(){
+    function rotYXZ(px,py,pz,ry,rx,rz){
+      var c=Math.cos(rz),s2=Math.sin(rz), x1=px*c-py*s2, y1=px*s2+py*c, z1=pz;
+      c=Math.cos(rx); s2=Math.sin(rx);
+      var x2=x1, y2=y1*c-z1*s2, z2=y1*s2+z1*c;
+      c=Math.cos(ry); s2=Math.sin(ry);
+      return [x2*c+z2*s2, y2, -x2*s2+z2*c];
+    }
+    state.displays.forEach(function(d){
+      var cx=effX3(d), cz=effZ3(d), b=baseYOf(d), Hm=effHm3(d), dep=depthOf(d);
+      var ry=effYaw3(d)*Math.PI/180, rx=(+d.rotX3d||0)*Math.PI/180, rz=(+d.rotZ3d||0)*Math.PI/180, cy=b+Hm/2;
+      chainOf(d,effCols3(d)).secs.forEach(function(sc){
+        var ex=sc.sx+Math.cos(sc.a)*sc.w, ez=sc.sz-Math.sin(sc.a)*sc.w;
+        var mx=(sc.sx+ex)/2, mz=(sc.sz+ez)/2;
+        var u=[Math.cos(sc.a),0,-Math.sin(sc.a)], n=[Math.sin(sc.a),0,Math.cos(sc.a)], cornersB=[];
+        for(var i=0;i<8;i++){
+          var su=(i&1)?1:-1, sv=(i&2)?1:-1, sn=(i&4)?1:-1;
+          var lx=mx+u[0]*sc.w/2*su+n[0]*dep/2*sn, ly=sv*Hm/2, lz=mz+u[2]*sc.w/2*su+n[2]*dep/2*sn;
+          var rp=rotYXZ(lx,ly,lz,ry,rx,rz);
+          cornersB.push(P(cx+rp[0],cy+rp[1],cz+rp[2]));
+        }
+        poly([cornersB[4],cornersB[5],cornersB[7],cornersB[6]],null,0,"rgba(38,84,104,.55)");
+        [[0,1],[0,2],[0,4],[1,3],[1,5],[2,3],[2,6],[3,7],[4,5],[4,6],[5,7],[6,7]].forEach(function(e){line(cornersB[e[0]],cornersB[e[1]],"#d7e1ec",2)});
+      });
+    });
+  })();
+  /* ── speaker arrays — outline boxes on their suspension lines ── */
+  D.speakers.forEach(function(sp){
+    line(P(sp.x-0.3,sp.top,sp.z),P(sp.x-0.3,sp.rigTop,sp.z),"#7186a0",1.6);
+    line(P(sp.x+0.3,sp.top,sp.z),P(sp.x+0.3,sp.rigTop,sp.z),"#7186a0",1.6);
+    var c8=[[sp.x-0.475,sp.bottom,sp.z-0.31],[sp.x+0.475,sp.bottom,sp.z-0.31],[sp.x+0.475,sp.bottom,sp.z+0.31],[sp.x-0.475,sp.bottom,sp.z+0.31],
+            [sp.x-0.475,sp.top,sp.z-0.31],[sp.x+0.475,sp.top,sp.z-0.31],[sp.x+0.475,sp.top,sp.z+0.31],[sp.x-0.475,sp.top,sp.z+0.31]].map(function(p){return P(p[0],p[1],p[2])});
+    poly([c8[4],c8[5],c8[6],c8[7]],"#8fa2b8",1.8,"#131a26");
+    [[0,1],[1,2],[2,3],[3,0],[0,4],[1,5],[2,6],[3,7]].forEach(function(e){line(c8[e[0]],c8[e[1]],"#8fa2b8",1.8)});
+  });
+  /* ── flown suspension lines — beam pickups up to the enclosure top ── */
+  D.flown.forEach(function(m){
+    briefTrussSegs(m).forEach(function(sg){
+      if(sg.ring)return;
+      var dx=sg.bx-sg.ax, dz=sg.bz-sg.az;
+      if(Math.hypot(dx,dz)>1&&Math.abs(sg.by-sg.ay)<0.2){
+        [0.25,0.75].forEach(function(t){
+          var px=sg.ax+dx*t, pz=sg.az+dz*t, py=Math.max(sg.ay,sg.by);
+          line(P(px,py,pz),P(px,bTop,pz),"#7186a0",1.6,[8,7]);
+        });
+      }
+    });
+  });
+  /* ── truss — every segment as a two-chord band with rungs ── */
+  function band(a3,b3,secM){
+    var A=P(a3[0],a3[1],a3[2]), B=P(b3[0],b3[1],b3[2]);
+    var dx=B.x-A.x, dy=B.y-A.y, dl=Math.hypot(dx,dy); if(dl<2)return;
+    var pvx=-dy/dl, pvy=dx/dl, half=clamp(secM/2*s,2.5,16);
+    x.strokeStyle="#e9eef5"; x.lineWidth=2.1;
+    x.beginPath(); x.moveTo(A.x+pvx*half,A.y+pvy*half); x.lineTo(B.x+pvx*half,B.y+pvy*half);
+    x.moveTo(A.x-pvx*half,A.y-pvy*half); x.lineTo(B.x-pvx*half,B.y-pvy*half); x.stroke();
+    var len3=Math.hypot(b3[0]-a3[0],b3[1]-a3[1],b3[2]-a3[2]), nR=Math.max(0,Math.min(28,Math.floor(len3/0.55)));
+    x.lineWidth=1.3; x.strokeStyle="#9fb0c3";
+    x.beginPath();
+    for(var i=1;i<=nR;i++){var t=i/(nR+1); var qx=A.x+dx*t, qy=A.y+dy*t; x.moveTo(qx+pvx*half,qy+pvy*half); x.lineTo(qx-pvx*half,qy-pvy*half)}
+    x.stroke();
+  }
+  var ringInfo=[];
+  D.segs.forEach(function(rec){
+    var sg=rec.sg, p=rec.m.params, secM=clamp(((sg.section!=null?+sg.section:+p.section)||290)/1000,0.2,0.6);
+    if(sg.ring){
+      var r=segRadius(sg), ccx=(sg.ax+sg.bx)/2, ccy=(sg.ay+sg.by)/2, ccz=(sg.az+sg.bz)/2, arc=segArcRad(sg), a0=arcStartRad(arc);
+      var txR=(+sg.tiltX||0)*Math.PI/180, tzR=(+sg.tiltZ||0)*Math.PI/180;
+      function rp(a,rr){
+        var lx=rr*Math.cos(a), lz=rr*Math.sin(a);
+        var x1=lx*Math.cos(tzR), y1=lx*Math.sin(tzR);
+        return [ccx+x1, ccy+y1*Math.cos(txR)-lz*Math.sin(txR), ccz+y1*Math.sin(txR)+lz*Math.cos(txR)];
+      }
+      var topPt=null, topY=-1e18;
+      [-1,1].forEach(function(off){
+        x.strokeStyle="#e9eef5"; x.lineWidth=2.1; x.beginPath();
+        for(var k=0;k<=72;k++){var aa=a0+arc*k/72, wp=rp(aa,r+off*secM/2), q=P(wp[0],wp[1],wp[2]); if(k===0)x.moveTo(q.x,q.y); else x.lineTo(q.x,q.y); if(off===1&&(wp[1]>topY)){topY=wp[1]; topPt=wp}}
+        x.stroke();
+      });
+      x.strokeStyle="#9fb0c3"; x.lineWidth=1.3; x.beginPath();
+      for(var k2=0;k2<=12;k2++){var aa2=a0+arc*k2/12, w1=rp(aa2,r-secM/2), w2=rp(aa2,r+secM/2), q1=P(w1[0],w1[1],w1[2]), q2=P(w2[0],w2[1],w2[2]); x.moveTo(q1.x,q1.y); x.lineTo(q2.x,q2.y)}
+      x.stroke();
+      ringInfo.push({sg:sg,r:r,cx:ccx,cy:ccy,cz:ccz,top:topY,topPt:topPt,
+        dA:rp(Math.atan2(sg.az-ccz,sg.ax-ccx),r), dB:rp(Math.atan2(sg.bz-ccz,sg.bx-ccx),r)});
+      return;
+    }
+    band([sg.ax,sg.ay,sg.az],[sg.bx,sg.by,sg.bz],secM);
+  });
+  /* ── tower base plates ── */
+  D.bases.forEach(function(b){
+    var hs=0.55, cs=[[b.x-hs,b.z-hs],[b.x+hs,b.z-hs],[b.x+hs,b.z+hs],[b.x-hs,b.z+hs]].map(function(c){return P(c[0],Math.max(0,b.y),c[1])});
+    poly(cs,"#e9eef5",2,"#232f42");
+    line(P(b.x-hs,Math.max(0,b.y),b.z),P(b.x-1.15,Math.max(0,b.y),b.z),"#9fb0c3",1.6);
+    line(P(b.x+hs,Math.max(0,b.y),b.z),P(b.x+1.15,Math.max(0,b.y),b.z),"#9fb0c3",1.6);
+    line(P(b.x,Math.max(0,b.y),b.z-hs),P(b.x,Math.max(0,b.y),b.z-1.15),"#9fb0c3",1.6);
+    line(P(b.x,Math.max(0,b.y),b.z+hs),P(b.x,Math.max(0,b.y),b.z+1.15),"#9fb0c3",1.6);
+  });
+  /* ── props — simple outlines; draping / hoops / silks as outlines ── */
+  function propTopPt(rec,lx){var co=Math.cos(rec.ry), si=Math.sin(rec.ry); return P(rec.x+lx*co,rec.y+rec.h,rec.z+lx*si)}
+  D.props.forEach(function(rec){
+    var isD=D.drapes.indexOf(rec)>=0, isH=D.hoops.indexOf(rec)>=0, isS=D.silks.indexOf(rec)>=0;
+    if(isH){
+      var cxw=rec.x, cyw=rec.y+rec.h/2, czw=rec.z, rr=Math.min(rec.w,rec.h)/2, co2=Math.cos(rec.ry), si2=Math.sin(rec.ry);
+      x.strokeStyle="#e9eef5"; x.lineWidth=2.4; x.beginPath();
+      for(var k=0;k<=48;k++){var aa=k/48*Math.PI*2, lx=Math.cos(aa)*rr, ly=Math.sin(aa)*rr; var q=P(cxw+lx*co2,cyw+ly,czw+lx*si2); if(k===0)x.moveTo(q.x,q.y); else x.lineTo(q.x,q.y)}
+      x.stroke();
+      var hTop=P(cxw,cyw+rr,czw), hUp=(D.gridTop>cyw+rr)?P(cxw,D.gridTop,czw):P(cxw,cyw+rr+1,czw);
+      line(hTop,hUp,"#93a2b5",1.8);
+      rec._anchor={x:cxw,y:cyw,z:czw};
+      return;
+    }
+    if(isS){
+      var tp=P(rec.x,rec.y+rec.h,rec.z);
+      if(D.gridTop>rec.y+rec.h)line(tp,P(rec.x,D.gridTop,rec.z),"#93a2b5",1.8);
+      var bl=P(rec.x-rec.w*0.16,Math.max(0.02,rec.y),rec.z), br=P(rec.x+rec.w*0.16,Math.max(0.02,rec.y),rec.z);
+      x.strokeStyle="#e9eef5"; x.lineWidth=2.2;
+      x.beginPath(); x.moveTo(tp.x,tp.y); x.quadraticCurveTo(P(rec.x-rec.w*0.3,rec.y+rec.h*0.45,rec.z).x,P(rec.x-rec.w*0.3,rec.y+rec.h*0.45,rec.z).y,bl.x,bl.y); x.stroke();
+      x.beginPath(); x.moveTo(tp.x,tp.y); x.quadraticCurveTo(P(rec.x+rec.w*0.3,rec.y+rec.h*0.45,rec.z).x,P(rec.x+rec.w*0.3,rec.y+rec.h*0.45,rec.z).y,br.x,br.y); x.stroke();
+      rec._anchor={x:rec.x,y:rec.y+rec.h*0.55,z:rec.z};
+      return;
+    }
+    if(isD){
+      var nB=Math.max(2,Math.round(rec.w/0.9)), co3=Math.cos(rec.ry), si3=Math.sin(rec.ry);
+      x.strokeStyle="#e9eef5"; x.lineWidth=2.2;
+      for(var bi=0;bi<nB;bi++){
+        var lx0=-rec.w/2+rec.w*bi/nB, lx1=-rec.w/2+rec.w*(bi+1)/nB;
+        var q0=propTopPt(rec,lx0), q1=propTopPt(rec,lx1);
+        var mid=P(rec.x+((lx0+lx1)/2)*co3,rec.y+rec.h-Math.min(rec.h*0.38,0.55),rec.z+((lx0+lx1)/2)*si3);
+        x.beginPath(); x.moveTo(q0.x,q0.y); x.quadraticCurveTo(mid.x,mid.y+Math.min(rec.h*0.38,0.55)*s*0.5,q1.x,q1.y); x.stroke();
+        x.fillStyle="#f5a623"; x.beginPath(); x.arc(q0.x,q0.y,5,0,Math.PI*2); x.fill();
+        if(bi===nB-1){x.beginPath(); x.arc(q1.x,q1.y,5,0,Math.PI*2); x.fill()}
+      }
+      [-rec.w/2,rec.w/2].forEach(function(lx){
+        var qt=propTopPt(rec,lx), qb=P(rec.x+lx*co3,rec.y+rec.h*0.18,rec.z+lx*si3);
+        x.strokeStyle="#c8d3e0"; x.lineWidth=2; x.beginPath(); x.moveTo(qt.x,qt.y); x.quadraticCurveTo(qt.x+(qb.x-qt.x)*0.3,qt.y+(qb.y-qt.y)*0.6,qb.x,qb.y); x.stroke();
+      });
+      rec._anchor={x:rec.x,y:rec.y+rec.h,z:rec.z};
+      return;
+    }
+    var hw=rec.w/2, hd=rec.d/2, co4=Math.cos(rec.ry), si4=Math.sin(rec.ry);
+    function PC(lx,yy,lz){return P(rec.x+lx*co4-lz*si4,yy,rec.z+lx*si4+lz*co4)}
+    var c8=[PC(-hw,rec.y,-hd),PC(hw,rec.y,-hd),PC(hw,rec.y,hd),PC(-hw,rec.y,hd),PC(-hw,rec.y+rec.h,-hd),PC(hw,rec.y+rec.h,-hd),PC(hw,rec.y+rec.h,hd),PC(-hw,rec.y+rec.h,hd)];
+    [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]].forEach(function(e){line(c8[e[0]],c8[e[1]],"#7186a0",1.6)});
+  });
+  /* ── dimensions (amber, the report's dimension colour) ── */
+  function dimLabel(cx,cy,val,cap){
+    x.font="700 31px 'IBM Plex Mono', monospace"; var wv=x.measureText(val).width;
+    x.font="600 21px 'IBM Plex Mono', monospace"; var wc=x.measureText(cap).width;
+    var w=Math.max(wv,wc)+14, h=58;
+    placed.push(labBox(cx,cy,w,h));
+    x.fillStyle="#f5a623"; x.textAlign="center";
+    x.font="700 31px 'IBM Plex Mono', monospace"; x.textBaseline="bottom"; x.fillText(val,cx,cy-2);
+    x.font="600 21px 'IBM Plex Mono', monospace"; x.textBaseline="top"; x.fillText(cap,cx,cy+4);
+  }
+  function dimAlong(p1,p2,offDx,offDy,val,cap){
+    var A={x:p1.x+offDx,y:p1.y+offDy}, B={x:p2.x+offDx,y:p2.y+offDy};
+    x.strokeStyle="#f5a623"; x.lineWidth=2.4;
+    x.beginPath(); x.moveTo(p1.x,p1.y); x.lineTo(A.x,A.y); x.moveTo(p2.x,p2.y); x.lineTo(B.x,B.y); x.moveTo(A.x,A.y); x.lineTo(B.x,B.y); x.stroke();
+    var ux=B.x-A.x, uy=B.y-A.y, ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
+    x.fillStyle="#f5a623";
+    [[A,1],[B,-1]].forEach(function(en){
+      var px=en[0].x, py=en[0].y, sg2=en[1];
+      x.beginPath(); x.moveTo(px,py); x.lineTo(px-ux*16*sg2-uy*6,py-uy*16*sg2+ux*6); x.lineTo(px-ux*16*sg2+uy*6,py-uy*16*sg2-ux*6); x.closePath(); x.fill();
+    });
+    dimLabel((A.x+B.x)/2,(A.y+B.y)/2-44,val,cap);
+  }
+  var fFL=P(bx0,0,bz1), fFR=P(bx1,0,bz1), fBR=P(bx1,0,bz0);
+  dimAlong(fFL,fFR,-18,64,fmtMeasure(D.maxX-D.minX),"WIDTH");
+  dimAlong(fFR,fBR,64,18,fmtMeasure(D.maxZ-D.minZ),"LENGTH");
+  (function(){
+    var hv=(D.gridTop>0.05)?D.gridTop:D.maxTop, hCap=(D.gridTop>0.05)?"to top of grid":"overall height";
+    var base=P(bx1,0,bz1), X0=base.x+84;
+    var yBot=base.y, yTop=base.y-hv*s;
+    x.strokeStyle="#f5a623"; x.lineWidth=2.4;
+    x.beginPath(); x.moveTo(X0-9,yBot); x.lineTo(X0+9,yBot); x.moveTo(X0-9,yTop); x.lineTo(X0+9,yTop); x.moveTo(X0,yTop); x.lineTo(X0,yBot); x.stroke();
+    x.font="700 31px 'IBM Plex Mono', monospace"; var wv=x.measureText(fmtMeasure(hv)).width;
+    x.font="600 21px 'IBM Plex Mono', monospace"; var wc=x.measureText(hCap).width;
+    var lw=Math.max(wv,wc)+14;
+    placed.push(labBox(X0+16+lw/2,(yBot+yTop)/2,lw,58));
+    x.fillStyle="#f5a623"; x.textAlign="left";
+    x.font="700 31px 'IBM Plex Mono', monospace"; x.textBaseline="bottom"; x.fillText(fmtMeasure(hv),X0+16,(yBot+yTop)/2-2);
+    x.font="600 21px 'IBM Plex Mono', monospace"; x.textBaseline="top"; x.fillText(hCap,X0+16,(yBot+yTop)/2+4);
+  })();
+  ringInfo.forEach(function(ri){
+    var A=P(ri.dA[0],ri.dA[1],ri.dA[2]), B=P(ri.dB[0],ri.dB[1],ri.dB[2]);
+    dimAlong(A,B,0,-56,"Ø "+fmtMeasure(ri.r*2),"CIRCULAR TRUSS");
+  });
+  /* ── leader labels — only for parts this layout actually has ── */
+  var labels=[];
+  labels.push({lines:["Design enclosure (indicative only)",fmtMeasure(D.maxX-D.minX)+" (W) × "+fmtMeasure(D.maxZ-D.minZ)+" (L) × "+fmtMeasure(D.maxTop)+" (H)"],anchor:P(bx0,bTop,bz0)});
+  ringInfo.forEach(function(ri){
+    labels.push({lines:["Ring elevation and suspension:","top of ring "+fmtMeasure(ri.top)+" · TBD by rigging engineer"],anchor:P(ri.topPt[0],ri.topPt[1],ri.topPt[2])});
+  });
+  if(D.flown.length){
+    var fSeg=null;
+    D.segs.forEach(function(rec){if(rec.m===D.flown[0]&&!rec.sg.ring&&Math.hypot(rec.sg.bx-rec.sg.ax,rec.sg.bz-rec.sg.az)>1&&(!fSeg||rec.sg.ay>fSeg.ay))fSeg=rec.sg});
+    if(fSeg)labels.push({lines:["Flown suspension — "+Math.max(1,Math.round(+D.flown[0].params.hoists||2))+" pickup(s)","to venue roof points · TBD by rigging engineer"],anchor:P((fSeg.ax+fSeg.bx)/2,Math.max(fSeg.ay,fSeg.by),(fSeg.az+fSeg.bz)/2)});
+  }
+  if(D.towers.length)labels.push({lines:["Ground-support towers","on base plates · "+D.towers.length+" tower(s)"],anchor:P(D.towers[0].high.x,D.towers[0].high.y,D.towers[0].high.z)});
+  if(D.drapes.length)labels.push({lines:["Draping attachment","positions — indicative"],anchor:P(D.drapes[0]._anchor.x,D.drapes[0]._anchor.y,D.drapes[0]._anchor.z)});
+  if(D.hoops.length||D.silks.length){
+    var parts=[]; if(D.hoops.length)parts.push(D.hoops.length+" aerial hoop"+(D.hoops.length===1?"":"s")); if(D.silks.length)parts.push(D.silks.length+" silk line"+(D.silks.length===1?"":"s"));
+    var aRec=D.hoops.length?D.hoops[0]:D.silks[0];
+    labels.push({lines:[parts.join(" + ")+" —","conceptual positions"],anchor:P(aRec._anchor.x,aRec._anchor.y,aRec._anchor.z)});
+  }
+  var zonesL=[{x:64,y:110},{x:64,y:Math.round(H*0.38)},{x:64,y:H-360}];
+  var zonesR=[{x:W-64,y:110},{x:W-64,y:Math.round(H*0.38)},{x:W-64,y:H-360}];
+  labels.forEach(function(L){
+    x.font="800 26px Archivo, Arial"; var w1=x.measureText(L.lines[0]).width;
+    x.font="600 22px 'IBM Plex Mono', monospace"; var w2=x.measureText(L.lines[1]||"").width;
+    var lw=Math.max(w1,w2)+10, lh=64;
+    var leftSide=L.anchor.x<W/2, zones=(leftSide?zonesL:zonesR).slice().sort(function(a,b){return Math.abs(a.y-L.anchor.y)-Math.abs(b.y-L.anchor.y)});
+    var spot=null;
+    for(var zi=0;zi<zones.length;zi++){
+      var zx=leftSide?zones[zi].x+lw/2:zones[zi].x-lw/2, zy=zones[zi].y+lh/2, b=labBox(zx,zy,lw,lh);
+      if(labFree(b)){spot={cx:zx,cy:zy,box:b,left:leftSide}; break}
+    }
+    if(!spot){var z0=zones[0]; spot={cx:leftSide?z0.x+lw/2:z0.x-lw/2, cy:z0.y+lh/2, box:labBox(leftSide?z0.x+lw/2:z0.x-lw/2,z0.y+lh/2,lw,lh), left:leftSide}}
+    placed.push(spot.box);
+    var edgeX=spot.left?spot.box.x1:spot.box.x0, edgeY=Math.max(spot.box.y0+8,Math.min(spot.box.y1-8,L.anchor.y));
+    x.strokeStyle="#c8d3e0"; x.lineWidth=1.8;
+    x.beginPath(); x.moveTo(edgeX,edgeY); x.lineTo(L.anchor.x,L.anchor.y); x.stroke();
+    x.fillStyle="#e9eef5"; x.beginPath(); x.arc(L.anchor.x,L.anchor.y,5,0,Math.PI*2); x.fill();
+    x.textAlign=spot.left?"left":"right"; var tx=spot.left?spot.box.x0+4:spot.box.x1-4;
+    x.fillStyle="#e9eef5"; x.font="800 26px Archivo, Arial"; x.textBaseline="bottom"; x.fillText(L.lines[0],tx,spot.cy-4);
+    x.fillStyle="#93a2b5"; x.font="600 22px 'IBM Plex Mono', monospace"; x.textBaseline="top"; x.fillText(L.lines[1]||"",tx,spot.cy+4);
+  });
+  if(!D.segs.length&&!state.displays.length&&!briefStagePieces().length){
+    x.fillStyle="#e9eef5"; x.font="800 34px Archivo, Arial"; x.textAlign="center"; x.textBaseline="middle";
+    x.fillText("No stage design built yet",W/2,H/2);
+  }
+  return cv;
+}
 function downloadBriefPDF(){
   if(!window.jspdf||!window.jspdf.jsPDF){
     /* The PDF library is editor-only, so it is no longer loaded with
@@ -14895,6 +15461,26 @@ function downloadBriefPDF(){
       ["Combined Length:", fmtMetres(allLen), "Combined Truss Weight:", fmt(Math.round(allKg*10)/10)+" kg"]
     ]);
   }
+  /* ── Truss Concept — the whole stage design as one isometric
+     concept page: enclosure, floor, stage, screens, truss (grid,
+     towers, bases, rings), speakers and props, dimensioned and
+     labelled from this layout only (see briefConceptCanvas). It
+     starts on its own page and paginates through need() like every
+     other section, so its text can never overlap what follows. ── */
+  addPage();
+  sectionHead("Truss Concept","Isometric stage design · concept");
+  drawImg(briefConceptCanvas(),178);
+  var cD=briefConceptCanvas._d;
+  subHead("Concept Dimensions — from this layout");
+  var cRows=[
+    ["Overall Width:", fmtMetres(cD.maxX-cD.minX), "Overall Length (depth):", fmtMetres(cD.maxZ-cD.minZ)],
+    ["Design Height:", fmtMetres(cD.maxTop), cD.gridTop>0.05?"Height to Top of Grid:":"Enclosure (indicative):", cD.gridTop>0.05?fmtMetres(cD.gridTop):(fmtMeasure(cD.maxX-cD.minX)+" × "+fmtMeasure(cD.maxZ-cD.minZ)+" × "+fmtMeasure(cD.maxTop))]
+  ];
+  if(cD.rings.length)cRows.push(["Circular Truss:", "Ø "+fmtMetres(segRadius(cD.rings[0])*2), "Ring Top (elevation):", fmtMetres(Math.max(cD.rings[0].ay,cD.rings[0].by))]);
+  if(cD.towers.length)cRows.push(["Towers:", String(cD.towers.length)+" on base plates", "Systems Drawn:", String(cD.segs.length)+" truss segment(s)"]);
+  detailsTable(cRows);
+  noteLine("Hall height is not shown — this layout stores no venue height, so no hall dimension is invented; the dashed enclosure is the design's own size, indicative only.");
+  noteLine("CONCEPT ONLY — NOT A RIGGING OR CONSTRUCTION DRAWING. All spans, towers, bases, ballast, suspension points and aerial dynamic loads require specialist engineering.",true);
   /* ── Full Canvas Layout / Global Layout ── */
   sectionHead("Full Canvas Layout","Global Layout");
   drawImg(briefFrontCanvas(),178);
@@ -15125,7 +15711,7 @@ function downloadBriefPDF(){
     doc.text(ftrR,196,ph-8,{align:"right"});
   }
   doc.save((state.project||"led-layout").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").toLowerCase()+"-technical-report.pdf");
-  toast("Technical Document downloaded — "+nPages+" pages: one section per display (dimensioned drawing + screen details), the full screen map with every screen's edges dimensioned, stage build details with sizes on every edge, full truss system details (front + plan drawings, every bar's length, weight and angles, load check), the full canvas layout with totals, and finally “What you need to build this stage” — the full setup list (screens, truss, scaffolding, lights, cables & power, stage, speakers, crowd, props).");
+  toast("Technical Document downloaded — "+nPages+" pages: one section per display (dimensioned drawing + screen details), the full screen map with every screen's edges dimensioned, stage build details with sizes on every edge, full truss system details (front + plan drawings, every bar's length, weight and angles, load check), the truss concept page (the whole stage design — enclosure, stage, screens, truss grid, towers, bases and rings, speakers and props — drawn isometrically from this layout with its own dimensions and labels), the full canvas layout with totals, and finally “What you need to build this stage” — the full setup list (screens, truss, scaffolding, lights, cables & power, stage, speakers, crowd, props).");
 }
 $("btnBrief").addEventListener("click",downloadBriefPDF);
 
