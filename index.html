@@ -2611,7 +2611,7 @@ html.admin-boot #adminPage{display:block}
         <input type="hidden" name="city" id="payhereFCity">
         <input type="hidden" name="country" value="Sri Lanka">
         <input type="hidden" name="hash" id="payhereFHash">
-        <button class="btn primary cta-big" type="submit" id="payherePayBtn" disabled>Sandbox checkout not configured — add your sandbox Merchant ID and Secret</button>
+        <button class="btn primary cta-big" type="submit" id="payherePayBtn" disabled>Sandbox checkout not configured — the server-side hash endpoint is not wired with the real secret yet</button>
       </form>
       <p class="payhere-note">The payment hash for this order is generated server-side by your own backend / Supabase Edge Function — the sandbox Merchant Secret never appears in this page. After a test payment, PayHere returns you here, but your plan is upgraded ONLY by PayHere's notify callback to your server — never by the return page alone.</p>
       <p class="payhere-err" id="payhereErr" role="alert"></p>
@@ -18067,16 +18067,17 @@ function closePlanModal(){var pm=$("planModal"); if(pm){pm.classList.remove("ope
    plans, periods, LKR prices, return / cancel / notify URLs all
    stay the same.
 
-   OWNER SETUP — the two credential fields below hold PLACEHOLDER
-   TEXT ONLY ("YOUR_SANDBOX_MERCHANT_ID" /
-   "YOUR_SANDBOX_MERCHANT_SECRET"). Never paste a real Merchant
+   OWNER SETUP — merchant_id below is the owner's sandbox
+   Merchant ID (1231184, a public identifier). merchant_secret
+   still holds PLACEHOLDER TEXT ONLY
+   ("YOUR_SANDBOX_MERCHANT_SECRET"). Never paste a real Merchant
    Secret into this file: the secret must NEVER appear in
    client-side code or be sent to the browser. The real sandbox
    secret lives ONLY as a server-side secret (an environment
    variable / Supabase secret) inside the two server pieces:
 
-   1. HASH ENDPOINT (PAYHERE_CONFIG.hash_endpoint) — STUB, owner
-      wires it to their own backend / a Supabase Edge Function.
+   1. HASH ENDPOINT (PAYHERE_CONFIG.hash_endpoint) — WIRED to
+      the owner's Supabase Edge Function (payhere-hash).
       It receives {merchant_id, order_id, amount, currency} from
       this page and returns {hash}, where
         hash = md5(merchant_id + order_id + amount + currency
@@ -18088,17 +18089,23 @@ function closePlanModal(){var pm=$("planModal"); if(pm){pm.classList.remove("ope
       payhereNotifyHandlerStub below. It is the ONLY place a
       plan may be upgraded after a payment.
 
-   Until the owner fills in merchant_id AND wires the hash
-   endpoint, payhereConfigured() is false: the checkout button
-   reads "Sandbox checkout not configured — add your sandbox
-   Merchant ID and Secret", stays disabled, and an Upgrade tap
-   can open the checkout step but can never post a payment. */
+   The hash endpoint is now wired (see PAYHERE_CONFIG below),
+   so payhereConfigured() is true while PAYHERE_SANDBOX is
+   true, the Merchant ID is set and the checkout URL is the
+   sandbox host: the Pay button is enabled in the checkout
+   step, fetches {hash} from the hash endpoint for the order,
+   and posts the form to the sandbox checkout. If the endpoint
+   is ever cleared, payhereConfigured() is false again: the
+   checkout button reads "Sandbox checkout not configured —
+   the server-side hash endpoint is not wired with the real
+   secret yet", stays disabled, and an Upgrade tap can open
+   the checkout step but can never post a payment. */
 var PAYHERE_SANDBOX=true;
 var PAYHERE_CONFIG={
-  merchant_id:"YOUR_SANDBOX_MERCHANT_ID", /* PLACEHOLDER — owner replaces with the sandbox Merchant ID from sandbox.payhere.lk → Integrations */
+  merchant_id:"1231184", /* Sandbox Merchant ID from sandbox.payhere.lk → Integrations */
   merchant_secret:"YOUR_SANDBOX_MERCHANT_SECRET", /* PLACEHOLDER TEXT ONLY — never a real value, never read by any code in this page; the real secret exists only on the server (hash endpoint + notify handler) */
   checkout_url:"https://sandbox.payhere.lk/pay/checkout", /* SANDBOX host only — never www.payhere.lk while PAYHERE_SANDBOX is true */
-  hash_endpoint:"", /* STUB — owner sets this to their backend / Supabase Edge Function URL that returns the payment hash (see above) */
+  hash_endpoint:"https://loaqegnxedkhwiulpidn.supabase.co/functions/v1/payhere-hash", /* Supabase Edge Function that returns the payment hash — the Merchant Secret lives only there, server-side */
   notify_url:"", /* STUB — owner sets this to their server notify handler URL (see payhereNotifyHandlerStub) */
   return_url:"https://lutasled.com/?payhere=returned",
   cancel_url:"https://lutasled.com/?payhere=cancelled&open=plans",
@@ -18185,7 +18192,7 @@ function payhereOpenStep(key){
   var btn=$("payherePayBtn");
   if(btn){
     if(payhereConfigured()){btn.disabled=false; btn.textContent="Continue to PayHere sandbox — "+planFmtLkr(pr.lkr)}
-    else{btn.disabled=true; btn.textContent="Sandbox checkout not configured — add your sandbox Merchant ID and Secret"}
+    else{btn.disabled=true; btn.textContent="Sandbox checkout not configured — the server-side hash endpoint is not wired with the real secret yet"}
   }
   var note=$("planCheckoutNote"); if(note)note.hidden=true;
   step.hidden=false;
@@ -18208,7 +18215,7 @@ function payhereStartCheckout(ev){
   if(!payhereOrder)return;
   var err=$("payhereErr");
   function fail(m){if(err)err.textContent=m}
-  if(!payhereConfigured()){fail("Sandbox checkout not configured — add your sandbox Merchant ID and Secret, and wire the server hash endpoint, before a test payment can start. Nothing was sent."); return}
+  if(!payhereConfigured()){fail("Sandbox checkout not configured — the server-side hash endpoint is not wired with the real secret yet, so a test payment cannot start. Nothing was sent."); return}
   if(PAYHERE_CONFIG.checkout_url!=="https://sandbox.payhere.lk/pay/checkout"){fail("Sandbox guard: the configured checkout URL is not the PayHere sandbox URL, so nothing was sent."); return}
   var pairs=[["payhereFirstName","payhereFFirst","first name"],["payhereLastName","payhereFLast","last name"],["payhereEmail","payhereFEmail","email"],["payherePhone","payhereFPhone","phone"],["payhereAddress","payhereFAddress","address"],["payhereCity","payhereFCity","city"]];
   for(var i=0;i<pairs.length;i++){
