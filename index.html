@@ -931,6 +931,29 @@ html.client-boot #clientBootSplash{position:fixed;inset:0;z-index:80;display:fle
 .plan-trial{margin:14px 0 2px}
 .plan-trial .trial-err{color:#e2574c;font-size:12.5px;line-height:1.55;margin:10px 0 0}
 .plan-trial .trial-err:empty{display:none}
+/* ── PayHere SANDBOX checkout (Plans & Upgrade) ───────────────────
+   Test payments only: the amber banner marks every surface that
+   can lead to the sandbox checkout, the agreement row gates the
+   Upgrade buttons, and the checkout step holds the order summary,
+   the buyer fields and the single Pay button whose form posts to
+   https://sandbox.payhere.lk/pay/checkout — never the live host. */
+.plan-sandbox{margin:12px 0 2px;border:1.5px dashed var(--accent);border-radius:10px;padding:9px 12px;background:var(--panel2);color:var(--text);font-weight:800;font-size:13px;letter-spacing:.02em;text-align:center}
+.plan-agree{display:flex;gap:9px;align-items:flex-start;margin-top:14px;font-size:13px;line-height:1.5;color:var(--text);cursor:pointer}
+.plan-agree input{width:17px;height:17px;margin-top:1px;flex:none;accent-color:var(--accent);cursor:pointer}
+.plan-agree.flash{border-radius:8px;box-shadow:0 0 0 2px var(--accent);padding:4px 6px;margin-left:-6px;margin-right:-6px}
+.payhere-step{margin-top:14px;border:1px solid var(--accent);border-radius:12px;padding:14px;background:var(--panel2)}
+.payhere-step .plan-sandbox{margin:0 0 10px}
+.payhere-step h3{margin:0 0 6px;font-family:Archivo,sans-serif;font-size:15px}
+.payhere-summary{margin:0;font-size:13.5px;line-height:1.6;color:var(--text)}
+.payhere-order{margin:4px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6;word-break:break-all}
+.payhere-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;margin-top:12px}
+.payhere-fields .field{margin:0}
+@media(max-width:560px){.payhere-fields{grid-template-columns:1fr}}
+.payhere-note{margin:12px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6}
+.payhere-err{color:#e2574c;font-size:12.5px;line-height:1.55;margin:10px 0 0}
+.payhere-err:empty{display:none}
+.payhere-step .btn.cta-big{width:100%;justify-content:center;margin-top:12px}
+.payhere-back{margin-top:8px}
 @media(max-width:700px){.plan-grid{grid-template-columns:1fr}}
 /* ── Client gate — a private share asks for a name + the passkey
    before the render view loads. Dark card over the client frame,
@@ -1796,6 +1819,8 @@ html.admin-boot #adminPage{display:block}
               </div>
               <div class="rs-slider" style="margin-top:8px"><div class="rs-row"><span class="rs-lab">Environment intensity</span><output id="rsHdriIOut">100%</output></div><input type="range" id="rsHdriI" min="0" max="200" step="5" value="100" aria-label="Environment intensity — strength of the HDRI image-based light"></div>
               <div class="rs-col"><span class="rs-lab">Backdrop</span><input type="color" id="rsBackdrop" value="#05070a" aria-label="Backdrop colour behind the stage"></div>
+              <div class="rs-row" style="margin-top:8px"><span class="rs-lab">Ground — floor under the stage</span><span class="rs-fx"><button type="button" id="rsGroundBtn" class="on">On</button></span></div>
+              <p class="hint">A dark floor plane under the stage, sized to the stage's footprint and standing at the deck's base — it catches the beam pools and shadows so the stage sits on the ground instead of floating over the backdrop. Render only.</p>
             </div>
           </div>
           <div class="rs-sec open" data-rssec>
@@ -2467,12 +2492,18 @@ html.admin-boot #adminPage{display:block}
      Modifier tab / pane on Starter, the Share dialog below VIP,
      the .ledx download controls below VIP). Monthly / Yearly
      toggle: Yearly is exactly Monthly × 12 — no discount, and no
-     discount badge anywhere. Checkout is NOT connected yet
-     (PayHere for LKR, Paddle for USD): an Upgrade tap shows the
-     chosen tier, period and price and says so plainly — it never
-     pretends a payment succeeded. Plans themselves are stored per
-     user in public.profiles.plan and assigned by admin / VIP key
-     only for now. The trial box (#trialBox) offers a signed-in
+     discount badge anywhere. Checkout is a PayHere SANDBOX test
+     checkout for LKR only (see the PAYHERE SANDBOX block in the
+     plans script): an Upgrade tap on Advance or VIP, with the
+     "I agree to the Payment & Refund Policy" box ticked, opens
+     the sandbox checkout step for that exact plan, period and
+     price — it posts ONLY to sandbox.payhere.lk, never takes
+     real money, and never upgrades a plan by itself (a plan
+     changes only from PayHere's server-side notify callback,
+     still a stub, or by admin / VIP key). While the sandbox
+     merchant config holds placeholders, the checkout button
+     states that plainly and does nothing. Plans themselves are
+     stored per user in public.profiles.plan. The trial box (#trialBox) offers a signed-in
      user ONE 14-day free VIP trial, stored server-side in
      public.profiles (see supabase-trial.sql): before starting it
      reads "Start free 14-day VIP trial", while active "VIP
@@ -2482,6 +2513,7 @@ html.admin-boot #adminPage{display:block}
   <div class="modal plan-modal" role="dialog" aria-modal="true" aria-labelledby="planTitle">
     <h2 id="planTitle">Plans &amp; pricing</h2>
     <p class="plan-cur">Your current plan: <b id="planCurrentName">Starter — Free</b><span id="planCurrentWho"></span></p>
+    <div class="plan-sandbox" role="note">SANDBOX — test payment, no real money</div>
     <div class="plan-lock plan-trial" id="trialBox" hidden>
       <b id="trialTitle">Try VIP free for 14 days</b>
       <p id="trialText">Start a free 14-day VIP trial — no card details. While it runs you get full VIP: all modifiers, client link sharing and .ledx downloads. One trial per account; when it ends you return to your current plan.</p>
@@ -2537,6 +2569,53 @@ html.admin-boot #adminPage{display:block}
         </ul>
         <button class="btn primary cta-big" type="button" id="planBtnVip">Upgrade to VIP</button>
       </div>
+    </div>
+    <label class="plan-agree" id="planAgreeRow"><input type="checkbox" id="planAgreePay"> <span>I agree to the Payment &amp; Refund Policy</span></label>
+    <!-- PAYHERE SANDBOX CHECKOUT STEP — shown by an Upgrade tap on
+         Advance / VIP once the agreement box above is ticked. The
+         form below is the ONLY payment form in the app: it posts
+         to the PayHere SANDBOX host (sandbox.payhere.lk) and the
+         script refuses any other action while PAYHERE_SANDBOX is
+         true. Its hash field is filled ONLY from the owner's
+         server hash endpoint (see PAYHERE_CONFIG.hash_endpoint) —
+         the merchant secret is never in this page. While the
+         sandbox config holds placeholders, the Pay button carries
+         the not-configured label and stays disabled. -->
+    <div class="payhere-step" id="payhereStep" hidden>
+      <div class="plan-sandbox" role="note">SANDBOX — test payment, no real money</div>
+      <h3>PayHere sandbox checkout</h3>
+      <p class="payhere-summary" id="payhereSummary"></p>
+      <p class="payhere-order">Order ID: <span class="mono" id="payhereOrderId"></span><br>Currency: LKR · Test gateway: sandbox.payhere.lk</p>
+      <div class="payhere-fields">
+        <label class="field"><span>First name</span><input type="text" id="payhereFirstName" autocomplete="given-name"></label>
+        <label class="field"><span>Last name</span><input type="text" id="payhereLastName" autocomplete="family-name"></label>
+        <label class="field"><span>Email</span><input type="email" id="payhereEmail" autocomplete="email"></label>
+        <label class="field"><span>Phone</span><input type="tel" id="payherePhone" autocomplete="tel"></label>
+        <label class="field"><span>Address</span><input type="text" id="payhereAddress" autocomplete="street-address"></label>
+        <label class="field"><span>City</span><input type="text" id="payhereCity" autocomplete="address-level2"></label>
+      </div>
+      <form id="payhereForm" method="post" action="https://sandbox.payhere.lk/pay/checkout">
+        <input type="hidden" name="merchant_id" id="payhereFMid">
+        <input type="hidden" name="return_url" id="payhereFReturn">
+        <input type="hidden" name="cancel_url" id="payhereFCancel">
+        <input type="hidden" name="notify_url" id="payhereFNotify">
+        <input type="hidden" name="order_id" id="payhereFOrder">
+        <input type="hidden" name="items" id="payhereFItems">
+        <input type="hidden" name="currency" value="LKR">
+        <input type="hidden" name="amount" id="payhereFAmount">
+        <input type="hidden" name="first_name" id="payhereFFirst">
+        <input type="hidden" name="last_name" id="payhereFLast">
+        <input type="hidden" name="email" id="payhereFEmail">
+        <input type="hidden" name="phone" id="payhereFPhone">
+        <input type="hidden" name="address" id="payhereFAddress">
+        <input type="hidden" name="city" id="payhereFCity">
+        <input type="hidden" name="country" value="Sri Lanka">
+        <input type="hidden" name="hash" id="payhereFHash">
+        <button class="btn primary cta-big" type="submit" id="payherePayBtn" disabled>Sandbox checkout not configured — add your sandbox Merchant ID and Secret</button>
+      </form>
+      <p class="payhere-note">The payment hash for this order is generated server-side by your own backend / Supabase Edge Function — the sandbox Merchant Secret never appears in this page. After a test payment, PayHere returns you here, but your plan is upgraded ONLY by PayHere's notify callback to your server — never by the return page alone.</p>
+      <p class="payhere-err" id="payhereErr" role="alert"></p>
+      <button class="btn payhere-back" type="button" id="payhereBackBtn">Back to plans</button>
     </div>
     <p class="plan-policies">Before you upgrade, please read our <button type="button" data-policy-link="payment">Payment Policy</button> · <button type="button" data-policy-link="refund">Refund Policy</button> · <button type="button" data-policy-link="terms">Terms of Service</button> · <button type="button" data-policy-link="privacy">Privacy Policy</button></p>
     <p class="plan-policies">Public versions of these policies — no sign-in needed: <a href="/terms" target="_blank" rel="noopener">Terms of Service</a> · <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a> · <a href="/refund-policy" target="_blank" rel="noopener">Refund Policy</a> · <a href="/payment-policy" target="_blank" rel="noopener">Payment Policy</a></p>
@@ -2930,7 +3009,7 @@ html.admin-boot #adminPage{display:block}
           <li>You can cancel at any time — see the Refund Policy for what happens when you cancel.</li>
         </ul>
         <h4>Checkout status</h4>
-        <p><b>Checkout is not yet connected, so no payment can be taken yet.</b> The Upgrade buttons in Plans &amp; Upgrade show the plan and price and tell you checkout isn't connected — nothing is charged. This policy is published now so the payment terms are clear before checkout opens.</p>
+        <p><b>Only a PayHere SANDBOX (test) checkout is wired so far, so no real payment can be taken yet.</b> The Upgrade buttons in Plans &amp; Upgrade open that sandbox test checkout for the chosen plan and price — sandbox payments use test money only and never charge a real card. A live checkout opens only after PayHere merchant approval. This policy is published now so the payment terms are clear before live checkout opens.</p>
         <h4>Questions about a payment</h4>
         <p>Email us at <a href="mailto:hello@lutas.digital">hello@lutas.digital</a> with your account email and the date of the payment.</p>
       </div>
@@ -5897,6 +5976,13 @@ function histDispData(d){
   return {id:d.id,name:d.name,color:d.color,cabW:d.cabW,cabH:d.cabH,pitch:d.pitch,resX:d.resX,resY:d.resY,weight:d.weight,power:d.power,cols:d.cols,rows:d.rows,corner:d.corner,path:d.path,pmode:d.pmode,cabPerPort:d.cabPerPort,pixPerPort:d.pixPerPort,x:d.x,y:d.y,rotation:d.rotation,z:d.z,rotX3d:d.rotX3d,rotY3d:d.rotY3d,rotZ3d:d.rotZ3d,x3:d.x3,z3:d.z3,cols3:d.cols3,rows3:d.rows3,cabRes:d.cabRes,base:d.base,bend:d.bend,bendAngle:d.bendAngle,bendDir:d.bendDir,bendPivot:d.bendPivot,family:d.family,bendRadius:d.bendRadius,jointAngle:d.jointAngle,secRotAxis:d.secRotAxis,secRotCount:d.secRotCount,secRotAngles:(d.secRotAngles||[]).slice(),off:Array.from(d.off)};
 }
 function histSnapshot(){
+  /* Scaffolding layers: the selected layer's live edits sit in the
+     modifier's FLAT params while params.units[selected] is only
+     synced on a mirror-save — fold the flat fields back into the
+     selected unit first, so every snapshot carries the layers list
+     exactly as built and a restore can never resurrect a stale
+     selected layer or drop the others. */
+  state.modifiers.forEach(function(m){if(m.type==="scaffold"&&typeof scaffoldMirrorSave==="function")scaffoldMirrorSave(m)});
   return JSON.stringify({project:state.project,selId:state.selId,selCab:state.selCab,selModId:selModId,layoutLink:state.layoutLink,
     displays:state.displays.map(histDispData),
     modifiers:state.modifiers.map(function(m){return {id:m.id,type:m.type,name:m.name,enabled:m.enabled,params:m.params}})});
@@ -8106,6 +8192,11 @@ function build3DScene(){
      is open, and built here in the editor scene only, so it can
      never reach a Capture, a client view or a model export. */
   if(centreGuideOn&&!isClientViewRequest()){var cg3=buildCentreGuide3D(); if(cg3){T3.scene.add(cg3); T3.centreGuide=cg3}}
+  /* Render ground (Render view only): syncRenderGround builds the
+     dark floor plane under the stage while Render is open with
+     the Ground setting on, and removes it in every other view —
+     see the RENDER GROUND block by applyRenderSettings. */
+  syncRenderGround();
   updateSelBox3D();
   buildGizmo3D();
   buildSecRotGizmo();
@@ -8261,6 +8352,11 @@ function defaultRenderSettings(){
        remain as gentle environment support, and the HDRI preset,
        its intensity and the backdrop colour are all pickable. */
     dayNight:"night",hdri:"night",hdriI:1.0,
+    /* Ground: the Render-only dark floor plane under the stage
+       (syncRenderGround) — on by default, follows the stage's
+       footprint and deck, and rides the saved Render look like
+       every other setting here. */
+    ground:true,
     exposure:1.12,temp:0,sat:1.0,contrast:1.0,vig:0.34,backdrop:"#05070a"};
 }
 /* The HDRI preset that actually lights the stage: Day is always
@@ -8456,6 +8552,93 @@ function applyRenderSettings(){
   applyRenderBeamFx();
   T3.renderer.toneMappingExposure=rs.exposure;
   try{var bg=new THREE.Color(rs.backdrop||"#05070a"); if(T3.scene.background&&T3.scene.background.setHex)T3.scene.background.setHex(bg.getHex()); if(T3.scene.fog)T3.scene.fog.color.setHex(bg.getHex())}catch(e){}
+  syncRenderGround();
+}
+/* ── Render ground — RENDER VIEW ONLY ─────────────────────────────
+   A simple dark floor plane under the stage, so the stage sits on
+   the ground in Render instead of floating over the backdrop /
+   fog. It exists ONLY while Render is open and the Ground setting
+   is on (renderSettings.ground, default on — it rides the saved
+   Render look like every Render setting): build3DScene and
+   applyRenderSettings keep it in sync, exitRender removes it, and
+   the editor 3D view, the 2D view and every non-Render export
+   never see it (PNG / model exports are written from layout data,
+   and the client view is a Render view, so it shows the ground
+   only as part of its saved Render look). The plane:
+   • follows the STAGE FOOTPRINT — the displays' scene bounds plus
+     the stage margin, unioned with every Stage Settings piece,
+     with an apron around it so beams landing in front of the
+     stage still hit floor;
+   • follows the DECK HEIGHT — it stands at the deck's base
+     (y = 0, the floor the deck of state.stage3d.deck metres
+     stands on) and rebuilds whenever the deck height changes, so
+     a raised stage never floats and the ground never pokes
+     through the deck top;
+   • is a plain dark MeshStandardMaterial floor — near-black at
+     Night, a darker daylight grey by Day — receiving shadows
+     (receiveShadow) and the beam pools that land at floor level;
+     it is sized to the stage, so it never covers the stage,
+     screens, truss or crowd. It shares the editor floor disc's
+     name ("ground3d") so the viewport shading pass leaves it
+     filled and applyRenderLook gives it the ground treatment. */
+var renderGroundSig="";
+function renderGroundFootprint(){
+  var bb=sceneBBox3D();
+  var minX=bb.minX,maxX=bb.maxX,minZ=bb.minZ,maxZ=bb.maxZ;
+  var m=state.stage3d.show?(+state.stage3d.margin||0):0;
+  minX-=m; maxX+=m; minZ-=m; maxZ+=m;
+  state.modifiers.forEach(function(mo){
+    if(mo.type!=="stage"||!mo.enabled)return;
+    (mo.params.els||[]).forEach(function(el){
+      var w=Math.max(0.05,+el.w||1), d=Math.max(0.05,+el.d||1);
+      var ry=(+el.ry||0)*Math.PI/180, co=Math.abs(Math.cos(ry)), si=Math.abs(Math.sin(ry));
+      var hw=(co*w+si*d)/2, hd=(si*w+co*d)/2, x=+el.x||0, z=+el.z||0;
+      if(x-hw<minX)minX=x-hw; if(x+hw>maxX)maxX=x+hw;
+      if(z-hd<minZ)minZ=z-hd; if(z+hd>maxZ)maxZ=z+hd;
+    });
+  });
+  var w=maxX-minX, d=maxZ-minZ;
+  var pad=Math.max(3,Math.max(w,d)*0.3);
+  return {cx:(minX+maxX)/2,cz:(minZ+maxZ)/2,w:w+pad*2,d:d+pad*2,
+    key:[minX,maxX,minZ,maxZ].map(function(v){return Math.round(v*20)/20}).join(",")};
+}
+function syncRenderGround(){
+  if(!T3||!T3.scene||typeof THREE==="undefined")return;
+  var want=!!(renderMode&&renderSettings&&renderSettings.ground!==false);
+  if(!want){
+    if(T3.renderGround){
+      T3.scene.remove(T3.renderGround);
+      if(T3.renderGround.geometry)T3.renderGround.geometry.dispose();
+      if(T3.renderGround.material)T3.renderGround.material.dispose();
+      T3.renderGround=null;
+    }
+    renderGroundSig="";
+    return;
+  }
+  var fp=renderGroundFootprint();
+  var deckH=state.stage3d.show?+state.stage3d.deck||0:0;
+  var sig=fp.key+"|deck"+deckH+"|"+(renderSettings.dayNight||"night");
+  if(T3.renderGround&&renderGroundSig===sig)return;
+  if(T3.renderGround){
+    T3.scene.remove(T3.renderGround);
+    if(T3.renderGround.geometry)T3.renderGround.geometry.dispose();
+    if(T3.renderGround.material)T3.renderGround.material.dispose();
+    T3.renderGround=null;
+  }
+  var day=renderSettings.dayNight==="day";
+  var mat=new THREE.MeshStandardMaterial({color:day?0x757f8c:0x11151d,roughness:0.92,metalness:0});
+  mat.envMapIntensity=0.3*(renderSettings.hdriI||1); /* applyRenderLook's ground treatment, kept across rebuilds */
+  var mesh=new THREE.Mesh(new THREE.PlaneGeometry(fp.w,fp.d),mat);
+  mesh.name="ground3d";
+  mesh.rotation.x=-Math.PI/2;
+  /* At the deck's base (y = 0), 1 cm above the editor's floor disc
+     so the two floors never z-fight; the deck and every stage
+     piece stand on it from y = 0 up. */
+  mesh.position.set(fp.cx,0.01,fp.cz);
+  mesh.receiveShadow=true;
+  T3.scene.add(mesh);
+  T3.renderGround=mesh;
+  renderGroundSig=sig;
 }
 /* The effect toggles + shadow flag a tier (or the user) chose. The
    grade pass itself stays live on every tier, so the Colours keep
@@ -8645,6 +8828,9 @@ function enterRender(){
 function exitRender(){
   if(!renderMode)return;
   renderMode=false;
+  /* The Render ground leaves with Render — removed here directly
+     (not only via the rebuild below) so no view can inherit it. */
+  syncRenderGround();
   /* Simulator off with Render: the source stays loaded in the Render
      panel, but nothing plays in the normal 3D view or the 2D layout. */
   if(pv.on){pv.on=false; syncPvUI(); if(view3dOpen&&T3)build3DScene()}
@@ -11877,6 +12063,7 @@ function syncRenderSettingsUI(){
   set("rsFlare",Math.round((rs.flare==null?1:rs.flare)*100)); out("rsFlareOut",Math.round((rs.flare==null?1:rs.flare)*100)+"%");
   set("rsClearBeam",Math.round((rs.clearBeam==null?0.12:rs.clearBeam)*100)); out("rsClearBeamOut",Math.round((rs.clearBeam==null?0.12:rs.clearBeam)*100)+"%");
   syncBeamFxBtn();
+  syncGroundBtn();
   set("rsFillCol",rs.fillCol);
   set("rsExp",Math.round(rs.exposure*100)); out("rsExpOut",Math.round(rs.exposure*100)+"%");
   set("rsTemp",Math.round(rs.temp*100)); out("rsTempOut",(rs.temp>0?"+":"")+Math.round(rs.temp*100));
@@ -11947,6 +12134,8 @@ rsBind("rsCon",function(v){renderSettings.contrast=v/100; $("rsConOut").textCont
 rsBind("rsVig",function(v){renderSettings.vig=v/100; $("rsVigOut").textContent=v+"%"});
 rsBind("rsGlow",function(v){renderSettings.glow=v/100; $("rsGlowOut").textContent=v+"%"; if(renderMode)applyRenderSettings()});
 function syncBeamFxBtn(){var b=$("rsBeamFxBtn"); if(!b)return; var on=renderSettings.beamFx!==false; b.classList.toggle("on",on); b.textContent=on?"On":"Off"}
+function syncGroundBtn(){var b=$("rsGroundBtn"); if(!b)return; var on=renderSettings.ground!==false; b.classList.toggle("on",on); b.textContent=on?"On":"Off"}
+(function(){var b=$("rsGroundBtn"); if(b)b.addEventListener("click",function(){renderSettings.ground=renderSettings.ground===false?true:false; syncGroundBtn(); if(renderMode)applyRenderSettings(); toast(renderSettings.ground===false?"Render ground off — the stage floats over the backdrop again.":"Render ground on — a dark floor sits under the stage, following its footprint and deck height.")})})();
 rsBind("rsImpact",function(v){renderSettings.beamImpact=v/100; $("rsImpactOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
 rsBind("rsFlare",function(v){renderSettings.flare=v/100; $("rsFlareOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
 rsBind("rsClearBeam",function(v){renderSettings.clearBeam=v/100; $("rsClearBeamOut").textContent=v+"%"; if(renderMode)applyRenderBeamFx()});
@@ -17582,12 +17771,20 @@ function authSignedInAs(u,sessionData){
    (update public.profiles set plan = 'vvip' where email = '…').
    A VVIP user's dialog states their current plan is VVIP and
    marks every public tier as included — never as an upgrade.
-   Checkout is NOT connected: PayHere (LKR) and Paddle (USD)
-   merchant accounts do not exist yet, so an Upgrade tap only
-   shows the chosen tier / period / price and states that plainly.
-   No payment is taken, no card details are collected or stored,
-   and no plan ever changes from an Upgrade tap — plans change by
-   admin assignment / VIP key only.
+   Checkout is a PayHere SANDBOX test checkout for LKR only
+   (Paddle / USD is not wired): an Upgrade tap on Advance or VIP,
+   with the "I agree to the Payment & Refund Policy" box ticked,
+   opens the sandbox checkout step for that exact tier / period /
+   price (see the PAYHERE SANDBOX block below planPriceFor). It
+   posts ONLY to sandbox.payhere.lk — no real payment is taken
+   and no card details are collected or stored by this app (the
+   card is entered on PayHere's own sandbox page). No plan ever
+   changes from an Upgrade tap or from the payment return URL —
+   a plan changes only from PayHere's server-side notify
+   callback (a stub, not yet wired) or by admin assignment /
+   VIP key. While the sandbox merchant config holds its
+   placeholders, the checkout button states that plainly and
+   does nothing.
    ── FREE TRIAL ──────────────────────────────────────────────────
    A signed-in user may start ONE 14-day free VIP trial, ever.
    The trial lives SERVER-SIDE in public.profiles (trial_started_at,
@@ -17713,9 +17910,9 @@ function planFetch(u){
 /* Trial end, announced once per session: the Plans & Upgrade
    dialog opens on the VIP card's price (Monthly LKR 9,974 /
    USD 30, Yearly LKR 119,688 / USD 360 — exactly 12 × monthly,
-   no discount) with the usual plain statement that checkout is
-   not yet connected. No payment flow is invented and no card
-   details are ever collected. */
+   no discount) with the usual sandbox-checkout statement. No
+   real payment flow exists yet — only the PayHere sandbox test
+   checkout — and no card details are ever collected here. */
 function trialAnnounceEnd(){
   if(trialEndAnnounced)return;
   trialEndAnnounced=true;
@@ -17859,29 +18056,261 @@ function openPlanModal(){
   pm.classList.add("open");
 }
 function closePlanModal(){var pm=$("planModal"); if(pm){pm.classList.remove("open"); pm.classList.remove("admin-top")}}
+/* ══════════ PAYHERE SANDBOX CHECKOUT — TEST ONLY ══════════
+   This is the app's ONE PayHere configuration, and it is a
+   SANDBOX configuration: PAYHERE_SANDBOX is true, the checkout
+   URL is the sandbox host, and a payment made through it is a
+   test payment — no real money. Going live later means changing
+   THREE things together on the SERVER side as well as here: the
+   Merchant ID, the Merchant Secret and the checkout URL
+   (sandbox.payhere.lk → www.payhere.lk). Nothing else changes:
+   plans, periods, LKR prices, return / cancel / notify URLs all
+   stay the same.
+
+   OWNER SETUP — the two credential fields below hold PLACEHOLDER
+   TEXT ONLY ("YOUR_SANDBOX_MERCHANT_ID" /
+   "YOUR_SANDBOX_MERCHANT_SECRET"). Never paste a real Merchant
+   Secret into this file: the secret must NEVER appear in
+   client-side code or be sent to the browser. The real sandbox
+   secret lives ONLY as a server-side secret (an environment
+   variable / Supabase secret) inside the two server pieces:
+
+   1. HASH ENDPOINT (PAYHERE_CONFIG.hash_endpoint) — STUB, owner
+      wires it to their own backend / a Supabase Edge Function.
+      It receives {merchant_id, order_id, amount, currency} from
+      this page and returns {hash}, where
+        hash = md5(merchant_id + order_id + amount + currency
+                   + md5(merchant_secret).toUpperCase())
+                   .toUpperCase()
+      computed with the SERVER-side secret. This page never
+      computes a hash and never reads the merchant_secret field.
+   2. NOTIFY HANDLER (PAYHERE_CONFIG.notify_url) — STUB, see
+      payhereNotifyHandlerStub below. It is the ONLY place a
+      plan may be upgraded after a payment.
+
+   Until the owner fills in merchant_id AND wires the hash
+   endpoint, payhereConfigured() is false: the checkout button
+   reads "Sandbox checkout not configured — add your sandbox
+   Merchant ID and Secret", stays disabled, and an Upgrade tap
+   can open the checkout step but can never post a payment. */
+var PAYHERE_SANDBOX=true;
+var PAYHERE_CONFIG={
+  merchant_id:"YOUR_SANDBOX_MERCHANT_ID", /* PLACEHOLDER — owner replaces with the sandbox Merchant ID from sandbox.payhere.lk → Integrations */
+  merchant_secret:"YOUR_SANDBOX_MERCHANT_SECRET", /* PLACEHOLDER TEXT ONLY — never a real value, never read by any code in this page; the real secret exists only on the server (hash endpoint + notify handler) */
+  checkout_url:"https://sandbox.payhere.lk/pay/checkout", /* SANDBOX host only — never www.payhere.lk while PAYHERE_SANDBOX is true */
+  hash_endpoint:"", /* STUB — owner sets this to their backend / Supabase Edge Function URL that returns the payment hash (see above) */
+  notify_url:"", /* STUB — owner sets this to their server notify handler URL (see payhereNotifyHandlerStub) */
+  return_url:"https://lutasled.com/?payhere=returned",
+  cancel_url:"https://lutasled.com/?payhere=cancelled&open=plans",
+  currency:"LKR"
+};
+var payhereOrder=null; /* the order built by the open checkout step: {key, period, amountLkr, orderId} — in-memory only, never stored */
+function payhereConfigured(){
+  if(!PAYHERE_SANDBOX)return false;
+  /* Sandbox guard: any other checkout host means NOT configured —
+     this build can never post to the live PayHere host. */
+  if(PAYHERE_CONFIG.checkout_url!=="https://sandbox.payhere.lk/pay/checkout")return false;
+  if(!PAYHERE_CONFIG.merchant_id||PAYHERE_CONFIG.merchant_id==="YOUR_SANDBOX_MERCHANT_ID")return false;
+  if(!PAYHERE_CONFIG.hash_endpoint)return false;
+  return true;
+}
+function payhereFmtAmount(n){return Number(n).toFixed(2)}
+function payhereNewOrderId(key,period){
+  /* Unique per purchase: plan + period + timestamp + random. */
+  var rnd=Math.random().toString(36).slice(2,8).toUpperCase();
+  return "LUTAS-SBX-"+String(key).toUpperCase()+"-"+(period==="yearly"?"YR":"MO")+"-"+Date.now().toString(36).toUpperCase()+"-"+rnd;
+}
 function planUpgradeTap(key){
   /* VVIP is never purchasable: no card, no price, no checkout. It
      is granted only by admin assignment in Supabase. */
   if(key==="vvip")return;
-  /* No fake checkout: show exactly what was chosen and state that
-     checkout is not connected yet. The plan does NOT change here. */
+  /* The sandbox checkout starts only with the agreement box
+     ticked — otherwise say so plainly and point at the box. The
+     agreement is per-purchase and in-session only; it is never
+     stored anywhere. */
+  var agree=$("planAgreePay");
+  if(!agree||!agree.checked){
+    var row=$("planAgreeRow");
+    if(row){row.classList.add("flash"); row.scrollIntoView({block:"nearest",behavior:"smooth"}); setTimeout(function(){row.classList.remove("flash")},2600)}
+    var note=$("planCheckoutNote"); if(!note)return;
+    note.innerHTML="";
+    var b=document.createElement("b");
+    b.textContent="Tick the agreement box first. ";
+    note.appendChild(b);
+    note.appendChild(document.createTextNode("The PayHere sandbox checkout starts only after you tick 'I agree to the Payment & Refund Policy' above. This is a sandbox test payment — no real money is charged."));
+    note.hidden=false;
+    note.scrollIntoView({block:"nearest",behavior:"smooth"});
+    return;
+  }
+  payhereOpenStep(key);
+}
+/* Opens the checkout step for the exact plan / period / price
+   currently chosen in the dialog and builds a fresh unique
+   order_id for it. Fills the PayHere form's hidden fields from
+   PAYHERE_CONFIG (never the secret — there is no secret field).
+   The Pay button is enabled only when payhereConfigured(). */
+function payhereOpenStep(key){
   var pr=planPriceFor(key);
+  var period=planBilling;
+  payhereOrder={key:key,period:period,amountLkr:pr.lkr,orderId:payhereNewOrderId(key,period)};
+  var step=$("payhereStep"); if(!step)return;
+  var sum=$("payhereSummary");
+  if(sum)sum.textContent="Test payment for LUTAS LED "+PLAN_DEFS[key].name+" — "+(period==="yearly"?"Yearly":"Monthly")+": "+planFmtLkr(pr.lkr)+(period==="yearly"?" per year":" per month")+" ("+payhereFmtAmount(pr.lkr)+" LKR). SANDBOX — test payment, no real money.";
+  var oid=$("payhereOrderId"); if(oid)oid.textContent=payhereOrder.orderId;
+  /* Prefill the buyer fields from the signed-in account when
+     known; the buyer can edit every field before paying. */
+  try{
+    if(typeof authUser!=="undefined"&&authUser){
+      var em=$("payhereEmail"); if(em&&!em.value&&authUser.email)em.value=authUser.email;
+      var meta=authUser.user_metadata||{};
+      var full=String(meta.full_name||meta.name||"").trim();
+      if(full){
+        var parts=full.split(/\s+/);
+        var fn=$("payhereFirstName"); if(fn&&!fn.value)fn.value=parts[0];
+        var ln=$("payhereLastName"); if(ln&&!ln.value&&parts.length>1)ln.value=parts.slice(1).join(" ");
+      }
+    }
+  }catch(e){}
+  var err=$("payhereErr"); if(err)err.textContent="";
+  var form=$("payhereForm"); if(form)form.action=PAYHERE_CONFIG.checkout_url;
+  var set=function(id,v){var el=$(id); if(el)el.value=v};
+  set("payhereFMid",PAYHERE_CONFIG.merchant_id);
+  set("payhereFReturn",PAYHERE_CONFIG.return_url);
+  set("payhereFCancel",PAYHERE_CONFIG.cancel_url);
+  set("payhereFNotify",PAYHERE_CONFIG.notify_url);
+  set("payhereFOrder",payhereOrder.orderId);
+  set("payhereFItems","LUTAS LED "+PLAN_DEFS[key].name+" — "+(period==="yearly"?"Yearly":"Monthly"));
+  set("payhereFAmount",payhereFmtAmount(pr.lkr));
+  set("payhereFHash","");
+  var btn=$("payherePayBtn");
+  if(btn){
+    if(payhereConfigured()){btn.disabled=false; btn.textContent="Continue to PayHere sandbox — "+planFmtLkr(pr.lkr)}
+    else{btn.disabled=true; btn.textContent="Sandbox checkout not configured — add your sandbox Merchant ID and Secret"}
+  }
+  var note=$("planCheckoutNote"); if(note)note.hidden=true;
+  step.hidden=false;
+  step.scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+function payhereCloseStep(){
+  var step=$("payhereStep"); if(step)step.hidden=true;
+  payhereOrder=null;
+}
+/* The Pay button's submit: NEVER posts directly. It first asks
+   the owner's server hash endpoint for this order's hash (the
+   endpoint holds the secret and computes
+   md5(merchant_id + order_id + amount + currency +
+   md5(merchant_secret))), fills the form's hash field with the
+   answer, and only then submits the form to the SANDBOX host.
+   Any failure stops here with a plain message — a broken payment
+   is never posted. */
+function payhereStartCheckout(ev){
+  if(ev)ev.preventDefault();
+  if(!payhereOrder)return;
+  var err=$("payhereErr");
+  function fail(m){if(err)err.textContent=m}
+  if(!payhereConfigured()){fail("Sandbox checkout not configured — add your sandbox Merchant ID and Secret, and wire the server hash endpoint, before a test payment can start. Nothing was sent."); return}
+  if(PAYHERE_CONFIG.checkout_url!=="https://sandbox.payhere.lk/pay/checkout"){fail("Sandbox guard: the configured checkout URL is not the PayHere sandbox URL, so nothing was sent."); return}
+  var pairs=[["payhereFirstName","payhereFFirst","first name"],["payhereLastName","payhereFLast","last name"],["payhereEmail","payhereFEmail","email"],["payherePhone","payhereFPhone","phone"],["payhereAddress","payhereFAddress","address"],["payhereCity","payhereFCity","city"]];
+  for(var i=0;i<pairs.length;i++){
+    var src=$(pairs[i][0]), dst=$(pairs[i][1]);
+    var v=src?src.value.trim():"";
+    if(!v){fail("Add your "+pairs[i][2]+" above — PayHere needs buyer details for the test payment. Nothing was sent."); if(src)src.focus(); return}
+    if(dst)dst.value=v;
+  }
+  var emailEl=$("payhereFEmail");
+  if(emailEl&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value)){fail("That email doesn't look complete — PayHere needs a valid email for the test payment. Nothing was sent."); return}
+  var btn=$("payherePayBtn");
+  if(btn){btn.disabled=true; btn.textContent="Getting secure hash from your server…"}
+  fetch(PAYHERE_CONFIG.hash_endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({merchant_id:PAYHERE_CONFIG.merchant_id,order_id:payhereOrder.orderId,amount:payhereFmtAmount(payhereOrder.amountLkr),currency:PAYHERE_CONFIG.currency})})
+    .then(function(r){if(!r.ok)throw new Error("hash endpoint "+r.status); return r.json()})
+    .then(function(d){
+      if(!d||!d.hash)throw new Error("hash endpoint returned no hash");
+      var h=$("payhereFHash"); if(h)h.value=String(d.hash);
+      var f=$("payhereForm"); if(!f)throw new Error("checkout form missing");
+      f.action=PAYHERE_CONFIG.checkout_url;
+      f.submit();
+    })
+    .catch(function(){
+      if(btn){btn.disabled=false; btn.textContent="Continue to PayHere sandbox — "+planFmtLkr(payhereOrder.amountLkr)}
+      fail("Couldn't get a payment hash from your server hash endpoint — nothing was sent to PayHere. Check the endpoint is wired and try again.");
+    });
+}
+/* ── PAYHERE NOTIFY HANDLER — STUB (server-side only) ────────
+   OWNER WIRES THIS on their own backend / as a Supabase Edge
+   Function at PAYHERE_CONFIG.notify_url. It NEVER runs in this
+   browser page — the function below is an inert marker so the
+   stub is easy to find; the real handler is server code:
+
+     1. PayHere POSTs merchant_id, order_id, payment_id,
+        payhere_amount, payhere_currency, status_code, md5sig
+        to notify_url after every sandbox payment attempt.
+     2. Verify BEFORE trusting it, using the SERVER-side secret:
+          md5sig must equal
+          md5(merchant_id + order_id + payhere_amount
+              + payhere_currency + status_code
+              + md5(merchant_secret)).toUpperCase()
+     3. status_code "2" means the payment succeeded. ONLY then —
+        and only after the signature check — write the plan from
+        the order (Advance / VIP, monthly / yearly) to that
+        user's public.profiles.plan in Supabase, and record the
+        order_id so a replayed notify can never upgrade twice.
+     4. Answer HTTP 200 either way so PayHere stops retrying.
+
+   The return_url landing below deliberately does NONE of this:
+   a browser return can be faked by anyone, so it never upgrades
+   a plan. */
+function payhereNotifyHandlerStub(){
+  /* Inert in the browser build — the real handler is server-side
+     (see the block above). Kept as a named stub so the wiring
+     point is explicit and searchable. */
+  return null;
+}
+/* Payment return landing: PayHere sends the browser back to
+   return_url (?payhere=returned) after a payment attempt, or to
+   cancel_url (?payhere=cancelled&open=plans) on cancel. Show the
+   result plainly and upgrade NOTHING — the plan changes only
+   from the notify callback above, which is not wired yet. */
+function payhereHandleReturn(){
+  var q;
+  try{q=new URLSearchParams(window.location.search||"")}catch(e){return}
+  var ph=q.get("payhere"); if(!ph)return;
+  if(isClientViewRequest())return;
+  openPlanModal();
   var note=$("planCheckoutNote"); if(!note)return;
   note.innerHTML="";
   var b=document.createElement("b");
-  b.textContent=PLAN_DEFS[key].name+" — "+(planBilling==="yearly"?"Yearly":"Monthly")+": "+planFmtLkr(pr.lkr)+" / "+planFmtUsd(pr.usd)+(planBilling==="yearly"?" per year":" per month")+". ";
-  note.appendChild(b);
-  note.appendChild(document.createTextNode("Checkout is not yet connected — PayHere (for LKR) and Paddle (for USD) merchant accounts are not set up, so no payment can be taken here and no card details are collected. For now, plans are changed by admin assignment or a VIP key only; your plan stays "+planName()+" until then."));
+  var status=String(q.get("status")||"").toLowerCase();
+  if(ph==="cancelled"){
+    b.textContent="Sandbox payment cancelled. ";
+    note.appendChild(b);
+    note.appendChild(document.createTextNode("You cancelled at the PayHere sandbox — no test payment was completed, no real money was involved, and your plan is unchanged: it stays "+planName()+"."));
+    toast("PayHere sandbox payment cancelled — plan unchanged.");
+  }else if(ph==="failed"||status==="failed"||status==="-1"||status==="-2"){
+    b.textContent="Sandbox payment failed. ";
+    note.appendChild(b);
+    note.appendChild(document.createTextNode("The PayHere sandbox reported the test payment as failed — no real money was involved, and your plan is unchanged: it stays "+planName()+". You can try the sandbox checkout again."));
+    toast("PayHere sandbox payment failed — plan unchanged.");
+  }else{
+    b.textContent="Test payment returned — plan not upgraded yet (notify not wired)";
+    note.appendChild(b);
+    note.appendChild(document.createTextNode(" PayHere sent you back from the sandbox, but a return alone never upgrades a plan: the upgrade happens only when PayHere's notify callback reaches the server notify handler, which is still a stub. Your plan stays "+planName()+" until that is wired."));
+    toast("Test payment returned — plan not upgraded yet (notify not wired)");
+  }
   note.hidden=false;
-  note.scrollIntoView({block:"nearest",behavior:"smooth"});
+  note.scrollIntoView({block:"nearest"});
 }
 function initPlans(){
   if(isClientViewRequest())return;
   var pm=$("planPerMonthly"), py=$("planPerYearly");
-  if(pm)pm.addEventListener("click",function(){planBilling="monthly"; planRenderPrices()});
-  if(py)py.addEventListener("click",function(){planBilling="yearly"; planRenderPrices()});
+  if(pm)pm.addEventListener("click",function(){planBilling="monthly"; payhereCloseStep(); planRenderPrices()});
+  if(py)py.addEventListener("click",function(){planBilling="yearly"; payhereCloseStep(); planRenderPrices()});
   var ba=$("planBtnAdvance"); if(ba)ba.addEventListener("click",function(){planUpgradeTap("advance")});
   var bv=$("planBtnVip"); if(bv)bv.addEventListener("click",function(){planUpgradeTap("vip")});
+  /* PayHere sandbox checkout step: the form NEVER submits on its
+     own — payhereStartCheckout fetches the server-side hash first
+     and only then posts the form to the sandbox host. */
+  var pf=$("payhereForm"); if(pf)pf.addEventListener("submit",payhereStartCheckout);
+  var pb=$("payhereBackBtn"); if(pb)pb.addEventListener("click",payhereCloseStep);
   var pc=$("planClose"); if(pc)pc.addEventListener("click",closePlanModal);
   var pmo=$("planModal"); if(pmo)pmo.addEventListener("click",function(ev){if(ev.target===this)closePlanModal()});
   var apb=$("authPlanBtn"); if(apb)apb.addEventListener("click",function(){closeAuthDialog(); openPlanModal()});
@@ -17902,6 +18331,10 @@ function initPlans(){
     }
   },60000);
   planApplyEffective();
+  /* A PayHere sandbox return / cancel lands back on the app with
+     ?payhere=… in the URL: show the result (and upgrade nothing —
+     see payhereHandleReturn). */
+  payhereHandleReturn();
 }
 /* ══════════ ADMIN DASHBOARD — separate page, SEPARATE LOGIN ══
    A full page (#adminPage) that replaces the editor view, at its
@@ -22291,8 +22724,26 @@ function sanitizeModifier(o){
        gizmo and the Object tab open on that layer. A layout with
        no units list keeps the flat build as its one layer (the
        list is built from it on first read — scaffoldUnits). */
-    if(Array.isArray(p.units)&&sct){
-      p.units=p.units.filter(function(u){return u&&typeof u==="object"}).map(function(u){
+    /* The layers list and the selected-layer index are read from the
+       SOURCE (o.params), never from p: p is built by copying only the
+       keys in MOD_DEFS defaults, and the scaffold defaults carry no
+       units / sel keys — reading them from p always found nothing,
+       so every sanitize (Undo / Redo restore, layout load) silently
+       dropped every scaffolding layer except the selected one, which
+       scaffoldUnits then rebuilt alone from the flat params. */
+    var scafSrcUnits=(o.params&&Array.isArray(o.params.units))?JSON.parse(JSON.stringify(o.params.units)):null;
+    var scafSrcSel=(o.params&&isFinite(+o.params.sel))?Math.round(+o.params.sel):0;
+    if(scafSrcUnits&&sct){
+      /* The source flat params ARE the selected layer's live state
+         (panel / gizmo edits land there first; units[sel] can lag
+         behind until a mirror-save). Fold them into the selected
+         unit BEFORE validation, so the flat mirror below can never
+         resurrect stale values over the layer's latest edits. */
+      if(scafSrcUnits.length){
+        var su0=scafSrcUnits[clamp(scafSrcSel,0,scafSrcUnits.length-1)];
+        if(su0&&typeof su0==="object")for(var fk=0;fk<SCAFFOLD_UNIT_KEYS.length;fk++){var fkk=SCAFFOLD_UNIT_KEYS[fk]; if(o.params[fkk]!==undefined)su0[fkk]=Array.isArray(o.params[fkk])?o.params[fkk].slice():o.params[fkk]}
+      }
+      p.units=scafSrcUnits.filter(function(u){return u&&typeof u==="object"}).map(function(u){
         var ut=SCAFFOLD_TYPES[u.system]?SCAFFOLD_TYPES[u.system]:sct;
         u.system=SCAFFOLD_TYPES[u.system]?u.system:"layher";
         u.bayL=scaSnap(ut.bays,u.bayL,2.07); u.bayW=scaSnap(ut.bays,u.bayW,2.07);
@@ -22315,12 +22766,13 @@ function sanitizeModifier(o){
         u.name=(typeof u.name==="string"&&u.name)?u.name:"Scaffolding";
         return u;
       });
-      p.sel=isFinite(+p.sel)?clamp(Math.round(+p.sel),0,Math.max(0,p.units.length-1)):0;
-      if(p.units.length){
+      if(!p.units.length){delete p.units; p.sel=0} /* no valid layer survived — the flat build rebuilds as the one layer on first read */
+      else{
+        p.sel=clamp(scafSrcSel,0,p.units.length-1);
         var au=p.units[p.sel];
         for(var uk2=0;uk2<SCAFFOLD_UNIT_KEYS.length;uk2++){var kk2=SCAFFOLD_UNIT_KEYS[uk2]; if(au[kk2]!==undefined)p[kk2]=Array.isArray(au[kk2])?au[kk2].slice():au[kk2]}
       }
-    }else if(!Array.isArray(p.units)){p.sel=0}
+    }else{p.sel=0}
   }
   /* Props: validate each imported model entry. The embedded model
      data is kept only as a plausible data URL within the embed
