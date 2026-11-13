@@ -4675,9 +4675,9 @@ function specText(){
     if(nCustom)lines.push("  Custom cabinet resolutions: "+nCustom+" cabinet(s) with their own pixel size (see CSV)");
     lines.push("  Signal: start "+d.corner+", path "+d.path+", "+d._pm.ports.length+" port(s)");
     if(indMode()){
-      lines.push("  3D (independent — its own position / facing, which the 2D layout above is unchanged by; size is shared): stage X "+fmtMeasure(effX3(d))+" · stage Z "+fmtMeasure(effZ3(d))+" · bottom edge "+fmtMeasure(baseYOf(d))+" above floor (never below 0) · facing yaw "+Math.round(effYaw3(d))+"° · tilt X "+Math.round(+d.rotX3d||0)+"° / Z "+Math.round(+d.rotZ3d||0)+"° · 3D size "+effCols3(d)+" × "+effRows3(d)+" cabs ("+fmtMeasurePair(effWm3(d),effHm3(d))+")"+(bendText(d)?(" · "+bendText(d)):(secRotText(d)?"":" · flat"))+(secRotText(d)?(" · "+secRotText(d)):"")+(bendInfo(d).active&&Math.abs((+d.bendPivot||0.5)-0.5)>0.01?(" · bend pivot "+Math.round((+d.bendPivot||0)*100)+"% along the wall"):""));
+      lines.push("  3D (independent — its own position / facing, which the 2D layout above is unchanged by; size is shared): stage X "+fmtMeasure(effX3(d))+" · stage Z "+fmtMeasure(effZ3(d))+" · bottom edge "+fmtMeasure(baseYOf(d))+" · lowest point "+fmtMeasure(lowestYOf(d))+" above floor (never below 0) · facing yaw "+Math.round(effYaw3(d))+"° · tilt X "+Math.round(+d.rotX3d||0)+"° / Z "+Math.round(+d.rotZ3d||0)+"° · 3D size "+effCols3(d)+" × "+effRows3(d)+" cabs ("+fmtMeasurePair(effWm3(d),effHm3(d))+")"+(bendText(d)?(" · "+bendText(d)):(secRotText(d)?"":" · flat"))+(secRotText(d)?(" · "+secRotText(d)):"")+(bendInfo(d).active&&Math.abs((+d.bendPivot||0.5)-0.5)>0.01?(" · bend pivot "+Math.round((+d.bendPivot||0)*100)+"% along the wall"):""));
     }else{
-      lines.push("  3D: bottom edge "+fmtMeasure(baseYOf(d))+" above floor (never below 0) · depth Z "+fmtMeasureSigned(+d.z||0)+((+d.rotX3d||+d.rotY3d||+d.rotZ3d)?(" · 3D rotation Y "+Math.round(+d.rotY3d||0)+"° · tilt X "+Math.round(+d.rotX3d||0)+"° / Z "+Math.round(+d.rotZ3d||0)+"° (gizmo, Y shared with the 2D degree)"):"")+(bendText(d)?(" · "+bendText(d)):(secRotText(d)?"":" · flat"))+(secRotText(d)?(" · "+secRotText(d)):"")+(bendInfo(d).active&&Math.abs((+d.bendPivot||0.5)-0.5)>0.01?(" · bend pivot "+Math.round((+d.bendPivot||0)*100)+"% along the wall"):""));
+      lines.push("  3D: bottom edge "+fmtMeasure(baseYOf(d))+" · lowest point "+fmtMeasure(lowestYOf(d))+" above floor (never below 0) · depth Z "+fmtMeasureSigned(+d.z||0)+((+d.rotX3d||+d.rotY3d||+d.rotZ3d)?(" · 3D rotation Y "+Math.round(+d.rotY3d||0)+"° · tilt X "+Math.round(+d.rotX3d||0)+"° / Z "+Math.round(+d.rotZ3d||0)+"° (gizmo, Y shared with the 2D degree)"):"")+(bendText(d)?(" · "+bendText(d)):(secRotText(d)?"":" · flat"))+(secRotText(d)?(" · "+secRotText(d)):"")+(bendInfo(d).active&&Math.abs((+d.bendPivot||0.5)-0.5)>0.01?(" · bend pivot "+Math.round((+d.bendPivot||0)*100)+"% along the wall"):""));
     }
     cablingLines(d).forEach(function(l){lines.push("  "+l)});
     lines.push("");
@@ -6744,9 +6744,15 @@ $("simShare").addEventListener("click",function(){
 });
 
 /* ══════════ 3D VIEW — real WebGL stage (three.js) ══════════
-   World units are metres. Floor plane is height 0; a display's bottom edge
-   sits at baseYOf() and can never go below the floor. Stage X = layout X,
-   stage Z (towards the audience) = layout Y, wall faces look towards +Z. */
+   World units are metres. Floor plane is height 0; a display's LOWEST
+   POINT — its real bottom after the X / Z tilts — sits at lowestYOf()
+   and can never go below the surface it stands on (the stage deck when
+   one is shown, otherwise floor 0). For an upright wall the lowest
+   point IS its bottom edge at baseYOf(); a wall tilted flat (rotX ±90°)
+   rests on its face, so its stored bottom edge legitimately goes
+   negative — what is clamped is the tilted geometry, never the stored
+   edge alone. Stage X = layout X, stage Z (towards the audience) =
+   layout Y, wall faces look towards +Z. */
 var view3dOpen=false, T3=null;
 var CAB_DEPTH=0.09;
 var matCache={}, bodyMat=null, hitMat=null, deckSideMat=null, deckTopMat=null, edgeMat=null, unitBox=null, unitPlane=null;
@@ -6754,7 +6760,67 @@ function mPerPxX(d){return d.cabW/d.resX/1000}
 function mPerPxY(d){return d.cabH/d.resY/1000}
 function dispWm(d){return d.cols*d.cabW/1000}
 function dispHm(d){return d.rows*d.cabH/1000}
-function baseYOf(d){return Math.max(0,(state.stage3d.show?+state.stage3d.deck||0:0)+Math.max(0,+d.base||0))}
+function supportYOf(){return state.stage3d.show?+state.stage3d.deck||0:0}
+/* Tilt geometry of a display, in its group (centre-pivot) frame.
+   The group's rotation order is YXZ and yaw never changes height, so
+   the world-Y of a local point (x, y, z) is
+     cos(rx)·sin(rz)·x + cos(rx)·cos(rz)·y − sin(rx)·z.
+   half = how far the tilted box's vertical half-extent reaches from
+   its centre; shift = the vertical offset of the local bounding-box
+   centre (a bent wall's chain bows in local Z and its pivot can sit
+   off-centre in X). The local box spans the bend chain's points in
+   X / Z (plus the cabinet depth), the full wall height in Y, and the
+   cabinets' row-band pitching is ignored — that only ever shrinks the
+   true extent, so this box is conservative: clamping against it can
+   stop a wall a touch early, never let it sink through the floor. */
+function tiltGeom3(d,rxDeg,rzDeg){
+  var rx=(rxDeg||0)*Math.PI/180, rz=(rzDeg||0)*Math.PI/180;
+  var W=effWm3(d), H=effHm3(d), dep=depthOf(d);
+  var mnx=-W/2, mxx=W/2, mnz=0, mxz=0;
+  try{
+    var pts=secRotChainOf(d,effCols3(d)).pts;
+    if(pts&&pts.length){mnx=1e18; mxx=-1e18; mnz=1e18; mxz=-1e18;
+      pts.forEach(function(p){if(p.x<mnx)mnx=p.x; if(p.x>mxx)mxx=p.x; if(p.z<mnz)mnz=p.z; if(p.z>mxz)mxz=p.z})}
+  }catch(e){}
+  var ex=Math.max(0.01,mxx-mnx), ez=Math.max(0.01,(mxz-mnz)+dep);
+  var cx=Math.cos(rx), sx=Math.sin(rx);
+  var half=ex/2*Math.abs(cx*Math.sin(rz))+H/2*Math.abs(cx*Math.cos(rz))+ez/2*Math.abs(sx);
+  var shift=cx*Math.sin(rz)*((mnx+mxx)/2)-sx*((mnz+mxz)/2);
+  return {half:half, shift:shift, h:H};
+}
+/* The lowest baseYOf() value at which the display's real lowest point
+   still rests exactly on its support surface: support + (half − H/2 −
+   shift). Upright that is exactly the support height, as always; flat
+   on its face it is support − (H − cabinet depth)/2, so the stored
+   bottom edge may go that far negative and no further. */
+function minBaseAbsOf(d,rxDeg,rzDeg){
+  var g=tiltGeom3(d,rxDeg!==undefined?rxDeg:(+d.rotX3d||0),rzDeg!==undefined?rzDeg:(+d.rotZ3d||0));
+  return supportYOf()+g.half-g.h/2-g.shift;
+}
+function baseYOf(d){
+  var v=supportYOf()+(+d.base||0);
+  var mn=minBaseAbsOf(d);
+  return v<mn?mn:v;
+}
+/* The display's real lowest point in the world, after its tilts. */
+function lowestYOf(d){
+  var g=tiltGeom3(d,+d.rotX3d||0,+d.rotZ3d||0);
+  return baseYOf(d)+g.h/2+g.shift-g.half;
+}
+/* After a tilt or size change, lift a display whose real lowest point
+   would sink below its support surface back onto that surface. The
+   pre-lift lowest point is computed from the UNCLAMPED stored height
+   (support + d.base): lowestYOf() reads baseYOf(), which already
+   clamps at the floor, so it could never report a sink and the lift
+   would never fire — a flat screen rotated back upright kept its
+   negative stored base instead of returning to 0. Only ever raises —
+   lowering stays the user's own move. */
+function liftDisplayToFloor(d){
+  var sup=supportYOf();
+  var g=tiltGeom3(d,+d.rotX3d||0,+d.rotZ3d||0);
+  var lowRaw=sup+(+d.base||0)+g.h/2+g.shift-g.half;
+  if(lowRaw<sup-1e-9)d.base=Math.round(((+d.base||0)+(sup-lowRaw))*1000)/1000;
+}
 /* Bend chain: the wall's shape in its local frame (metres, centred on the
    chain's midpoint), as flat sections + joint points. Three shapes, by
    panel kind (see bendInfo):
@@ -10865,6 +10931,14 @@ function attach3DPointer(el){
             if(snapOn)nZ=Math.round(nZ/rStep)*rStep;
             gizDrag.cur.rotZ=nZ; gizDrag.g.rotation.z=nZ*Math.PI/180;
           }
+          /* Tilting changes the wall's real lowest point: if the new
+             tilt would push it below the floor, the wall rides up so
+             its lowest point stays exactly on the floor — it never
+             sinks through, and the lift is one-way from the drag's
+             start height, so tilting back never drops it either. */
+          var gRot=tiltGeom3(dG,gizDrag.cur.rotX,gizDrag.cur.rotZ);
+          var needBaseR=supportYOf()+gRot.half-gRot.h/2-gRot.shift;
+          if(gizDrag.cur.baseAbs<needBaseR){gizDrag.cur.baseAbs=needBaseR; gizDrag.g.position.y=needBaseR+effHm3(dG)/2}
         }else if(gizDrag.info.kind==="scale"||gizDrag.info.kind==="scaleplane"){
           /* Scale drag: the pointer's travel along the dragged axis,
              relative to the wall's current size on that axis, is the
@@ -10889,7 +10963,7 @@ function attach3DPointer(el){
           var cxT=null,czT=null,cbT=null,mxT=null,mzT=null;
           function applyAxis(ax,t){
             if(ax==="x"){cxT=sG.x+t/mPerPxX(dG); mxT=sG.x3+t}
-            else if(ax==="y")cbT=clamp(sG.baseAbs+t,0,10+deckB);
+            else if(ax==="y")cbT=clamp(sG.baseAbs+t,minBaseAbsOf(dG,sG.rotX,sG.rotZ),10+deckB); /* the floor limit is the display's real LOWEST point after its tilts, not its stored bottom edge — a wall lying flat can lower until its face touches the floor */
             else if(ax==="z"){czT=clamp(sG.z+t,-20,20); mzT=clamp(sG.z3+t,-90,90)}
           }
           /* The pointer's travel is measured along the ORIENTED
@@ -10913,20 +10987,28 @@ function attach3DPointer(el){
             if(indMode()){if(snapOn)mzT=Math.round(mzT/gmM)*gmM; gizDrag.cur.z3=mzT; gizDrag.g.position.z=mzT}
             else{if(snapOn)czT=Math.round(czT/gmM)*gmM; gizDrag.cur.z=czT; gizDrag.g.position.z=dG.y*mPerPxY(dG)+czT}
           }
-          if(cbT!==null){if(snapOn)cbT=Math.round(cbT/gmM)*gmM; gizDrag.cur.baseAbs=cbT; gizDrag.g.position.y=cbT+effHm3(dG)/2} /* group origin is the centre: centre height = bottom edge + half the wall height */
+          if(cbT!==null){if(snapOn)cbT=clamp(Math.round(cbT/gmM)*gmM,minBaseAbsOf(dG,sG.rotX,sG.rotZ),10+deckB); gizDrag.cur.baseAbs=cbT; gizDrag.g.position.y=cbT+effHm3(dG)/2} /* group origin is the centre: centre height = bottom edge + half the wall height; the snap is re-clamped so it can never round the lowest point below the floor */
         }
         var cc=gizDrag.cur;
+        /* When a move / tilt is stopped by the floor, the readout says
+           so — with the real lowest point, not a silent stop. */
+        var floorNote="";
+        if(gizDrag.info.kind!=="scale"&&gizDrag.info.kind!=="scaleplane"){
+          var gLow=tiltGeom3(dG,cc.rotX,cc.rotZ);
+          var lowNow=cc.baseAbs+gLow.h/2+gLow.shift-gLow.half;
+          if(lowNow<=supportYOf()+0.005)floorNote=" · lowest point "+fmtMeasure(Math.max(supportYOf(),lowNow))+" — at floor, cannot go lower";
+        }
         if(gizDrag.info.kind==="scale"||gizDrag.info.kind==="scaleplane"){
           updateV3Readout("Gizmo scale · "+escapeHtml(dG.name)+" — "+cc.cols+" × "+cc.rows+" cabinets · "+fmtMeasurePair(cc.cols*dG.cabW/1000,cc.rows*dG.cabH/1000)+" · "+fmt(cc.cols*dG.resX)+" × "+fmt(cc.rows*dG.resY)+" px · release to apply — size is shared: panel count, resolution, ports, power and weight follow the new size in BOTH views"+(layoutLinked()?"":" (Independent: only position and facing stay 3D-only)"));
         }else if(indMode()){
           var axNoteI="";
           if(gizDrag.info.kind==="rot")axNoteI=" · "+gizDrag.info.axis.toUpperCase()+" ring rotation is 3D only — the 2D layout does not change";
-          updateV3Readout("Gizmo · "+escapeHtml(dG.name)+" — stage X "+fmtMeasure(cc.x3)+" · stage Z "+fmtMeasure(cc.z3)+" · bottom edge "+fmtMeasure(cc.baseAbs)+" · 3D yaw "+Math.round(cc.yaw3)+"°"+((cc.rotX||cc.rotZ)?" · tilt X "+Math.round(cc.rotX||0)+"° / Z "+Math.round(cc.rotZ||0)+"°":"")+axNoteI+" · release to apply — 3D only, the 2D layout is untouched.");
+          updateV3Readout("Gizmo · "+escapeHtml(dG.name)+" — stage X "+fmtMeasure(cc.x3)+" · stage Z "+fmtMeasure(cc.z3)+" · bottom edge "+fmtMeasure(cc.baseAbs)+" · 3D yaw "+Math.round(cc.yaw3)+"°"+((cc.rotX||cc.rotZ)?" · tilt X "+Math.round(cc.rotX||0)+"° / Z "+Math.round(cc.rotZ||0)+"°":"")+axNoteI+floorNote+" · release to apply — 3D only, the 2D layout is untouched.");
         }else{
           var axNote="";
           if(gizDrag.info.kind==="rot")axNote=(gizDrag.info.axis==="y"&&layoutLinked())?" · Y ring is LINKED — this yaw writes the 2D degree, so both layouts share the rotation (placement and depth do not change)":" · "+gizDrag.info.axis.toUpperCase()+" ring rotation is 3D preview only — the 2D layout does not change";
           else if(gizDrag.info.axis&&gizDrag.info.axis.indexOf("z")>=0)axNote=" · Z depth is 3D-only — the 2D layout does not change";
-          updateV3Readout("Gizmo · "+escapeHtml(dG.name)+" — X "+Math.round(cc.x)+" px · bottom edge "+fmtMeasure(cc.baseAbs)+" · depth Z "+fmtMeasureSigned(cc.z)+" · 2D rotation "+Math.round(cc.rot)+"°"+((cc.rotX||cc.rotY||cc.rotZ)?" · 3D preview yaw Y "+Math.round(cc.rotY||0)+"° · tilt X "+Math.round(cc.rotX||0)+"° / Z "+Math.round(cc.rotZ||0)+"°":"")+axNote+" · release to apply.");
+          updateV3Readout("Gizmo · "+escapeHtml(dG.name)+" — X "+Math.round(cc.x)+" px · bottom edge "+fmtMeasure(cc.baseAbs)+" · depth Z "+fmtMeasureSigned(cc.z)+" · 2D rotation "+Math.round(cc.rot)+"°"+((cc.rotX||cc.rotY||cc.rotZ)?" · 3D preview yaw Y "+Math.round(cc.rotY||0)+"° · tilt X "+Math.round(cc.rotX||0)+"° / Z "+Math.round(cc.rotZ||0)+"°":"")+axNote+floorNote+" · release to apply.");
         }
         /* Publish the in-drag transform so the Object tab's fields
            track this gizmo drag LIVE — the display itself is only
@@ -10982,9 +11064,9 @@ function attach3DPointer(el){
         var d=null; state.displays.forEach(function(x){if(x.id===dragDisp)d=x});
         if(d){
           if(indMode()){
-            updateV3Readout("Moving "+escapeHtml(d.name)+" — stage X "+fmtMeasure(g.position.x)+" · stage Z "+fmtMeasure(g.position.z)+" · release to drop. Independent: this move stays in 3D — the 2D layout does not change. Bottom edge stays at "+fmtMeasure(baseYOf(d))+" — never below floor 0.")
+            updateV3Readout("Moving "+escapeHtml(d.name)+" — stage X "+fmtMeasure(g.position.x)+" · stage Z "+fmtMeasure(g.position.z)+" · release to drop. Independent: this move stays in 3D — the 2D layout does not change. Lowest point stays at "+fmtMeasure(lowestYOf(d))+" — never below the floor.")
           }else{
-            var dzNow=g.position.z-d.y*mPerPxY(d); updateV3Readout("Moving "+escapeHtml(d.name)+" — layout X "+Math.round(g.position.x/mPerPxX(d))+" px · depth Z "+fmtMeasureSigned(dzNow)+" · release to drop. Depth is a Z move only — the 2D layout (which has no Z axis) does not change. Bottom edge stays at "+fmtMeasure(baseYOf(d))+" — never below floor 0.")
+            var dzNow=g.position.z-d.y*mPerPxY(d); updateV3Readout("Moving "+escapeHtml(d.name)+" — layout X "+Math.round(g.position.x/mPerPxX(d))+" px · depth Z "+fmtMeasureSigned(dzNow)+" · release to drop. Depth is a Z move only — the 2D layout (which has no Z axis) does not change. Lowest point stays at "+fmtMeasure(lowestYOf(d))+" — never below the floor.")
           }
           /* Object tab fields track the floor drag LIVE (the display
              itself is written on release): publish the in-drag stage
@@ -11090,6 +11172,10 @@ function attach3DPointer(el){
         else if(gInfo.axis==="y")dZ2.rotY3d=Math.round(indMode()?cZ.yaw3:cZ.rotY);
         else if(gInfo.axis==="x")dZ2.rotX3d=Math.round(cZ.rotX);
         else dZ2.rotZ3d=Math.round(cZ.rotZ);
+        /* The drag may have lifted the wall so its new tilt's lowest
+           point stays on the floor — keep that lift in the write. */
+        dZ2.base=clamp(Math.round((cZ.baseAbs-deckB2)*1000)/1000,minBaseAbsOf(dZ2)-deckB2,10);
+        liftDisplayToFloor(dZ2);
       }else if(gInfo.kind==="scale"||gInfo.kind==="scaleplane"){
         /* Scale writes the SHARED cabinet count (cols / rows) in both
            modes — and nothing else: position, depth and rotations are
@@ -11103,6 +11189,7 @@ function attach3DPointer(el){
         if(cZ.rows&&cZ.rows!==dZ2.rows)dZ2.rows=cZ.rows;
         pruneOff(dZ2);
         mirrorSize3(dZ2);
+        liftDisplayToFloor(dZ2); /* a taller wall's lowest point must not sink below the floor */
       }else{
         if(indMode())ensureInd3(dZ2);
         /* In Local / Parent orientation an axis or plane drag travels
@@ -11113,7 +11200,7 @@ function attach3DPointer(el){
         axes.forEach(function(ax){
           if(ax==="x"){if(indMode())dZ2.x3=Math.round(cZ.x3*100)/100; else dZ2.x=Math.round(cZ.x)}
           else if(ax==="z"){if(indMode())dZ2.z3=Math.round(cZ.z3*100)/100; else dZ2.z=Math.round(cZ.z*10)/10}
-          else if(ax==="y")dZ2.base=clamp(cZ.baseAbs-deckB2,0,10);
+          else if(ax==="y")dZ2.base=clamp(Math.round((cZ.baseAbs-deckB2)*1000)/1000,minBaseAbsOf(dZ2)-deckB2,10); /* the floor is the tilted lowest point (see minBaseAbsOf), so a flat wall's stored bottom edge may go negative exactly far enough for its face to rest on the floor */
         });
       }
       gizDrag=null; dragMode=null;
@@ -12539,12 +12626,12 @@ function applyObjField(o,key,v){
     var d=o.disp;
     if(key==="px"){if(layoutLinked())d.x=Math.round(v/mPerPxX(d)); else{ensureInd3(d); d.x3=Math.round(v*1000)/1000}}
     else if(key==="pz"){if(layoutLinked())d.z=clamp(Math.round((v-d.y*mPerPxY(d))*10)/10,-20,20); else{ensureInd3(d); d.z3=Math.round(v*1000)/1000}}
-    else if(key==="py"){var deck=state.stage3d.show?+state.stage3d.deck||0:0; d.base=clamp(r2(v-effHm3(d)/2-deck),0,10)}
-    else if(key==="rx")d.rotX3d=Math.round(normDeg180(v));
-    else if(key==="rz")d.rotZ3d=Math.round(normDeg180(v));
+    else if(key==="py"){var deck=state.stage3d.show?+state.stage3d.deck||0:0; d.base=clamp(r2(v-effHm3(d)/2-deck),Math.round((minBaseAbsOf(d)-deck)*100)/100,10)} /* centre height's floor is the tilted lowest point: a flat wall's centre can go down to half its cabinet depth, not half its height */
+    else if(key==="rx"){d.rotX3d=Math.round(normDeg180(v)); liftDisplayToFloor(d)}
+    else if(key==="rz"){d.rotZ3d=Math.round(normDeg180(v)); liftDisplayToFloor(d)}
     else if(key==="ry"){var yv=Math.round(normDeg180(v)); if(layoutLinked()){d.rotation=normDeg180(-yv); d.rotY3d=0} else{ensureInd3(d); d.rotY3d=yv}}
-    else if(key==="sx"){var nc=clamp(Math.round(v/(d.cabW/1000)),1,50); if(nc!==d.cols){d.cols=nc; pruneOff(d); mirrorSize3(d)}}
-    else if(key==="sy"){var nr=clamp(Math.round(v/(d.cabH/1000)),1,30); if(nr!==d.rows){d.rows=nr; pruneOff(d); mirrorSize3(d)}}
+    else if(key==="sx"){var nc=clamp(Math.round(v/(d.cabW/1000)),1,50); if(nc!==d.cols){d.cols=nc; pruneOff(d); mirrorSize3(d); liftDisplayToFloor(d)}}
+    else if(key==="sy"){var nr=clamp(Math.round(v/(d.cabH/1000)),1,30); if(nr!==d.rows){d.rows=nr; pruneOff(d); mirrorSize3(d); liftDisplayToFloor(d)}}
     return;
   }
   if(o.kind==="truss"){
