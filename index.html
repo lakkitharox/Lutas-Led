@@ -1672,7 +1672,6 @@ html.admin-boot #adminPage{display:block}
 <div id="notifPanel" hidden role="dialog" aria-label="Notifications — client comments and reminders">
   <div class="notif-head"><b>Notifications</b><button class="btn small" type="button" id="notifClose">Close</button></div>
   <p class="notif-note" id="notifSignInNote" hidden></p>
-  <p class="notif-note">Comments from clients on your shared links, grouped by project / shared link with the newest activity first. A client's Reminder appears here as a new notification on the comment it belongs to. You can Like a comment, react to it, or mark it Done — the client sees your reaction and the Done tick in their view. Tap a project name to open that design in client view in a new tab. Names are self-reported, not verified. Notifications are per-device / per-browser: read state is kept in this browser only, is not synced across devices, and there is no push or email alert — new comments are checked when the app opens, when this panel opens, and every few minutes while the app is open.</p>
   <p class="cc-err" id="notifErr"></p>
   <div class="cc-list" id="notifList"></div>
 </div>
@@ -1779,7 +1778,7 @@ html.admin-boot #adminPage{display:block}
              the editing look exactly. -->
         <div class="rs-panel" id="renderSettingsPanel">
           <div class="rs-head"><b>Render settings</b><span>Render only · HDRI day / night</span></div>
-          <p class="hint" style="margin:2px 0 8px">The light in Render comes from the HDRI environment — pick Day for bright daylight or Night for the dark night environment, then the beams, light pools, colours and screen content read against it.</p>
+          <p class="hint" style="margin:2px 0 8px">Render light comes from the HDRI environment — Day or Night.</p>
           <div class="rs-sec open" data-rssec>
             <button type="button" class="rs-sec-head" aria-expanded="true">Graphics <span class="rs-chev">▾</span></button>
             <div class="rs-sec-body">
@@ -1820,7 +1819,7 @@ html.admin-boot #adminPage{display:block}
               <div class="rs-slider" style="margin-top:8px"><div class="rs-row"><span class="rs-lab">Environment intensity</span><output id="rsHdriIOut">100%</output></div><input type="range" id="rsHdriI" min="0" max="200" step="5" value="100" aria-label="Environment intensity — strength of the HDRI image-based light"></div>
               <div class="rs-col"><span class="rs-lab">Backdrop</span><input type="color" id="rsBackdrop" value="#05070a" aria-label="Backdrop colour behind the stage"></div>
               <div class="rs-row" style="margin-top:8px"><span class="rs-lab">Ground — floor under the stage</span><span class="rs-fx"><button type="button" id="rsGroundBtn" class="on">On</button></span></div>
-              <p class="hint">A massive dark floor plane under the whole setup, standing at the deck's base and extending past the camera's view in every direction, so no ground edge is ever visible — it catches the beam pools and shadows across the whole plane. Render only.</p>
+              <p class="hint">Massive floor plane under the whole setup — no ground edge is visible. Render only.</p>
             </div>
           </div>
           <div class="rs-sec open" data-rssec>
@@ -1841,7 +1840,7 @@ html.admin-boot #adminPage{display:block}
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Beam impact — pool on stage</span><output id="rsImpactOut">100%</output></div><input type="range" id="rsImpact" min="0" max="200" step="5" value="100" aria-label="Beam impact — brightness of the light pool and the real spotlight where each beam lands"></div>
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Lens flare</span><output id="rsFlareOut">100%</output></div><input type="range" id="rsFlare" min="0" max="200" step="5" value="100" aria-label="Lens flare — glow at each fixture lens"></div>
               <div class="rs-slider"><div class="rs-row"><span class="rs-lab">Beam shaft in clear air</span><output id="rsClearBeamOut">12%</output></div><input type="range" id="rsClearBeam" min="0" max="60" step="2" value="12" aria-label="Beam shaft in clear air — how much of the beam shaft stays visible when there is no haze"></div>
-              <p class="hint">Beams need haze to read in the air: with no Haze modifier the shafts fade, and only the bright pool where each beam lands and the flare at the lens stay — like a real clear room. Beam spots are capped for performance and cast no shadow.</p>
+              <p class="hint">Beams need haze to read in the air — without a Haze modifier only the landing pool and lens flare stay. Beam spots cast no shadow.</p>
               <button type="button" class="btn small block" id="rsBeamReset">Reset stage lights</button>
             </div>
           </div>
@@ -2220,7 +2219,7 @@ html.admin-boot #adminPage{display:block}
       <div class="tab-pane" id="tab-modifier">
         <div class="plan-lock" id="modPlanLock" hidden>
           <b>Modifiers are locked on the Starter plan</b>
-          <p>Truss, Scaffolding, Lighting, Crowd, Speakers, Haze, Props and Stage Settings are part of the Advance plan. Your 2D and 3D views, screens, PNG / PSD exports and opening .ledx files stay fully open on Starter — only downloading a .ledx file needs VIP.</p>
+          <p>Part of the Advance plan.</p>
           <button class="btn primary small" type="button" id="modPlanUpgrade">Upgrade to Advance</button>
         </div>
         <div class="modlist-hl" id="modListBox">
@@ -2404,7 +2403,7 @@ html.admin-boot #adminPage{display:block}
       </div>
     </div>
     <p class="share-note" id="shareModeNote" style="margin-top:14px">Public — anyone with the link opens the client view directly.</p>
-    <p class="share-note" id="shareScreenNote" style="margin-top:7px">Screen content: nothing is playing on the screens, so the client sees the screens in their layout colours. Start a Simulator source in Render first if you want content on the walls in the client view.</p>
+    <p class="share-note" id="shareScreenNote" style="margin-top:7px">Screen content: nothing playing — the client sees the screens in their layout colours.</p>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
       <button class="btn" id="shareClose">Close</button>
       <button class="btn" id="shareOpenBtn" title="Optional preview — open the client view in a new window to check what the client will see">Open client view</button>
@@ -2440,10 +2439,6 @@ html.admin-boot #adminPage{display:block}
     </div>
     <h3 id="authTitle" style="margin:0 0 8px;font-family:Archivo,sans-serif;text-align:center">LUTAS LED</h3>
     <div id="authSignedOut">
-      <div class="auth-intro-text">
-        <p>LUTAS LED is a web-based digital stage visualisation tool designed to empower stage designers and visual artists to create, plan, and preview their LED stage designs — anytime, anywhere.</p>
-        <p>You are experiencing the Beta Version of LUTAS LED. The platform is still under active development, and you're among the early users exploring a new way to approach stage visualisation.</p>
-      </div>
       <div id="authSignUpFields" hidden>
         <div class="field" style="margin-top:12px"><span>Name</span><input type="text" id="authName" autocomplete="name" placeholder="Your name"></div>
         <div class="field" style="margin-top:8px"><span>Occupation</span><input type="text" id="authOccupation" autocomplete="organization-title" placeholder="e.g. Lighting designer"></div>
@@ -2474,7 +2469,6 @@ html.admin-boot #adminPage{display:block}
       <p class="sub" style="margin:8px 0 0">Your plan: <b id="authPlanName">Starter — Free</b></p>
       <button class="btn block cta-big" type="button" id="authPlanBtn" style="margin-top:12px">Pricing — Plans &amp; Upgrade…</button>
       <button class="btn block" type="button" id="authProjectsBtn" style="margin-top:14px">My designs — open Projects…</button>
-      <p class="auth-note">Your saved designs live in the Projects window: recent projects with Open, Duplicate, Rename and Delete.</p>
       <p class="auth-note auth-policies">Policies — no sign-in needed: <a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy-policy" target="_blank" rel="noopener">Privacy</a> · <a href="/refund-policy" target="_blank" rel="noopener">Refund</a> · <a href="/payment-policy" target="_blank" rel="noopener">Payment</a></p>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
         <button class="btn" type="button" id="authClose2">Close</button>
@@ -2613,7 +2607,7 @@ html.admin-boot #adminPage{display:block}
         <input type="hidden" name="hash" id="payhereFHash">
         <button class="btn primary cta-big" type="submit" id="payherePayBtn" disabled>Sandbox checkout not configured — the server-side hash endpoint is not wired with the real secret yet</button>
       </form>
-      <p class="payhere-note">The payment hash for this order is generated server-side by your own backend / Supabase Edge Function — the sandbox Merchant Secret never appears in this page. After a test payment, PayHere returns you here, but your plan is upgraded ONLY by PayHere's notify callback to your server — never by the return page alone.</p>
+      <p class="payhere-note">Your plan is upgraded only by PayHere's notify callback to the server — never by the return page alone.</p>
       <p class="payhere-err" id="payhereErr" role="alert"></p>
       <button class="btn payhere-back" type="button" id="payhereBackBtn">Back to plans</button>
     </div>
@@ -2957,10 +2951,7 @@ html.admin-boot #adminPage{display:block}
     </header>
     <main class="about-content">
       <p class="about-desc">A New Dimension in Stage Visualisation.</p>
-      <p class="about-desc">LUTAS LED is a web-based digital stage visualisation tool designed to empower stage designers and visual artists to create, plan, and preview their LED stage designs — anytime, anywhere.</p>
-      <p class="about-desc">We'd love to hear your thoughts, suggestions, and feedback as we continue developing the platform.</p>
       <p class="about-desc">Share your feedback: hello@lutas.digital</p>
-      <p class="about-desc">Privacy: visits to LUTAS LED are counted anonymously — a hashed identifier, the country, the device type and how long the page was open. Guests are never identified by name or email, and no IP address is stored. A visit is linked to an account only when that visitor signs in during the visit.</p>
       <div class="about-info"><span>Version</span><strong>V1.0.0.0.3</strong></div>
       <div class="about-info"><span>Developed by</span><strong>Team LUTAS</strong></div>
       <div class="about-info"><span>Created on</span><strong>October 22, 2026</strong></div>
@@ -5967,7 +5958,20 @@ $("mFit").addEventListener("click",function(){closeMenus();fitView()});
    pointerdown (or at the first keydown of a keyboard / typing burst);
    when it closes, the pre-gesture snapshot is pushed ONLY if the layout
    actually changed, so plain clicks, selections and camera moves never
-   burn one of the 5 steps. Any new change clears the redo stack. */
+   burn one of the 5 steps. Any new change clears the redo stack.
+   Selection is NOT layout: the change test (histCanon) ignores which
+   display / modifier is selected and — for a Scaffolding — which of
+   its layers is selected (params.sel plus the flat fields, which are
+   only that layer's mirror; the layers list, params.units, is the
+   build). Before this, every layer switch and modifier selection
+   silently spent one of the 5 steps, so Undo after moving a
+   scaffolding stepped through selections instead of reverting the
+   move, and a few more presses reached the snapshot from before the
+   scaffolding was added and deleted it whole. Restoring a snapshot
+   also keeps the scaffolding layer you were editing selected (the
+   restored build, your place in it), so one Undo after a move puts
+   the scaffolding back where it was — same modifier, every layer —
+   and nothing else about the build changes. */
 var HIST_MAX=5;
 var histUndo=[], histRedo=[], histOpen=false, histBase=null, histCloseT=null, histRestoring=false;
 function histDispData(d){
@@ -5985,6 +5989,26 @@ function histSnapshot(){
     displays:state.displays.map(histDispData),
     modifiers:state.modifiers.map(function(m){return {id:m.id,type:m.type,name:m.name,enabled:m.enabled,params:m.params}})});
 }
+/* The change test for history: a snapshot with its SELECTION
+   stripped. Two snapshots with the same canon are the same layout —
+   a gesture that only moved the selection (another display, another
+   modifier, another scaffolding layer) changed nothing Undo should
+   step through. For a Scaffolding with layers, params.sel and the
+   flat fields are selection (the flat fields mirror the selected
+   layer), so they are stripped and the layers list decides; with no
+   layers left the flat fields ARE the (empty) build and stay. */
+function histCanon(snap){
+  var d; try{d=JSON.parse(snap)}catch(e){return snap}
+  if(!d||typeof d!=="object")return snap;
+  delete d.selId; delete d.selCab; delete d.selModId;
+  var SUK=(typeof SCAFFOLD_UNIT_KEYS!=="undefined"&&SCAFFOLD_UNIT_KEYS)?SCAFFOLD_UNIT_KEYS:["system","bayL","bayW","baysX","baysZ","liftH","lifts","decks","guardrail","bracing","access","loadClass","x","y","z","ry","scale","sclL","sclW","sclH","us"];
+  (d.modifiers||[]).forEach(function(m){
+    if(!m||m.type!=="scaffold"||!m.params)return;
+    delete m.params.sel;
+    if(Array.isArray(m.params.units)&&m.params.units.length)SUK.forEach(function(k){delete m.params[k]});
+  });
+  return JSON.stringify(d);
+}
 function syncEditMenu(){
   var u=$("mUndo"), r=$("mRedo"); if(!u||!r)return;
   u.disabled=!histUndo.length; r.disabled=!histRedo.length;
@@ -6000,7 +6024,7 @@ function histBegin(){
 function histEnd(){
   if(!histOpen)return;
   histOpen=false;
-  if(histBase!==null&&histSnapshot()!==histBase){
+  if(histBase!==null&&histCanon(histSnapshot())!==histCanon(histBase)){
     if(histUndo[histUndo.length-1]!==histBase){histUndo.push(histBase); if(histUndo.length>HIST_MAX)histUndo.shift()}
     histRedo.length=0;
     scheduleAutosave(); /* a real layout change just landed — keep the recovery draft current */
@@ -6015,7 +6039,8 @@ function histScheduleEnd(ms){clearTimeout(histCloseT); histCloseT=setTimeout(his
 function histPushNow(){
   histEnd();
   var s=histSnapshot();
-  if(histUndo[histUndo.length-1]!==s){histUndo.push(s); if(histUndo.length>HIST_MAX)histUndo.shift()}
+  var topS=histUndo.length?histUndo[histUndo.length-1]:null;
+  if(topS!==s&&histCanon(topS||"")!==histCanon(s)){histUndo.push(s); if(histUndo.length>HIST_MAX)histUndo.shift()}
   histRedo.length=0;
   syncEditMenu();
   scheduleAutosave();
@@ -6032,6 +6057,13 @@ window.addEventListener("blur",function(){histEnd()});
 function histRestore(snap){
   var data; try{data=JSON.parse(snap)}catch(e){return false}
   histRestoring=true;
+  /* Scaffolding layer selection survives a restore: which layer is
+     being edited is selection, not build, so the restored snapshot's
+     layer choice never throws the user onto a different layer —
+     undoing a move keeps them on the layer they moved, with that
+     layer's restored build loaded into the flat mirror fields. */
+  var scSelBefore={};
+  state.modifiers.forEach(function(m){if(m.type==="scaffold"&&typeof scaffoldSelIdx==="function")scSelBefore[m.id]=scaffoldSelIdx(m)});
   state.project=data.project||state.project;
   state.layoutLink=(data.layoutLink==="linked")?"linked":"independent";
   $("projectName").value=state.project;
@@ -6043,6 +6075,13 @@ function histRestore(snap){
   state.selId=(data.selId&&state.displays.some(function(d){return d.id===data.selId}))?data.selId:state.displays[0].id;
   state.selCab=data.selCab||null;
   selModId=(data.selModId&&modById(data.selModId))?data.selModId:null;
+  state.modifiers.forEach(function(m){
+    if(m.type!=="scaffold"||!Object.prototype.hasOwnProperty.call(scSelBefore,m.id))return;
+    if(typeof scaffoldUnits!=="function"||typeof scaffoldMirrorLoad!=="function")return;
+    var usR=scaffoldUnits(m); if(!usR.length)return; /* no layers in the restored build — its flat empty build stands as restored */
+    m.params.sel=Math.max(0,Math.min(scSelBefore[m.id],usR.length-1));
+    scaffoldMirrorLoad(m);
+  });
   modSelSeg=-1; modSelFix=-1; fixSelSet={}; fixSelAnchor=-1; trussDraw=null;
   syncModifierPanel._ss=null; syncModifierPanel._pk=null; syncCustomLists._ts=null; syncCustomLists._fs=null;
   render();
@@ -6051,8 +6090,8 @@ function histRestore(snap){
 }
 function doUndo(){
   histEnd();
-  var cur=histSnapshot(), prev=null, c;
-  while(histUndo.length){c=histUndo.pop(); if(c!==cur){prev=c; break}}
+  var cur=histSnapshot(), curC=histCanon(cur), prev=null, c;
+  while(histUndo.length){c=histUndo.pop(); if(histCanon(c)!==curC){prev=c; break}}
   if(prev===null){syncEditMenu(); toast("Nothing to undo — Undo keeps the last "+HIST_MAX+" changes."); return}
   histRedo.push(cur); if(histRedo.length>HIST_MAX)histRedo.shift();
   if(histRestore(prev))toast("Undo — "+histUndo.length+" undo step"+(histUndo.length===1?"":"s")+" left, "+histRedo.length+" redo available.");
@@ -6061,8 +6100,8 @@ function doUndo(){
 }
 function doRedo(){
   histEnd();
-  var cur=histSnapshot(), nxt=null, c;
-  while(histRedo.length){c=histRedo.pop(); if(c!==cur){nxt=c; break}}
+  var cur=histSnapshot(), curC=histCanon(cur), nxt=null, c;
+  while(histRedo.length){c=histRedo.pop(); if(histCanon(c)!==curC){nxt=c; break}}
   if(nxt===null){syncEditMenu(); toast("Nothing to redo."); return}
   histUndo.push(cur); if(histUndo.length>HIST_MAX)histUndo.shift();
   if(histRestore(nxt))toast("Redo — "+histRedo.length+" redo step"+(histRedo.length===1?"":"s")+" left.");
@@ -7048,12 +7087,12 @@ function screenContentForShare(){
   return null;
 }
 function shareScreenNoteText(sc){
-  if(!sc)return "Screen content: nothing is playing on the screens, so the client sees the screens in their layout colours. Start a Simulator source in Render first if you want content on the walls in the client view.";
-  if(sc.kind==="sim")return "Screen content: the built-in VJ visuals playing now travel inside this link and play live on the screens in the client view, mapped across the layout exactly as here.";
-  if(sc.kind==="image")return "Screen content: your uploaded image travels inside this link (a compressed copy) and shows on the screens in the client view, mapped across the layout exactly as here.";
-  if(sc.kind==="image-missing")return "Screen content: your uploaded image could not be packed into the link (too large to encode), so the client will see the screens in their layout colours. A smaller image — or the built-in VJ visuals — travels in the link.";
-  if(sc.kind==="poster")return "Screen content: a video / shared window itself cannot travel inside a link — the file never leaves this tab — so a still frame from it travels instead, and the client sees that frame on the screens. For moving content in the client view, share with the built-in VJ visuals or an uploaded image playing.";
-  return "Screen content: this source (a video / shared window) cannot travel inside a link and no frame could be captured, so the client will see the screens in their layout colours. Use the built-in VJ visuals or an uploaded image for content in the client view.";
+  if(!sc)return "Screen content: nothing playing — the client sees the screens in their layout colours.";
+  if(sc.kind==="sim")return "Screen content: the VJ visuals playing now travel in this link and play live in the client view.";
+  if(sc.kind==="image")return "Screen content: your uploaded image travels in this link and shows on the screens in the client view.";
+  if(sc.kind==="image-missing")return "Screen content: your image was too large to pack into the link — the client sees the screens in their layout colours.";
+  if(sc.kind==="poster")return "Screen content: video can't travel in a link — a still frame from it travels instead.";
+  return "Screen content: this source can't travel in a link and no frame could be captured — the client sees the screens in their layout colours.";
 }
 /* Adopt screen content carried by a share link (client view only):
    called before the client render opens, with the image — when the
