@@ -6069,7 +6069,7 @@ function histRestore(snap){
   $("projectName").value=state.project;
   state.displays=(data.displays||[]).map(function(o){return makeDisplay(o)});
   if(!state.displays.length)state.displays=[makeDisplay({name:"Screen 1"})];
-  state.modifiers=(data.modifiers||[]).map(sanitizeModifier).filter(Boolean);
+  state.modifiers=sanitizeModifiers(data.modifiers||[]);
   syncDeckFromMainStage(); /* history carries no deck — re-derive it from the restored Main deck piece */
   fixLoadedIds(); /* a snapshot can carry ids the live counter has since passed — or duplicates from before this repair */
   state.selId=(data.selId&&state.displays.some(function(d){return d.id===data.selId}))?data.selId:state.displays[0].id;
@@ -20967,6 +20967,15 @@ $("viewerCsv").addEventListener("click",function(){
   downloadBlob(new Blob([rows.join("\r\n")],{type:"text/csv"}),"viewer-log.csv");
   toast("Viewer log exported as CSV.");
 });
+/* Load-time modifier sanitising, one modifier at a time: a single
+   modifier that fails validation must never take down the whole
+   layout load — a shared client view once fell back to the default
+   stage, and an Undo restore lost the layout, because ONE modifier
+   threw inside the map. The broken entry is dropped; the displays
+   and every other modifier still load. */
+function sanitizeModifiers(list){
+  return (Array.isArray(list)?list:[]).map(function(m){try{return sanitizeModifier(m)}catch(e){return null}}).filter(Boolean);
+}
 /* Apply a shared layout exactly like File → Load layout does (minus
    history — the client view has no editing to undo). */
 function applySharedLayout(data){
@@ -20975,7 +20984,7 @@ function applySharedLayout(data){
   if(data.stage3d)state.stage3d=Object.assign(state.stage3d,data.stage3d);
   if(data.prefs){state.prefs=Object.assign(state.prefs,data.prefs); applyPrefs()}
   state.layoutLink=(data.layoutLink==="linked")?"linked":"independent"; syncLayoutLinkUI();
-  if(Array.isArray(data.modifiers)){state.modifiers=data.modifiers.map(sanitizeModifier).filter(Boolean); selModId=state.modifiers.length?state.modifiers[0].id:null; syncDeckFromMainStage()}
+  if(Array.isArray(data.modifiers)){state.modifiers=sanitizeModifiers(data.modifiers); selModId=state.modifiers.length?state.modifiers[0].id:null; syncDeckFromMainStage()}
   if(data.project){state.project=data.project; $("projectName").value=data.project}
   state.displays=data.displays.map(function(o){return makeDisplay(o)});
   fixLoadedIds();
@@ -21195,7 +21204,7 @@ function applyLoadedLayout(data){
       if(data.gizmo){if(data.gizmo.mode)setGizmoMode(data.gizmo.mode); state.gizmoSnap=!!data.gizmo.snap; if(data.gizmo.strength!==undefined&&!isNaN(+data.gizmo.strength))state.snapStrength=clamp(+data.gizmo.strength,0,100); if(data.gizmo.snapScreens!==undefined){state.snapScreens=!!data.gizmo.snapScreens; syncSnapScreensUI()} if(data.gizmo.orientation)setTransformOrientation(data.gizmo.orientation); syncGizmoControls()}
       if(data.prefs){state.prefs=Object.assign(state.prefs,data.prefs); applyPrefs()}
       state.layoutLink=(data.layoutLink==="linked")?"linked":"independent"; syncLayoutLinkUI();
-      if(Array.isArray(data.modifiers)){state.modifiers=data.modifiers.map(sanitizeModifier).filter(Boolean); selModId=state.modifiers.length?state.modifiers[0].id:null; syncDeckFromMainStage()}
+      if(Array.isArray(data.modifiers)){state.modifiers=sanitizeModifiers(data.modifiers); selModId=state.modifiers.length?state.modifiers[0].id:null; syncDeckFromMainStage()}
       if(data.project){state.project=data.project;$("projectName").value=data.project}
       if(Array.isArray(data.displays)&&data.displays.length){
         state.displays=data.displays.map(function(o){return makeDisplay(o)});
@@ -22767,9 +22776,18 @@ function sanitizeModifier(o){
      factor applying uniformly on top. */
   if(o.type==="scaffold"){
     var sct=(typeof SCAFFOLD_TYPES!=="undefined"&&SCAFFOLD_TYPES[p.system])?SCAFFOLD_TYPES[p.system]:((typeof SCAFFOLD_TYPES!=="undefined")?SCAFFOLD_TYPES.layher:null);
+    /* scaSnap is declared HERE, at the scaffold-block level — NOT
+       inside the if(sct) block below — because the Layers (units)
+       validation further down this same block calls it too. A
+       function declared inside if(sct){…} is scoped to that block
+       only, so validating a layer threw "scaSnap is not defined":
+       any layout whose scaffolding carried layers failed to load
+       at all — a shared client view fell back to the default stage
+       with "This client link could not be read", and a .ledx load
+       of the same layout failed the same way. */
+    function scaSnap(list,v,dv){v=+v; if(!isFinite(v))return dv; var bs=list[0],bd=1e9; for(var bi=0;bi<list.length;bi++){var dd=Math.abs(list[bi]-v); if(dd<bd){bd=dd; bs=list[bi]}} return bs}
     if(sct){
       p.system=SCAFFOLD_TYPES[p.system]?p.system:"layher";
-      function scaSnap(list,v,dv){v=+v; if(!isFinite(v))return dv; var bs=list[0],bd=1e9; for(var bi=0;bi<list.length;bi++){var dd=Math.abs(list[bi]-v); if(dd<bd){bd=dd; bs=list[bi]}} return bs}
       p.bayL=scaSnap(sct.bays,p.bayL,2.07); p.bayW=scaSnap(sct.bays,p.bayW,2.07);
       p.liftH=scaSnap(sct.lifts,p.liftH,2);
       p.scale=isFinite(+p.scale)?clamp(Math.round(+p.scale*100)/100,0.25,4):1;
